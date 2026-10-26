@@ -121,7 +121,7 @@
   function setAmount() {
     // V4 used uAmount = refraction / 8 and displacement proportional
     // to surface slope; scale here is measured in rendered CSS pixels.
-    displacement.setAttribute('scale', (Number(refraction.value) * 55).toFixed(2));
+    displacement.setAttribute('scale', (Number(refraction.value) * 125).toFixed(2));
   }
 
   function initializeField() {
@@ -294,8 +294,8 @@
         const dx = heights[r] - heights[l];
         const dy = heights[d] - heights[u];
         const j = i * 4;
-        pixelData.data[j] = Math.round(clamp(127.5 + dx * 90, 0, 255));
-        pixelData.data[j+1] = Math.round(clamp(127.5 + dy * 90, 0, 255));
+        pixelData.data[j] = Math.round(clamp(127.5 + dx * 200, 0, 255));
+        pixelData.data[j+1] = Math.round(clamp(127.5 + dy * 200, 0, 255));
       }
     }
     ctx.putImageData(pixelData, 0, 0);
