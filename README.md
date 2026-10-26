@@ -1,5 +1,32 @@
 # Rolling Can Animation (Blender)
 
+## v3 — 실제 칠성사이다 패키징 1950 ↔ 1960 (2026-10-26)
+
+[rolling_can_v3.py](./rolling_can_v3.py)를 추가했습니다. 첨부 ZIP 안에서 아래 평면 라벨 2개를 자동으로 찾아 캔에 적용하는 **새로운** 테스트 스크립트입니다.
+
+- `칠성/img/1950packaging.png` — 아이보리 바탕 + 빨간 별/CIDER
+- `칠성/img/1960packaging.png` — 아이보리 바탕 + 초록 칠성 로고
+
+4초 동안 같은 위치에서 캔이 계속 회전하고, 1950 → 1960 → 1950 패키징이 자연스럽게 바뀝니다. 배경 이미지들은 캔 텍스처가 아니므로 아직 사용하지 않습니다. 이후 스크롤 웹 페이지에서 배경과 디자인을 연결할 예정입니다.
+
+### 실행 방법 (처음 하는 사용자)
+
+1. 기존 `rolling_can_v02.blend` 파일은 안전하게 보관하세요.
+2. 컴퓨터의 **같은 폴더에** `칠성.zip`을 둡니다. 압축을 풀 필요는 없습니다.
+3. Blender에서 **File → New → General**을 선택합니다.
+4. Blender **File → Save As...**로 **그 ZIP 파일과 같은 폴더에** `rolling_can_v03.blend`를 먼저 저장합니다.
+5. GitHub [rolling_can_v3.py](./rolling_can_v3.py) 페이지에서 **Raw**를 열고 코드를 전부 복사합니다.
+6. Blender의 **Scripting → New**에 붙여넣고 **Alt+P**를 누릅니다.
+7. **Layout** 탭으로 돌아가 오른쪽 위의 **Material Preview**를 선택하고 **Space**로 재생합니다.
+8. 실제 디자인이 보이면 **Ctrl+S**로 저장합니다.
+
+**주의:** 스크립트를 실행하면 **현재 씬에 있는 모든 오브젝트를 삭제**합니다. 반드시 빈 새 파일에서 실행하세요. ZIP이 없거나 해당 파일을 못 찾으면 빨간색/초록색 임시 색상으로 표시됩니다. 해당 경우 ZIP 경로·파일명을 확인하세요.
+
+**검증 상태:** GitHub 코드 등록까지 완료. 이 환경에는 Blender 프로그램이 없으므로 실제 렌더 검증은 진행하지 못했습니다. 캔에 감긴 로고의 크기나 방향은 Blender에서 보고 조정할 수 있습니다.
+
+---
+
+
 **A fixed-camera, horizontally lying beverage can that rotates in place while its package design smoothly changes A → B → C → A.**
 
 ## What's in this repository
