@@ -1,0 +1,45 @@
+/* The first two eras share one stationary camera and one rolling WebGL can. */
+.history-3d{position:relative;height:270svh;min-height:1500px;isolation:isolate}
+.history-3d-stage{position:sticky;top:0;height:100svh;min-height:600px;overflow:hidden;background:#f8f1d9}
+.history-3d-era{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.history-3d-era:not(:first-child) .history-3d-era-background{--wipe-top:110%;-webkit-mask-image:linear-gradient(to bottom,transparent calc(var(--wipe-top) - 8%),#000 calc(var(--wipe-top) + 8%));mask-image:linear-gradient(to bottom,transparent calc(var(--wipe-top) - 8%),#000 calc(var(--wipe-top) + 8%))}
+.history-3d-era:not(:first-child) .history-3d-year,.history-3d-era:not(:first-child) .history-3d-copy{opacity:0}
+.history-3d-era-background{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat}
+.history-3d-era-background:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,250,231,.4),transparent 75%)}
+.history-3d-era[data-year="1950"] .history-3d-era-background{background-image:url('../img/history/history-bg-1950.png')}
+.history-3d-era[data-year="1960"] .history-3d-era-background{background-image:url('../img/history/history-bg-1960.png')}
+.history-3d-era[data-year="1960"] .history-3d-era-background:after{background:linear-gradient(90deg,rgba(251,248,220,.58),transparent 70%)}
+.history-3d-year{position:absolute;top:2%;left:2%;font:400 clamp(230px,29vw,510px)/.9 var(--font-family-display,Arial,sans-serif);letter-spacing:-.1em;color:rgba(178,26,46,.38);white-space:nowrap;user-select:none}
+.history-3d-era[data-year="1960"] .history-3d-year{color:rgba(0,130,64,.38)}
+.history-3d-copy{position:absolute;z-index:3;max-width:400px;color:#8d1830;text-shadow:0 2px 14px rgba(255,250,231,.8)}
+.history-3d-era[data-year="1950"] .history-3d-copy{right:6%;bottom:11%;text-align:right}
+.history-3d-era[data-year="1960"] .history-3d-copy{left:6%;top:11%;color:#075d37}
+.history-3d-copy>span{font-size:13px;font-weight:800;letter-spacing:.16em}
+.history-3d-copy h3{margin:14px 0 0;font-size:clamp(48px,5.3vw,86px);font-weight:800;line-height:1.04;letter-spacing:-.06em}
+.history-3d-copy p{margin:17px 0 0;font-size:clamp(15px,1.3vw,20px);font-weight:700}
+.history-3d-canvas{position:absolute;z-index:4;inset:0;pointer-events:none}
+.history-3d-canvas canvas{display:block;width:100%;height:100%}
+.history-3d-fallback{display:none;position:absolute;z-index:4;inset:0;align-items:center;justify-content:center;pointer-events:none}
+.history-3d-fallback img{width:min(70vw,820px);height:auto;filter:drop-shadow(22px 25px 15px rgba(47,26,20,.25))}
+.history-3d[data-fallback="true"] .history-3d-fallback{display:flex}
+.history-3d-status{position:absolute;z-index:5;left:6%;right:6%;bottom:3%;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;color:#7b1c30;font-size:12px;font-weight:800;letter-spacing:.12em;pointer-events:none}
+.history-3d-status-track{height:2px;background:rgba(95,51,51,.32)}
+.history-3d-status-track i{display:block;width:100%;height:100%;background:currentColor;transform:scaleX(0);transform-origin:left}
+.history-3d[data-active-year="1960"] .history-3d-status,.history-3d[data-active-year="1960"] .history-3d-scroll-hint{color:#075d37}
+.history-3d-scroll-hint{position:absolute;z-index:5;left:6%;top:5%;color:#8d1830;font-size:12px;font-weight:800;letter-spacing:.16em}
+.history-prototype-page{margin:0;min-width:0;overflow-x:hidden;font-family:Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.history-prototype-page .history-3d-stage{min-height:0}
+.history-prototype-link{position:absolute;z-index:10;top:28px;right:6%;color:#8d1830;font-size:12px;font-weight:800;text-decoration:none;border-bottom:1px solid currentColor}
+.history-prototype-end{min-height:30vh;padding:9vh 6%;background:#075d37;color:#fff;font-size:clamp(25px,3vw,46px);font-weight:800}
+@media(max-width:700px){
+  .history-3d{min-height:0}
+  .history-3d-stage{min-height:0}
+  .history-3d-year{top:14%;left:-3%;font-size:55vw}
+  .history-3d-era[data-year="1950"] .history-3d-copy{left:7%;right:7%;top:8%;bottom:auto;text-align:left}
+  .history-3d-era[data-year="1960"] .history-3d-copy{left:7%;right:7%;top:8%}
+  .history-3d-copy h3{font-size:clamp(36px,9vw,58px)}
+  .history-3d-copy p{font-size:14px}
+  .history-3d-scroll-hint{left:7%;top:auto;bottom:9%;font-size:10px}
+  .history-3d-status{left:7%;right:7%;bottom:4%;font-size:10px;gap:9px}
+  .history-prototype-link{top:auto;bottom:10%;right:7%}
+}

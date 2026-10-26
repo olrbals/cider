@@ -1,4 +1,22 @@
-# Rolling Can Animation (Blender)
+# CHILSUNG CIDER — Web 3D and Blender rolling can
+
+## 웹사이트: 1950 → 1960 스크롤 3D 프로토타입
+
+정적 브랜드 사이트의 History 첫 두 구간에 Three.js 캔과 GSAP ScrollTrigger를 연결했습니다. 가로로 누운 캔은 스크롤을 따라 아래로 이동하며 긴 축으로 회전하고, 원통 표면의 1950·1960 패키징이 자연스럽게 혼합됩니다. 아래로 내리다 멈추면 캔도 멈추며, 위로 올리면 역방향으로 재생됩니다.
+
+1. Node.js가 설치된 컴퓨터에서 이 저장소를 다운로드하거나 클론합니다.
+2. 프로젝트 폴더에서 `node experiments/serve-local.mjs`를 실행합니다.
+3. `http://127.0.0.1:8767/index.html#history-3d`에서 통합된 사이트를 확인합니다. `http://127.0.0.1:8767/experiments/history-3d-1950-1960.html`은 독립 확인 페이지입니다.
+
+서버 실행에는 추가 패키지 설치가 필요하지 않습니다. 로컬 Three.js와 GSAP 파일이 `js/vendor/`에 포함되어 있습니다. HTML을 파일로 직접 열면 ES 모듈이 실행되지 않을 수 있으므로 로컬 서버 주소로 접속하세요.
+
+구조와 연도 추가 방법: [docs/history-3d-prototype.md](./docs/history-3d-prototype.md). 1950·1960 패키징 PNG는 사용자가 제공한 `칠성.zip`에서 추출했으며, 원본 ZIP과 아래 Blender 스크립트는 변경하지 않았습니다.
+
+![1960년 구간의 웹 3D 캔](./screenshots/history-3d-1960.png)
+
+---
+
+## Blender 실험
 
 ## v3 — 실제 칠성사이다 패키징 1950 ↔ 1960 (2026-10-26)
 

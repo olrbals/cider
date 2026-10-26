@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CHILSUNG CIDER — 1950 → 1960 3D 스크롤 프로토타입</title>
+  <link rel="stylesheet" href="../css/history-3d.css">
+  <script defer src="../js/vendor/gsap.min.js"></script>
+  <script defer src="../js/vendor/ScrollTrigger.min.js"></script>
+  <script type="module" src="../js/history-3d.js"></script>
+</head>
+<body class="history-prototype-page">
+  <main>
+    <section class="history-3d" id="history-3d" aria-label="1950년에서 1960년까지 패키징이 바뀌는 3D 캔">
+      <div class="history-3d-stage">
+        <article class="history-3d-era" data-year="1950" data-packaging="../img/history/1950packaging.png">
+          <div class="history-3d-era-background" aria-hidden="true"></div><span class="history-3d-year" aria-hidden="true">1950</span>
+          <div class="history-3d-copy"><span>01 / BRAND HISTORY</span><h3>붉은 별로<br>시작된 이름.</h3><p>크림색 바탕과 선명한 빨간 별.</p></div>
+        </article>
+        <article class="history-3d-era" data-year="1960" data-packaging="../img/history/1960packaging.png">
+          <div class="history-3d-era-background" aria-hidden="true"></div><span class="history-3d-year" aria-hidden="true">1960</span>
+          <div class="history-3d-copy"><span>02 / BRAND HISTORY</span><h3>별 아래<br>커진 이름.</h3><p>별과 한글 레터링이 중심에.</p></div>
+        </article>
+        <div class="history-3d-canvas" aria-hidden="true"></div>
+        <div class="history-3d-fallback" aria-hidden="true"><img src="../img/history/1950-horizontal-reference.png" alt=""></div>
+        <span class="history-3d-scroll-hint">SCROLL TO ROLL ↓</span>
+        <div class="history-3d-status" aria-hidden="true"><span>1950 → 1960</span><span class="history-3d-status-track"><i></i></span><span class="history-3d-progress">00%</span></div>
+        <a class="history-prototype-link" href="../index.html#history">전체 사이트 ↗</a>
+      </div>
+    </section>
+    <div class="history-prototype-end">1950 → 1960 / THE STAR KEEPS ROLLING.</div>
+  </main>
+</body>
+</html>
