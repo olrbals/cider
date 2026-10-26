@@ -1,16 +1,19 @@
 import * as THREE from './vendor/three.module.js';
 
-// The source images are the original Figma fills. Every label is a 2:1 UV map.
+// The connected background uses Figma frame 1261:1706 (1440 × 540 per era).
+// Crops are percentages of that frame; labels remain the original 2:1 UV maps.
 const HISTORY_ERAS = [
-  { year: '1950', background: 'img/history/history-bg-1950.png', packaging: 'img/history/1950packaging.png', fallback: 'img/history/1950-horizontal-reference.png', horizontalFallback: true },
-  { year: '1960', background: 'img/history/history-bg-1960.png', packaging: 'img/history/1960packaging.png', fallback: 'img/display/era-1960.png' },
-  { year: '1970', background: 'img/history/history-bg-1970.png', packaging: 'img/history/1970packaging.png', fallback: 'img/display/era-1970.png' },
-  { year: '1987', background: 'img/history/history-bg-1987.png', packaging: 'img/history/1987packaging.png', fallback: 'img/display/era-1987.png' },
-  { year: '1994', background: 'img/history/history-bg-1994.png', packaging: 'img/history/1994packaging.png', fallback: 'img/display/era-1994.png' },
-  { year: '2000', background: 'img/history/history-bg-2000.png', packaging: 'img/history/2000packaging.png', fallback: 'img/display/era-2000.png', uvShift: -0.11 },
-  { year: '2014', background: 'img/history/history-bg-2014.png', packaging: 'img/history/2014packaging-uv.png', fallback: 'img/display/era-2014.png' },
-  { year: '2024', background: 'img/history/history-bg-2024.png', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
+  { year: '1950', background: 'img/history/history-bg-1950.png', crop: ['-8.85%', '-0.05%', '110.24%', '128.12%'], yearColor: 'rgba(199,26,48,.57)', packaging: 'img/history/1950packaging.png', fallback: 'img/history/1950-horizontal-reference.png', horizontalFallback: true },
+  { year: '1960', background: 'img/history/history-bg-1960.png', crop: ['-10.92%', '-62.4%', '141.74%', '164.71%'], yearColor: 'rgba(0,120,56,.57)', packaging: 'img/history/1960packaging.png', fallback: 'img/display/era-1960.png' },
+  { year: '1970', background: 'img/history/history-bg-1970.png', crop: ['-7.4%', '-29.03%', '136.02%', '158.07%'], yearColor: 'rgba(229,255,177,.57)', packaging: 'img/history/1970packaging.png', fallback: 'img/display/era-1970.png' },
+  { year: '1987', background: 'img/history/history-bg-1987.png', crop: ['-20.51%', '-24.64%', '128.62%', '149.47%'], yearColor: 'rgba(229,255,177,.57)', packaging: 'img/history/1987packaging.png', fallback: 'img/display/era-1987.png' },
+  { year: '1994', background: 'img/history/history-bg-1994.png', crop: ['0.01%', '-24.73%', '120.36%', '139.88%'], yearColor: 'rgba(255,255,255,.57)', packaging: 'img/history/1994packaging.png', fallback: 'img/display/era-1994.png' },
+  { year: '2000', background: 'img/history/history-bg-2000.png', crop: ['0.01%', '-24.73%', '120.36%', '139.88%'], yearColor: 'rgba(20,159,92,.57)', packaging: 'img/history/2000packaging.png', fallback: 'img/display/era-2000.png', uvShift: -0.11 },
+  { year: '2014', background: 'img/history/history-bg-2014.png', crop: ['-0.02%', '-6.8%', '120.36%', '139.88%'], yearColor: 'rgba(255,255,255,.57)', packaging: 'img/history/2014packaging-uv.png', fallback: 'img/display/era-2014.png' },
+  { year: '2024', background: 'img/history/history-bg-2024.png', crop: ['0%', '-7.25%', '107.33%', '124.73%'], yearColor: 'rgba(255,255,255,.57)', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
 ];
+
+const assetURL = path => new URL(`../${path}`, import.meta.url).href;
 
 const clamp = value => Math.min(1, Math.max(0, value));
 const smoothstep = (start, end, value) => {
@@ -28,7 +31,7 @@ function loadImage(url) {
   });
 }
 
-function makeCan(stage, images) {
+function makeCan(stage, track, images) {
   const width = 1024;
   const height = 512;
   const labelCanvas = document.createElement('canvas');
@@ -119,13 +122,16 @@ function makeCan(stage, images) {
   rolling.add(pullRing);
 
   let frustumHeight = 3.1;
-  let narrow = false;
+  let viewportHeight = 1;
+  let panelHeight = 1;
+  let scrollDistance = 1;
   function resize() {
     const bounds = stage.getBoundingClientRect();
     const viewportWidth = Math.max(1, bounds.width);
-    const viewportHeight = Math.max(1, bounds.height);
+    viewportHeight = Math.max(1, bounds.height);
     const aspect = viewportWidth / viewportHeight;
-    narrow = aspect < 0.75;
+    panelHeight = Math.max(1, track.firstElementChild?.getBoundingClientRect().height || 1);
+    scrollDistance = Math.max(0, track.getBoundingClientRect().height - viewportHeight);
     frustumHeight = Math.max(3.1, 3.85 / aspect);
     camera.left = -frustumHeight * aspect / 2;
     camera.right = frustumHeight * aspect / 2;
@@ -137,16 +143,13 @@ function makeCan(stage, images) {
 
   function render(progress, pair, blend) {
     blendLabels(pair, blend);
-    // Repeat the original 1950→1960 travel without a position jump at a handoff.
-    // The rotation reverses with the travel, as a can rolling back across a surface would.
-    const point = progress * (images.length - 1);
-    const segment = Math.min(images.length - 2, Math.floor(point));
-    const local = point - segment;
-    const roll = segment % 2 === 0 ? local : 1 - local;
-    const travel = smoothstep(0, 1, roll);
-    carrier.position.y = frustumHeight * (narrow ? 0.10 - 0.30 * travel : 0.18 - 0.36 * travel);
-    // Two complete turns keep the printed face forward at every era boundary.
-    rolling.rotation.y = Math.PI + 0.28 + roll * Math.PI * 4;
+    // In document space the can passes through each connected frame's center.
+    // Its screen position gradually descends while the backgrounds scroll behind it.
+    const documentY = panelHeight * (0.5 + progress * (images.length - 1));
+    const screenY = documentY - progress * scrollDistance;
+    carrier.position.y = frustumHeight * (0.5 - screenY / viewportHeight);
+    // Scrolling down always rolls in the same direction: two turns per era.
+    rolling.rotation.y = Math.PI + 0.28 + progress * Math.PI * 4 * (images.length - 1);
     renderer.render(scene, camera);
   }
 
@@ -156,34 +159,37 @@ function makeCan(stage, images) {
 
 async function initHistory(section) {
   const stage = section.querySelector('.history-3d-stage');
-  if (!stage) return;
-  const canvasLayer = stage.querySelector('.history-3d-canvas');
+  const track = section.querySelector('.history-3d-track');
+  if (!stage || !track) return;
   const fallbackImage = stage.querySelector('.history-3d-fallback img');
-  const eras = HISTORY_ERAS.map(({ year, background, packaging }) => {
+  const eras = HISTORY_ERAS.map(({ year, background, crop, yearColor, packaging }) => {
     const era = document.createElement('article');
     era.className = 'history-3d-era';
     era.dataset.year = year;
     era.dataset.packaging = packaging;
-    era.setAttribute('aria-hidden', 'true');
-    const backdrop = document.createElement('div');
+    const backdrop = document.createElement('img');
     backdrop.className = 'history-3d-era-background';
+    backdrop.src = assetURL(background);
+    backdrop.alt = '';
     backdrop.setAttribute('aria-hidden', 'true');
-    backdrop.style.backgroundImage = `url("${new URL(background, document.baseURI).href}")`;
+    ['left', 'top', 'width', 'height'].forEach((name, index) => {
+      era.style.setProperty(`--background-${name}`, crop[index]);
+    });
+    era.style.setProperty('--year-color', yearColor);
     const yearLabel = document.createElement('span');
     yearLabel.className = 'history-3d-year';
     yearLabel.textContent = year;
     era.append(backdrop, yearLabel);
-    stage.insertBefore(era, canvasLayer);
+    track.append(era);
     return era;
   });
-  section.style.height = `${eras.length * 100 + 70}svh`;
   const years = eras.map(era => era.dataset.year);
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
   let can = null;
 
   try {
-    const images = await Promise.all(eras.map(era => loadImage(new URL(era.dataset.packaging, document.baseURI))));
-    can = makeCan(stage, images);
+    const images = await Promise.all(eras.map(era => loadImage(assetURL(era.dataset.packaging))));
+    can = makeCan(stage, track, images);
     section.dataset.ready = 'true';
   } catch (error) {
     section.dataset.fallback = 'true';
@@ -198,22 +204,11 @@ async function initHistory(section) {
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
     const blend = smoothstep(0.38, 0.62, local);
-    const backgroundReveal = blend;
-    const outgoingText = 1 - smoothstep(0.38, 0.48, local);
-    const incomingText = smoothstep(0.52, 0.62, local);
-
-    eras.forEach((era, index) => {
-      const background = era.querySelector('.history-3d-era-background');
-      const opacity = index === pair ? outgoingText : index === pair + 1 ? incomingText : 0;
-      background.style.setProperty('--wipe-top', index <= pair ? '-10%' : index === pair + 1 ? `${110 - backgroundReveal * 120}%` : '110%');
-      era.querySelector('.history-3d-year').style.opacity = String(opacity);
-      era.setAttribute('aria-hidden', opacity > 0.5 ? 'false' : 'true');
-    });
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = blend < 0.5 ? pair : pair + 1;
     section.dataset.activeYear = years[activeIndex];
     if (fallbackImage && fallbackYear !== years[activeIndex]) {
-      fallbackImage.src = new URL(HISTORY_ERAS[activeIndex].fallback, document.baseURI).href;
+      fallbackImage.src = assetURL(HISTORY_ERAS[activeIndex].fallback);
       fallbackImage.classList.toggle('is-horizontal', !!HISTORY_ERAS[activeIndex].horizontalFallback);
       fallbackYear = years[activeIndex];
     }
