@@ -34,10 +34,12 @@
   filter.setAttribute('color-interpolation-filters', 'sRGB');
 
   const surface = makeSVG('feImage');
-  surface.setAttribute('x', '0%');
-  surface.setAttribute('y', '0%');
-  surface.setAttribute('width', '100%');
-  surface.setAttribute('height', '100%');
+  // feImage primitive sizes must use *pixel* units for CSS-filtered HTML.
+  // Using 100% here shifts the entire scene by half the displacement scale.
+  surface.setAttribute('x', '0');
+  surface.setAttribute('y', '0');
+  surface.setAttribute('width', '1');
+  surface.setAttribute('height', '1');
   surface.setAttribute('preserveAspectRatio', 'none');
   surface.setAttribute('result', 'siteGel');
 
@@ -127,6 +129,8 @@
     const rect = active.getBoundingClientRect();
     width = Math.max(1, rect.width);
     height = Math.max(1, rect.height);
+    surface.setAttribute('width', String(width));
+    surface.setAttribute('height', String(height));
     rows = clamp(Math.round(cols * height / width), 66, 170);
     const count = cols * rows;
 
