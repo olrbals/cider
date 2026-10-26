@@ -1,5 +1,17 @@
 import * as THREE from './vendor/three.module.js';
 
+// The source images are the original Figma fills. Every label is a 2:1 UV map.
+const HISTORY_ERAS = [
+  { year: '1950', background: 'img/history/history-bg-1950.png', packaging: 'img/history/1950packaging.png', fallback: 'img/history/1950-horizontal-reference.png', horizontalFallback: true },
+  { year: '1960', background: 'img/history/history-bg-1960.png', packaging: 'img/history/1960packaging.png', fallback: 'img/display/era-1960.png' },
+  { year: '1970', background: 'img/history/history-bg-1970.png', packaging: 'img/history/1970packaging.png', fallback: 'img/display/era-1970.png' },
+  { year: '1987', background: 'img/history/history-bg-1987.png', packaging: 'img/history/1987packaging.png', fallback: 'img/display/era-1987.png' },
+  { year: '1994', background: 'img/history/history-bg-1994.png', packaging: 'img/history/1994packaging.png', fallback: 'img/display/era-1994.png' },
+  { year: '2000', background: 'img/history/history-bg-2000.png', packaging: 'img/history/2000packaging.png', fallback: 'img/display/era-2000.png', uvShift: -0.11 },
+  { year: '2014', background: 'img/history/history-bg-2014.png', packaging: 'img/history/2014packaging-uv.png', fallback: 'img/display/era-2014.png' },
+  { year: '2024', background: 'img/history/history-bg-2024.png', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
+];
+
 const clamp = value => Math.min(1, Math.max(0, value));
 const smoothstep = (start, end, value) => {
   const t = clamp((value - start) / (end - start));
@@ -26,22 +38,29 @@ function makeCan(stage, images) {
   let lastPair = -1;
   let lastBlend = -1;
 
+  function drawLabel(index, alpha = 1) {
+    // Rotate the flat UV around the same cylinder to center each era's front artwork.
+    const offset = (HISTORY_ERAS[index].uvShift || 0) * width;
+    context.globalAlpha = alpha;
+    context.drawImage(images[index], offset, 0, width, height);
+    if (offset < 0) context.drawImage(images[index], offset + width, 0, width, height);
+    if (offset > 0) context.drawImage(images[index], offset - width, 0, width, height);
+  }
+
   function blendLabels(index, blend) {
     const nextBlend = Math.round(blend * 128) / 128;
     if (index === lastPair && nextBlend === lastBlend) return;
-    context.globalAlpha = 1;
-    context.drawImage(images[index], 0, 0, width, height);
+    drawLabel(index);
     if (nextBlend > 0 && images[index + 1]) {
-      context.globalAlpha = nextBlend;
-      context.drawImage(images[index + 1], 0, 0, width, height);
-      context.globalAlpha = 1;
+      drawLabel(index + 1, nextBlend);
     }
+    context.globalAlpha = 1;
     lastPair = index;
     lastBlend = nextBlend;
     labelTexture.needsUpdate = true;
   }
 
-  context.drawImage(images[0], 0, 0, width, height);
+  drawLabel(0);
   const labelTexture = new THREE.CanvasTexture(labelCanvas);
   labelTexture.colorSpace = THREE.SRGBColorSpace;
   labelTexture.anisotropy = 4;
@@ -118,10 +137,16 @@ function makeCan(stage, images) {
 
   function render(progress, pair, blend) {
     blendLabels(pair, blend);
-    const travel = smoothstep(0, 1, progress);
+    // Repeat the original 1950→1960 travel without a position jump at a handoff.
+    // The rotation reverses with the travel, as a can rolling back across a surface would.
+    const point = progress * (images.length - 1);
+    const segment = Math.min(images.length - 2, Math.floor(point));
+    const local = point - segment;
+    const roll = segment % 2 === 0 ? local : 1 - local;
+    const travel = smoothstep(0, 1, roll);
     carrier.position.y = frustumHeight * (narrow ? 0.10 - 0.30 * travel : 0.18 - 0.36 * travel);
-    // Two turns put the printed face forward at the package handoff and at 1960.
-    rolling.rotation.y = Math.PI + 0.28 + progress * Math.PI * 4 * (images.length - 1);
+    // Two complete turns keep the printed face forward at every era boundary.
+    rolling.rotation.y = Math.PI + 0.28 + roll * Math.PI * 4;
     renderer.render(scene, camera);
   }
 
@@ -131,8 +156,26 @@ function makeCan(stage, images) {
 
 async function initHistory(section) {
   const stage = section.querySelector('.history-3d-stage');
-  const eras = [...section.querySelectorAll('.history-3d-era')];
-  if (eras.length < 2) return;
+  if (!stage) return;
+  const canvasLayer = stage.querySelector('.history-3d-canvas');
+  const fallbackImage = stage.querySelector('.history-3d-fallback img');
+  const eras = HISTORY_ERAS.map(({ year, background, packaging }) => {
+    const era = document.createElement('article');
+    era.className = 'history-3d-era';
+    era.dataset.year = year;
+    era.dataset.packaging = packaging;
+    era.setAttribute('aria-hidden', 'true');
+    const backdrop = document.createElement('div');
+    backdrop.className = 'history-3d-era-background';
+    backdrop.setAttribute('aria-hidden', 'true');
+    backdrop.style.backgroundImage = `url("${new URL(background, document.baseURI).href}")`;
+    const yearLabel = document.createElement('span');
+    yearLabel.className = 'history-3d-year';
+    yearLabel.textContent = year;
+    era.append(backdrop, yearLabel);
+    stage.insertBefore(era, canvasLayer);
+    return era;
+  });
   section.style.height = `${eras.length * 100 + 70}svh`;
   const years = eras.map(era => era.dataset.year);
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
@@ -148,13 +191,14 @@ async function initHistory(section) {
   }
 
   let progress = 0;
+  let fallbackYear = '';
   function render(value) {
     progress = clamp(value);
     const point = progress * (eras.length - 1);
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
     const blend = smoothstep(0.38, 0.62, local);
-    const backgroundReveal = smoothstep(0.38, 0.62, local);
+    const backgroundReveal = blend;
     const outgoingText = 1 - smoothstep(0.38, 0.48, local);
     const incomingText = smoothstep(0.52, 0.62, local);
 
@@ -166,7 +210,13 @@ async function initHistory(section) {
       era.setAttribute('aria-hidden', opacity > 0.5 ? 'false' : 'true');
     });
     section.dataset.progress = progress.toFixed(3);
-    section.dataset.activeYear = years[blend < 0.5 ? pair : pair + 1];
+    const activeIndex = blend < 0.5 ? pair : pair + 1;
+    section.dataset.activeYear = years[activeIndex];
+    if (fallbackImage && fallbackYear !== years[activeIndex]) {
+      fallbackImage.src = new URL(HISTORY_ERAS[activeIndex].fallback, document.baseURI).href;
+      fallbackImage.classList.toggle('is-horizontal', !!HISTORY_ERAS[activeIndex].horizontalFallback);
+      fallbackYear = years[activeIndex];
+    }
     can?.render(progress, pair, blend);
   }
 
