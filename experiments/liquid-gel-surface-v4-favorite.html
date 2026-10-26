@@ -1,0 +1,838 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHILSUNG — Viscous Gel Surface v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    background: #d8f9c5;
+    font-family: Arial, sans-serif;
+  }
+  #view {
+    display: block;
+    width: 100vw;
+    height: 100dvh;
+    touch-action: none;
+  }
+  .note {
+    position: fixed;
+    bottom: 26px;
+    left: 4%;
+    z-index: 4;
+    pointer-events: none;
+    color: #075b34;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+  }
+  .panel {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 5;
+    width: 226px;
+    background: rgba(7, 78, 45, .91);
+    color: white;
+    border: 1px solid #ffffff50;
+    padding: 16px;
+    border-radius: 15px;
+    box-shadow: 0 7px 28px #075b3424;
+  }
+  .panel-header {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    margin-bottom: 14px;
+  }
+  .control {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .control label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+  .control input {
+    width: 100%;
+    accent-color: #b5ffb8;
+  }
+  .reset {
+    width: 100%;
+    margin-top: 8px;
+    border: 0;
+    padding: 9px;
+    border-radius: 8px;
+    background: #efffe4;
+    color: #075b34;
+    cursor: pointer;
+    font-weight: 800;
+  }
+  @media(max-width:650px) {
+    .panel {
+      right: 12px;
+      bottom: 12px;
+      transform: scale(.88);
+      transform-origin: bottom right;
+    }
+    .note {
+      font-size: 9px;
+      bottom: 13px;
+    }
+  }
+  @media(prefers-reduced-motion:reduce) {
+    .panel { display:none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="투명한 점성 젤 막에 마우스가 지나가며 글자와 캔을 굴절시키는 테스트"></canvas>
+<div class="note">MOVE / DRAG / STOP — FEEL THE GEL SURFACE</div>
+
+<div class="panel">
+  <div class="panel-header">LIQUID SURFACE / TEST 04</div>
+
+  <div class="control">
+    <label for="sticky">
+      점성 · 회복 지연
+      <span id="sticky-val">17</span>
+    </label>
+    <input id="sticky" type="range"
+           min="1" max="20" value="17">
+  </div>
+
+  <div class="control">
+    <label for="refraction">
+      굴절 강도
+      <span id="refraction-val">1</span>
+    </label>
+    <input id="refraction" type="range"
+           min="1" max="10" value="1">
+  </div>
+
+  <button class="reset" id="reset" type="button">
+    표면 초기화
+  </button>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const view = document.getElementById('view');
+  const gl = view.getContext('webgl', {
+    alpha: false,
+    antialias: false
+  });
+
+  if (!gl) {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<p>WebGL이 지원되지 않는 브라우저입니다.</p>'
+    );
+    return;
+  }
+
+  const $ = id => document.getElementById(id);
+  const sticky = $('sticky');
+  const refraction = $('refraction');
+
+  sticky.addEventListener('input', () => {
+    $('sticky-val').textContent = sticky.value;
+  });
+
+  refraction.addEventListener('input', () => {
+    $('refraction-val').textContent = refraction.value;
+  });
+
+  const vertex = `
+    attribute vec2 aPos;
+    varying vec2 vUV;
+
+    void main() {
+      vUV = aPos * .5 + .5;
+      gl_Position = vec4(aPos, 0., 1.);
+    }
+  `;
+
+  const fragment = `
+    precision highp float;
+
+    varying vec2 vUV;
+
+    uniform sampler2D uPoster;
+    uniform sampler2D uGel;
+    uniform vec2 uPixel;
+    uniform float uTime;
+    uniform float uAmount;
+
+    float h(vec2 p) {
+      return (
+        texture2D(
+          uGel,
+          clamp(p, vec2(0.), vec2(1.))
+        ).r - .5
+      ) * 2.;
+    }
+
+    void main() {
+      float hc = h(vUV);
+
+      vec2 slope = vec2(
+        h(vUV + vec2(uPixel.x, 0.))
+        - h(vUV - vec2(uPixel.x, 0.)),
+        h(vUV + vec2(0., uPixel.y))
+        - h(vUV - vec2(0., uPixel.y))
+      );
+
+      // 투명한 젤 표면의 굴절
+      vec2 optical = slope * .57 * uAmount;
+
+      // 화면 전체에 깔리는 미세한 액체 표면
+      vec2 quietFilm = vec2(
+        sin(vUV.y * 18. + uTime * .17)
+          + cos(vUV.y * 11. - uTime * .12),
+        sin(vUV.x * 15. - uTime * .12)
+      ) * .00033;
+
+      vec2 distorted = clamp(
+        vUV - optical + quietFilm,
+        vec2(.002),
+        vec2(.998)
+      );
+
+      vec3 color = texture2D(
+        uPoster,
+        distorted
+      ).rgb;
+
+      // 표면의 은은한 반사광
+      float tilt = length(slope);
+
+      float gloss =
+        smoothstep(.008, .115, tilt) * .11
+        + smoothstep(.07, .38, abs(hc)) * .024;
+
+      vec3 reflection = vec3(.91, 1., .93);
+
+      color = mix(
+        color,
+        reflection,
+        clamp(gloss, 0., .14)
+      );
+
+      gl_FragColor = vec4(color, 1.);
+    }
+  `;
+
+  function shader(type, source) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, source);
+    gl.compileShader(s);
+
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      throw Error(gl.getShaderInfoLog(s));
+    }
+
+    return s;
+  }
+
+  const program = gl.createProgram();
+
+  gl.attachShader(
+    program,
+    shader(gl.VERTEX_SHADER, vertex)
+  );
+
+  gl.attachShader(
+    program,
+    shader(gl.FRAGMENT_SHADER, fragment)
+  );
+
+  gl.linkProgram(program);
+
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw Error(gl.getProgramInfoLog(program));
+  }
+
+  gl.useProgram(program);
+
+  gl.bindBuffer(
+    gl.ARRAY_BUFFER,
+    gl.createBuffer()
+  );
+
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([
+      -1,-1, 1,-1, -1,1,
+      -1,1, 1,-1, 1,1
+    ]),
+    gl.STATIC_DRAW
+  );
+
+  const pos = gl.getAttribLocation(program, 'aPos');
+
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(
+    pos, 2, gl.FLOAT, false, 0, 0
+  );
+
+  function texture(slot) {
+    const t = gl.createTexture();
+
+    gl.activeTexture(gl.TEXTURE0 + slot);
+    gl.bindTexture(gl.TEXTURE_2D, t);
+
+    gl.texParameteri(
+      gl.TEXTURE_2D,
+      gl.TEXTURE_MIN_FILTER,
+      gl.LINEAR
+    );
+
+    gl.texParameteri(
+      gl.TEXTURE_2D,
+      gl.TEXTURE_MAG_FILTER,
+      gl.LINEAR
+    );
+
+    gl.texParameteri(
+      gl.TEXTURE_2D,
+      gl.TEXTURE_WRAP_S,
+      gl.CLAMP_TO_EDGE
+    );
+
+    gl.texParameteri(
+      gl.TEXTURE_2D,
+      gl.TEXTURE_WRAP_T,
+      gl.CLAMP_TO_EDGE
+    );
+
+    return t;
+  }
+
+  const posterTex = texture(0);
+  const gelTex = texture(1);
+
+  gl.uniform1i(
+    gl.getUniformLocation(program, 'uPoster'), 0
+  );
+
+  gl.uniform1i(
+    gl.getUniformLocation(program, 'uGel'), 1
+  );
+
+  const pixelUniform =
+    gl.getUniformLocation(program, 'uPixel');
+
+  const timeUniform =
+    gl.getUniformLocation(program, 'uTime');
+
+  const amountUniform =
+    gl.getUniformLocation(program, 'uAmount');
+
+  const poster = document.createElement('canvas');
+  const ctx = poster.getContext('2d');
+
+  const can = new Image();
+  can.src = '../img/display/hero-can.png';
+  can.onload = drawPoster;
+
+  let cols = 180;
+  let rows = 100;
+
+  let heights;
+  let speeds;
+  let nextHeights;
+  let nextSpeeds;
+  let bytes;
+
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+
+  function initializeField() {
+    cols = 180;
+
+    rows = Math.max(
+      66,
+      Math.min(
+        180,
+        Math.round(cols * height / width)
+      )
+    );
+
+    const n = cols * rows;
+
+    heights = new Float32Array(n);
+    speeds = new Float32Array(n);
+    nextHeights = new Float32Array(n);
+    nextSpeeds = new Float32Array(n);
+
+    bytes = new Uint8Array(n * 4);
+
+    for (let i = 0; i < n; i++) {
+      bytes[i * 4] = 128;
+      bytes[i * 4 + 1] = 128;
+      bytes[i * 4 + 2] = 128;
+      bytes[i * 4 + 3] = 255;
+    }
+
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, gelTex);
+
+    gl.pixelStorei(
+      gl.UNPACK_FLIP_Y_WEBGL,
+      false
+    );
+
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      cols,
+      rows,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      bytes
+    );
+
+    gl.uniform2f(
+      pixelUniform,
+      1 / cols,
+      1 / rows
+    );
+  }
+
+  function drawPoster() {
+    if (!width || !height) return;
+
+    const scale = Math.min(
+      devicePixelRatio || 1,
+      1.5
+    );
+
+    poster.width = Math.round(width * scale);
+    poster.height = Math.round(height * scale);
+
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+
+    const grad = ctx.createLinearGradient(
+      0, 0, width, height
+    );
+
+    grad.addColorStop(0, '#e7ffd8');
+    grad.addColorStop(1, '#d1f4bc');
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    // 액체의 굴절이 잘 보이도록 가느다란 배경선
+    ctx.strokeStyle = 'rgba(10,113,62,.045)';
+    ctx.lineWidth = 1;
+
+    for (let x = 80; x < width; x += 88) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#08723f';
+    ctx.font = '800 18px Arial';
+    ctx.textAlign = 'left';
+
+    ctx.fillText(
+      'CHILSUNG CIDER ✳',
+      width * .04,
+      Math.max(46, height * .08)
+    );
+
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    ctx.font =
+      `900 ${Math.min(width*.19,height*.34,268)}px "Archivo Black",Impact,Arial Black,sans-serif`;
+
+    ctx.fillText(
+      'CHILSUNG',
+      width * .49,
+      height * .405,
+      width * .93
+    );
+
+    ctx.fillText(
+      'CIDER!',
+      width * .48,
+      height * .67,
+      width * .76
+    );
+
+    if (can.complete && can.naturalWidth) {
+      const ch = Math.min(
+        height * .54,
+        width * .34
+      );
+
+      const cw = ch * (
+        can.naturalWidth / can.naturalHeight
+      );
+
+      ctx.save();
+
+      ctx.translate(
+        width * .78,
+        height * .51
+      );
+
+      ctx.rotate(-.18);
+      ctx.shadowColor = 'rgba(4,78,42,.35)';
+      ctx.shadowBlur = 23;
+      ctx.shadowOffsetX = 15;
+      ctx.shadowOffsetY = 18;
+
+      ctx.drawImage(
+        can,
+        -cw / 2,
+        -ch / 2,
+        cw,
+        ch
+      );
+
+      ctx.restore();
+    }
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, posterTex);
+
+    gl.pixelStorei(
+      gl.UNPACK_FLIP_Y_WEBGL,
+      true
+    );
+
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      poster
+    );
+
+    gl.pixelStorei(
+      gl.UNPACK_FLIP_Y_WEBGL,
+      false
+    );
+  }
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+
+    const scale = Math.min(
+      devicePixelRatio || 1,
+      1.5
+    );
+
+    view.width = Math.round(width * scale);
+    view.height = Math.round(height * scale);
+
+    gl.viewport(
+      0, 0,
+      view.width,
+      view.height
+    );
+
+    initializeField();
+    drawPoster();
+  }
+
+  window.addEventListener('resize', resize);
+  document.fonts.ready.then(drawPoster);
+
+  $('reset').addEventListener('click', () => {
+    initializeField();
+  });
+
+  let last = null;
+  let pending = [];
+
+  function pointer(e) {
+    const current = {
+      x: e.clientX / width,
+      y: 1 - e.clientY / height
+    };
+
+    if (last) {
+      const dx = (current.x - last.x) * width;
+      const dy = (current.y - last.y) * height;
+
+      const dist = Math.hypot(dx, dy);
+
+      if (dist > .5) {
+        const count = Math.min(
+          50,
+          Math.ceil(dist / 13)
+        );
+
+        const speed = Math.min(
+          1.0,
+          dist / 35
+        );
+
+        for (let i = 1; i <= count; i++) {
+          const t = i / count;
+
+          pending.push({
+            x: last.x + (current.x - last.x) * t,
+            y: last.y + (current.y - last.y) * t,
+            nx: dx / (dist || 1),
+            ny: dy / (dist || 1),
+            amount: speed / count
+          });
+        }
+      }
+    }
+
+    last = current;
+  }
+
+  view.addEventListener('pointermove', pointer);
+
+  view.addEventListener('pointerleave', () => {
+    last = null;
+  });
+
+  view.addEventListener('pointerdown', e => {
+    last = null;
+    pointer(e);
+  });
+
+  function pushGel(stroke) {
+    const cx = stroke.x * (cols - 1);
+    const cy = stroke.y * (rows - 1);
+
+    // 조금 더 넓은 젤 표면이 함께 끌려오도록 조정
+    const rad = Math.max(10, cols * .083);
+    const rr = rad * rad;
+
+    const minX = Math.max(
+      1,
+      Math.floor(cx - rad * 2)
+    );
+
+    const maxX = Math.min(
+      cols - 2,
+      Math.ceil(cx + rad * 2)
+    );
+
+    const minY = Math.max(
+      1,
+      Math.floor(cy - rad * 2)
+    );
+
+    const maxY = Math.min(
+      rows - 2,
+      Math.ceil(cy + rad * 2)
+    );
+
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const ox = x - cx;
+
+        const oy =
+          (y - cy) * cols / rows * height / width;
+
+        const r2 = ox * ox + oy * oy;
+
+        if (r2 > 4 * rr) continue;
+
+        const gaussian = Math.exp(
+          -r2 / (rr * .52)
+        );
+
+        const along = (
+          ox * stroke.nx + oy * stroke.ny
+        ) / rad;
+
+        // 손가락이 젤 막을 밀어내는 힘
+        speeds[y * cols + x] +=
+          gaussian *
+          (.125 * along + .055) *
+          stroke.amount;
+      }
+    }
+  }
+
+  function simulate(dt) {
+    // V4: 최대 점성 20
+    // 높을수록 표면 복원이 느려지고
+    // 마우스 흔적이 오래 남는다.
+    const viscosity =
+      (Number(sticky.value) - 1) / 19;
+
+    // 파동의 운동량을 더 오래 유지
+    const damp = Math.pow(
+      .927 + viscosity * .060,
+      dt
+    );
+
+    // 표면의 복원력을 낮춰
+    // 묵직하게 천천히 원래 형태로 돌아온다.
+    const restore = (
+      .018 - viscosity * .0168
+    ) * dt;
+
+    // 주변으로 퍼지는 속도도 살짝 낮춘다.
+    const spread = (
+      .165 - viscosity * .045
+    ) * dt;
+
+    for (let y = 1; y < rows - 1; y++) {
+      for (let x = 1; x < cols - 1; x++) {
+        const i = y * cols + x;
+        const h = heights[i];
+
+        const lap =
+          heights[i - 1] +
+          heights[i + 1] +
+          heights[i - cols] +
+          heights[i + cols] -
+          4 * h;
+
+        const v = (
+          speeds[i] +
+          lap * spread -
+          h * restore
+        ) * damp;
+
+        nextSpeeds[i] = v;
+
+        nextHeights[i] = Math.max(
+          -1.1,
+          Math.min(1.1, h + v * dt)
+        );
+      }
+    }
+
+    // 경계면 연결
+    for (let x = 0; x < cols; x++) {
+      nextHeights[x] =
+        nextHeights[x + cols];
+
+      nextHeights[(rows - 1) * cols + x] =
+        nextHeights[(rows - 2) * cols + x];
+    }
+
+    for (let y = 0; y < rows; y++) {
+      nextHeights[y * cols] =
+        nextHeights[y * cols + 1];
+
+      nextHeights[y * cols + cols - 1] =
+        nextHeights[y * cols + cols - 2];
+    }
+
+    [heights, nextHeights] = [
+      nextHeights, heights
+    ];
+
+    [speeds, nextSpeeds] = [
+      nextSpeeds, speeds
+    ];
+
+    // WebGL 텍스처에 젤 표면의 높이 전달
+    for (let i = 0; i < heights.length; i++) {
+      const j = i * 4;
+
+      bytes[j] = Math.max(
+        0,
+        Math.min(
+          255,
+          Math.round(128 + heights[i] * 112)
+        )
+      );
+    }
+
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, gelTex);
+
+    gl.texSubImage2D(
+      gl.TEXTURE_2D,
+      0,
+      0, 0,
+      cols, rows,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      bytes
+    );
+  }
+
+  resize();
+
+  let lastT = 0;
+
+  function tick(t) {
+    requestAnimationFrame(tick);
+
+    const dt = Math.min(
+      1.4,
+      Math.max(
+        .35,
+        (t - lastT) / 16.67 || 1
+      )
+    );
+
+    lastT = t;
+
+    const strokes = pending.splice(0, 150);
+
+    for (const s of strokes) {
+      pushGel(s);
+    }
+
+    simulate(dt);
+
+    gl.uniform1f(
+      timeUniform,
+      t * .001
+    );
+
+    gl.uniform1f(
+      amountUniform,
+      Number(refraction.value) / 8
+    );
+
+    gl.drawArrays(
+      gl.TRIANGLES,
+      0,
+      6
+    );
+  }
+
+  if (matchMedia(
+    '(prefers-reduced-motion:reduce)'
+  ).matches) {
+    gl.uniform1f(timeUniform, 0);
+    gl.uniform1f(amountUniform, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  } else {
+    requestAnimationFrame(tick);
+  }
+})();
+</script>
+</body>
+</html>
