@@ -187,3 +187,80 @@ body[data-experience-hover="true"] .identity { cursor: none; }
   .korea-type-reveal { clip-path: none; opacity: 0; }
   .korea-star { transform: none; }
 }
+
+/* 01 HERO: original Figma type, rings, upright product and star coordinates. */
+.hero {
+  background: #149f5c;
+  color: #fff;
+}
+.hero::before { display: none; }
+.hero .hero-type {
+  font-family: var(--font-family-display);
+  font-weight: 400;
+  line-height: 1.0867;
+  letter-spacing: 0;
+  color: #fff;
+}
+.hero .hero-type-top {
+  top: .44%;
+  left: 0;
+  right: auto;
+  font-size: clamp(160px, 16.9444vw, 350px);
+}
+.hero .hero-type-bottom {
+  left: 28.1944%;
+  right: auto;
+  top: 63.7778%;
+  bottom: auto;
+  font-size: clamp(200px, 20.8333vw, 420px);
+}
+.hero .hero-ring {
+  z-index: 1;
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 50%;
+  transform: none;
+}
+.hero .hero-ring-outer {
+  width: 46.875vw;
+  height: 46.875vw;
+  left: 30.7639%;
+  top: 12.4444%;
+}
+.hero .hero-ring-inner {
+  width: 36.1111vw;
+  height: 36.1111vw;
+  left: 37.5%;
+  top: 20.6667%;
+  opacity: 1;
+}
+.hero .hero-product-layer {
+  z-index: 4;
+  top: 12.5%;
+  left: 50%;
+  width: 450px;
+  height: 75%;
+  transform: translateX(-50%);
+  filter: drop-shadow(9px 11px 8px rgba(5,72,43,.18));
+}
+.hero .hero-bubble-layer { display: none; }
+.hero-figma-star {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+.hero-star-primary { left: 26.25%; top: 29.8889%; width: 130px; height: 130px; }
+.hero-star-secondary { left: 10.2083%; top: 67.3333%; width: 85px; height: 85px; }
+.hero-star-small { left: 7.8472%; top: 65.4444%; width: 34px; height: 34px; }
+.hero-star-right { left: 82.7778%; top: 59%; width: 85px; height: 85px; }
+/* Navigation stays keyboard/pointer accessible without covering the designed poster. */
+.site-header {
+  background: none;
+  opacity: 0;
+  transition: opacity .22s ease;
+}
+.site-header:hover,.site-header:focus-within { opacity: 1; }
+@media(prefers-reduced-motion:reduce) {
+  .site-header { transition: none; }
+}
