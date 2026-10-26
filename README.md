@@ -10,6 +10,8 @@
 
 서버 실행에는 추가 패키지 설치가 필요하지 않습니다. 로컬 Three.js와 GSAP 파일이 `js/vendor/`에 포함되어 있습니다. HTML을 파일로 직접 열면 ES 모듈이 실행되지 않을 수 있으므로 로컬 서버 주소로 접속하세요.
 
+마우스 커서는 제공된 React Bits BlobCursor 예시의 젤리 꼬리와 스플래시 동작을 정적 사이트용 Canvas로 옮겼습니다. 마우스를 따라 반투명한 액체가 이어지고 클릭하면 탄산 방울이 퍼집니다. 터치 화면과 움직임 줄이기 설정에서는 기본 커서를 사용합니다. [클릭 효과 미리보기](./screenshots/jelly-cursor-click.png).
+
 구조와 연도 추가 방법: [docs/history-3d-prototype.md](./docs/history-3d-prototype.md). 1950·1960 패키징 PNG는 사용자가 제공한 `칠성.zip`에서 추출했으며, 원본 ZIP과 아래 Blender 스크립트는 변경하지 않았습니다.
 
 ![1960년 구간의 웹 3D 캔](./screenshots/history-3d-1960.png)

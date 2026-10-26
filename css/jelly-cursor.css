@@ -1,0 +1,18 @@
+@media (hover: hover) and (pointer: fine) {
+  body.has-jelly-cursor,
+  body.has-jelly-cursor a,
+  body.has-jelly-cursor button {
+    cursor: none;
+  }
+}
+
+.jelly-cursor-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  user-select: none;
+}
