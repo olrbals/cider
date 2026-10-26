@@ -48,7 +48,7 @@ function makeCan(stage, images) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-2, 2, 2, -2, 0.1, 40);
-  camera.position.set(2.5, 0, 8.5);
+  camera.position.set(0.9, 0, 8.5);
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
@@ -136,9 +136,6 @@ async function initHistory(section) {
   section.style.height = `${eras.length * 100 + 70}svh`;
   const years = eras.map(era => era.dataset.year);
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
-  stage.querySelector('.history-3d-status > span').textContent = years.join(' → ');
-  const progressLabel = stage.querySelector('.history-3d-progress');
-  const progressTrack = stage.querySelector('.history-3d-status-track i');
   let can = null;
 
   try {
@@ -166,11 +163,8 @@ async function initHistory(section) {
       const opacity = index === pair ? outgoingText : index === pair + 1 ? incomingText : 0;
       background.style.setProperty('--wipe-top', index <= pair ? '-10%' : index === pair + 1 ? `${110 - backgroundReveal * 120}%` : '110%');
       era.querySelector('.history-3d-year').style.opacity = String(opacity);
-      era.querySelector('.history-3d-copy').style.opacity = String(opacity);
       era.setAttribute('aria-hidden', opacity > 0.5 ? 'false' : 'true');
     });
-    progressLabel.textContent = `${String(Math.round(progress * 100)).padStart(2, '0')}%`;
-    progressTrack.style.transform = `scaleX(${progress})`;
     section.dataset.progress = progress.toFixed(3);
     section.dataset.activeYear = years[blend < 0.5 ? pair : pair + 1];
     can?.render(progress, pair, blend);
