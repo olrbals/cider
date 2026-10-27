@@ -35,20 +35,30 @@
 }
 
 .identity.experience-02 {
-  height: 100svh;
-  min-height: 700px;
+  width: 100vw;
+  height: 170svh;
+  min-height: 1100px;
   max-height: none;
   padding: 0;
   background: #009dff;
   color: #0004ff;
   isolation: isolate;
-  overflow: hidden;
+  overflow: clip;
   touch-action: pan-y;
   --cursor-x: 50%;
   --cursor-y: 50%;
   --cursor-intensity: 0;
 }
 .identity.experience-02::before { display:none; }
+.identity-stage {
+  width: 100vw;
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 700px;
+  overflow: hidden;
+  isolation: isolate;
+}
 .identity.experience-02 .identity-display,
 .identity.experience-02 .identity-liquid-type {
   position: absolute;
@@ -116,6 +126,29 @@
   left: 80.35%;
   transform: translate3d(calc(var(--cursor-shift-x, 0px) * -.1), calc(var(--cursor-shift-y, 0px) * -.1),0);
 }
+.identity-scroll-stars {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  pointer-events: none;
+}
+.identity-scroll-stars img {
+  position: absolute;
+  display: block;
+  width: var(--star-width);
+  height: auto;
+  left: var(--star-left);
+  top: var(--star-top);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.identity-scroll-stars img:nth-child(1) { --star-width: 100px; --star-left: 85.2083%; --star-top: 84.5556%; }
+.identity-scroll-stars img:nth-child(2) { --star-width: 100px; --star-left: 85.2083%; --star-top: 79.2222%; }
+.identity-scroll-stars img:nth-child(3) { --star-width: 80px; --star-left: 78.125%; --star-top: 84.7778%; }
+.identity-scroll-stars img:nth-child(4) { --star-width: 60px; --star-left: 87.9861%; --star-top: 74.5556%; }
+.identity-scroll-stars img:nth-child(5) { --star-width: 60px; --star-left: 83.125%; --star-top: 88.4444%; }
+.identity-scroll-stars img:nth-child(6) { --star-width: 40px; --star-left: 85.9028%; --star-top: 76.7778%; }
+.identity-scroll-stars img:nth-child(7) { --star-width: 120px; --star-left: 80.3472%; --star-top: 77.8889%; }
 
 /* 03: faithful initial cream type and scroll-revealed orange variant. */
 .korea-scene {
@@ -178,12 +211,24 @@ body[data-experience-hover="true"] { cursor: default; }
 body[data-experience-hover="true"] .identity { cursor: none; }
 
 @media (max-width: 900px) {
-  .identity.experience-02, .korea-stage { min-height: 550px; }
+  .identity.experience-02 { min-height: 900px; }
+  .identity-stage, .korea-stage { min-height: 550px; }
   .korea-scene { min-height: 1000px; }
+  .identity-scroll-stars { transform: translateX(-75px) scale(.6); transform-origin: right bottom; }
+}
+@media (max-width: 600px) {
+  .identity.experience-02 .identity-display,
+  .identity.experience-02 .identity-liquid-type {
+    top: 28%;
+    width: 100%;
+    font-size: clamp(56px, 17vw, 100px);
+    line-height: 1.2;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-liquid-layer { transform: translate3d(0,-112%,0) !important; }
   .identity-liquid-layer { display: none; }
+  .identity-scroll-stars img { opacity: 1; transform: none !important; }
   .korea-type-reveal { clip-path: none; opacity: 0; }
   .korea-star { transform: none; }
 }

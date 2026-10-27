@@ -14,9 +14,11 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/history-3d.css">
   <link rel="stylesheet" href="css/experience.css">
+  <link rel="stylesheet" href="css/pop-scroll.css">
   <link rel="stylesheet" href="css/liquid-gel-global.css">
   <script defer src="js/script.js"></script>
   <script defer src="js/experience.js"></script>
+  <script defer src="js/pop-scroll.js"></script>
   <script defer src="js/liquid-gel-global.js"></script>
   <script defer src="js/vendor/gsap.min.js"></script>
   <script defer src="js/vendor/ScrollTrigger.min.js"></script>
@@ -43,12 +45,21 @@
     </section>
 
     <section class="identity experience-02" id="identity" aria-label="SEVEN STARS">
-      <h2 class="identity-display" data-node-id="1254:1552">SEVEN<br>STARS</h2>
-      <div class="identity-liquid-layer" aria-hidden="true">
-        <div class="identity-liquid-type">SEVEN<br>STARS</div>
-        <div class="identity-liquid-gloss"></div>
-        <img class="identity-liquid-star identity-liquid-star-small" src="img/figma/star-100.svg" alt="">
-        <img class="identity-liquid-star identity-liquid-star-large" src="img/figma/star-120.svg" alt="">
+      <div class="identity-stage">
+        <h2 class="identity-display" data-node-id="1254:1552">SEVEN<br>STARS</h2>
+        <div class="identity-liquid-layer" aria-hidden="true">
+          <div class="identity-liquid-type">SEVEN<br>STARS</div>
+          <div class="identity-liquid-gloss"></div>
+        </div>
+        <div class="identity-scroll-stars" aria-hidden="true">
+          <img src="img/pop/star-100.svg" alt="" data-star="0">
+          <img src="img/pop/star-100.svg" alt="" data-star="1">
+          <img src="img/pop/star-80.svg" alt="" data-star="2">
+          <img src="img/pop/star-60.svg" alt="" data-star="3">
+          <img src="img/pop/star-60.svg" alt="" data-star="4">
+          <img src="img/pop/star-40.svg" alt="" data-star="5">
+          <img src="img/pop/star-cursor.svg" alt="" data-star="6">
+        </div>
       </div>
     </section>
 
@@ -85,9 +96,14 @@
         <div class="product-details"><h3 id="product-name">칠성사이다<br>오리지널</h3><div class="package-options" role="group" aria-label="패키지 형태"><button class="package-option is-selected" type="button" data-package="can" aria-pressed="true">CAN</button><button class="package-option" type="button" data-package="pet" aria-pressed="false">PET</button></div></div>
       </div>
 
-      <div class="rich-scenes">
-        <article class="rich-scene rich-scene-peach" aria-label="칠성사이다 리치 피치"><div class="rich-emphasis-layer"><img src="img/products/newhot_main_리치.jpg" alt="복숭아와 얼음, 칠성사이다 리치 피치 제품이 함께 놓인 캠페인 이미지" width="1462" height="864" loading="lazy"></div><div class="rich-base-layer" aria-hidden="true"><img src="img/display/rich-peach-bottle.png" alt="" width="176" height="533" loading="lazy"></div><span class="rich-giant" aria-hidden="true">PEACH</span></article>
-        <article class="rich-scene rich-scene-grape" aria-label="칠성사이다 리치 그레이프"><div class="rich-emphasis-layer"><img src="img/products/newhot_main_리치.jpg" alt="포도와 얼음, 칠성사이다 리치 그레이프 제품이 함께 놓인 캠페인 이미지" width="1462" height="864" loading="lazy"></div><div class="rich-base-layer" aria-hidden="true"><img src="img/display/rich-grape-bottle.png" alt="" width="176" height="533" loading="lazy"></div><span class="rich-giant" aria-hidden="true">GRAPE</span></article>
+    </section>
+    <section class="pop-scene" id="pop" aria-label="칠성사이다, 짠!">
+      <div class="pop-stage">
+        <div class="pop-composition" aria-hidden="true">
+          <div class="pop-panel pop-panel-apart"></div>
+          <div class="pop-panel pop-panel-together"></div>
+          <span class="pop-spark pop-spark-one">✳</span><span class="pop-spark pop-spark-two">✧</span>
+        </div>
       </div>
     </section>
   </main>

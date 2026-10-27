@@ -1,0 +1,80 @@
+/* Two Figma POP keyframes, connected by the visitor's scroll position. */
+.pop-scene {
+  position: relative;
+  width: 100vw;
+  height: 190svh;
+  min-height: 1250px;
+  background: #ece4d5;
+  --pop-together: 0;
+  --pop-spark: 0;
+  --pop-scale: 1;
+}
+.pop-stage {
+  position: sticky;
+  width: 100vw;
+  top: 0;
+  height: 100svh;
+  min-height: 650px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #ece4d5;
+}
+.pop-composition {
+  position: absolute;
+  left: var(--pop-left, 0px);
+  top: var(--pop-top, 0px);
+  width: 1440px;
+  height: 774px;
+  overflow: hidden;
+  transform: scale(var(--pop-scale));
+  transform-origin: top left;
+  background: #ece4d5;
+  pointer-events: none;
+}
+.pop-panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: opacity;
+}
+.pop-panel-apart {
+  opacity: calc(1 - var(--pop-together));
+  background: url("../img/pop/pop-apart.webp") center / cover no-repeat;
+}
+.pop-panel-together {
+  opacity: var(--pop-together);
+  background: url("../img/pop/pop-together.webp") center / cover no-repeat;
+}
+.pop-panel::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  height: 90px;
+  background: #ece4d5;
+}
+.pop-spark {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 36%;
+  color: #00a961;
+  font: 400 68px/1 var(--font-family-display);
+  opacity: var(--pop-spark);
+  transform: translate(-50%, -50%) scale(calc(.45 + var(--pop-spark) * .55));
+  text-shadow: 0 0 12px #ece4d5;
+}
+.pop-spark-two {
+  left: 54%;
+  top: 29%;
+  font-size: 35px;
+}
+@media (max-width: 700px) {
+  .pop-scene { min-height: 1050px; }
+  .pop-stage { min-height: 550px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop-scene { height: 100svh; min-height: 650px; --pop-together: 1; --pop-spark: 1; }
+  .pop-stage { position: relative; }
+}

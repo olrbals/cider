@@ -16,7 +16,7 @@
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (!precision.matches || motion.matches) return;
 
-  const targets = '.hero, .experience-02, .korea-stage, .history-3d-stage, .era, .product-explorer, .rich-scene, .outro, .site-header';
+  const targets = '.hero, .identity-stage, .korea-stage, .history-3d-stage, .era, .product-explorer, .pop-stage, .outro, .site-header';
   const svgNS = 'http://www.w3.org/2000/svg';
   const makeSVG = name => document.createElementNS(svgNS, name);
   const svg = makeSVG('svg');
@@ -172,6 +172,14 @@
     if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return null;
     const hit = document.elementFromPoint(x, y);
     if (!(hit instanceof Element) || panel.contains(hit)) return null;
+    // The 3D stage ignores pointer events so the page can scroll. Route
+    // hits on its visible track back to the sticky stage for refraction.
+    const history = hit.closest('.history-3d');
+    if (history) {
+      const stage = history.querySelector('.history-3d-stage');
+      const rect = stage?.getBoundingClientRect();
+      if (rect && x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom) return stage;
+    }
     return hit.closest(targets);
   }
 
