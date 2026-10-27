@@ -119,7 +119,8 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   function setAmount() {
-    // Reduce the original full-section displacement to keep headlines legible.\n    // V4 used uAmount = refraction / 8 and displacement proportional
+    // Reduce the original full-section displacement to keep headlines legible.
+    // V4 used uAmount = refraction / 8 and displacement proportional
     // to surface slope; scale here is measured in rendered CSS pixels.
     displacement.setAttribute('scale', (Number(refraction.value) * 55).toFixed(2));
   }
