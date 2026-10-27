@@ -49,8 +49,87 @@
   overflow: hidden;
   pointer-events: none;
 }
+
+/* A small optical center: glancing highlight, not another broad spotlight. */
+.site-liquid-cursor-core {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10001;
+  width: 22px;
+  height: 22px;
+  border-radius: 52% 48% 49% 51%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background: radial-gradient(ellipse at 34% 28%,
+    rgba(255, 255, 255, .78) 0%,
+    rgba(243, 255, 252, .33) 22%,
+    rgba(243, 255, 252, .1) 53%,
+    rgba(255, 255, 255, .15) 72%,
+    transparent 86%);
+  box-shadow: inset -2px -3px 5px rgba(255,255,255,.12),
+              inset 2px 2px 5px rgba(255,255,255,.2);
+  transition: opacity .2s ease;
+  will-change: transform;
+}
+.site-liquid-cursor-core::after {
+  content: "";
+  position: absolute;
+  top: 19%;
+  left: 24%;
+  width: 23%;
+  height: 10%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .72);
+  transform: rotate(-28deg);
+  filter: blur(.5px);
+}
+.site-liquid-cursor-core.is-visible { opacity: .85; }
+
+.site-liquid-cursor-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  overflow: hidden;
+  pointer-events: none;
+}
+.site-liquid-cursor-bubble, .site-liquid-cursor-ripple {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: 1px solid var(--liquid-particle-color, rgba(245,255,250,.83));
+}
+.site-liquid-cursor-bubble {
+  background: rgba(255,255,255,.045);
+  box-shadow: inset 1px 1px 2px rgba(255,255,255,.21);
+  animation: site-liquid-bubble-rise var(--liquid-bubble-duration, 500ms)
+    cubic-bezier(.19,.61,.3,1) forwards;
+}
+.site-liquid-cursor-ripple {
+  opacity: 0;
+  animation: site-liquid-ripple .4s ease-out forwards;
+}
+@keyframes site-liquid-bubble-rise {
+  0% { opacity: 0; transform: translate(-50%, -50%) translateY(3px) scale(.68); }
+  18% { opacity: .9; }
+  68% { opacity: .65; }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate(var(--liquid-bubble-dx, 0px), var(--liquid-bubble-dy, -24px))
+      scale(.54);
+  }
+}
+@keyframes site-liquid-ripple {
+  0% { opacity: .48; transform: translate(-50%, -50%) scale(.74); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.9); }
+}
+
 @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-  .site-liquid-cursor-glow { display: none; }
+  .site-liquid-cursor-glow, .site-liquid-cursor-core, .site-liquid-cursor-particles { display: none; }
   .site-liquid-type-outline { display: none; }
   .site-liquid-type-fill { clip-path: none !important; }
 }
