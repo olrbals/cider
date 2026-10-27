@@ -1,12 +1,11 @@
-/* Scroll transitions for the Figma HERO → 02 → 03 scenes.
+/* Scroll transition for the Figma KOREA scene.
  * Site-wide liquid physics is isolated in liquid-gel-global.js.
  * The original 1950–1960 Three.js history animation is untouched.
  */
 (() => {
   'use strict';
-  const hero = document.querySelector('.hero');
   const korea = document.querySelector('.korea-scene');
-  if (!hero || !korea) return;
+  if (!korea) return;
 
   const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
   const ease = value => {
@@ -20,10 +19,6 @@
     scrollTicking = false;
     if (reducedMotion.matches) return;
     const viewport = Math.max(1, window.innerHeight);
-    const heroRect = hero.getBoundingClientRect();
-    const flowProgress = ease(-heroRect.top / (viewport * 0.84));
-    hero.style.setProperty('--liquid-offset', (-112 + flowProgress * 112).toFixed(2) + '%');
-
     const koreaRect = korea.getBoundingClientRect();
     const available = Math.max(1, koreaRect.height - viewport);
     const progress = clamp(-koreaRect.top / available);
