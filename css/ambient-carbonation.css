@@ -10,7 +10,7 @@
   background: transparent;
   pointer-events: none;
   user-select: none;
-  opacity: .7;
+  opacity: .54;
 }
 @media (prefers-reduced-motion: reduce) {
   .site-ambient-carbonation { display: none !important; }

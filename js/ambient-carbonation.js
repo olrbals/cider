@@ -99,9 +99,10 @@
 
   function makeParticle(distribute = false, around = null) {
     const choice = Math.random();
-    const radius = choice < .55 ? random(1.5, 3.9) :
-      choice < .88 ? random(4, 8.3) :
-      choice < .975 ? random(8.5, 13) : random(13, 19);
+    // Around 20-25% smaller than the original; retain a varied soda-bubble mix.
+    const radius = choice < .55 ? random(1.2, 3.0) :
+      choice < .88 ? random(3.1, 6.4) :
+      choice < .975 ? random(6.5, 10) : random(10, 14.5);
     const depth = choice < .65 ? 0 : 1;
     const rise = random(55, 145) * (depth ? 1.1 : .9);
     const x = around === null ? random(-8, width + 8) : around + random(-28, 28);
