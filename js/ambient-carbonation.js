@@ -70,16 +70,16 @@
   const sprites = [makeBubbleSprite(0), makeBubbleSprite(1)];
 
   function desiredCount() {
-    return clamp(Math.round((width * height / 18500) * densityFactor), 35, lowPower ? 65 : 110);
+    return clamp(Math.round((width * height / 14230) * densityFactor), 46, lowPower ? 85 : 143);
   }
 
   function makeParticle(distribute = false, around = null) {
     const choice = Math.random();
     // Readable rings with a few small companion bubbles, never pixel-sized dots.
     const radius = choice < .18 ? random(3.2, 4.5) :
-      choice < .75 ? random(5, 8.5) : random(9, 14);
+      choice < .75 ? random(5, 8.5) : random(9, 12.5);
     const depth = choice < .18 ? 1 : 0;
-    const rise = random(50, 115) * (depth ? 1.18 : 1);
+    const rise = random(70, 150) * (depth ? 1.18 : 1);
     const x = around === null ? random(-8, width + 8) : around + random(-28, 28);
     const y = distribute ? random(-radius, height + radius) : height + radius * random(2, 7);
     return {
@@ -142,7 +142,7 @@
 
     // Keep a steady density; replacement bubbles originate below the viewport.
     // Some bubbles travel together as carbonation streams.
-    spawnCredit += (targetCount / Math.max(2, height / 110)) * dt;
+    spawnCredit += (targetCount / Math.max(2, height / 135)) * dt;
     while (spawnCredit >= 1 && particles.length < targetCount) {
       const cluster = Math.random() < .38 && particles.length > 0 ?
         particles[Math.floor(Math.random() * particles.length)].x : null;
