@@ -9,10 +9,11 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (!stage || !finePointer.matches || reducedMotion.matches) return;
 
+  // 2.5x Figma-original transparent PNGs replace 60px low-detail WebP sprites.
   const SOURCES = [
-    'img/fruit/lemon.webp', 'img/fruit/lemon-half.webp',
-    'img/fruit/lemon-side.webp', 'img/fruit/lime.webp',
-    'img/fruit/lime-half.webp', 'img/fruit/lime-side.webp'
+    'img/fruit/hq/lemon-slice.png', 'img/fruit/hq/lemon-half.png',
+    'img/fruit/hq/lemon-side.png', 'img/fruit/hq/lime-slice.png',
+    'img/fruit/hq/lime-half.png', 'img/fruit/hq/lime-side.png'
   ];
   const images = SOURCES.map(src => {
     const img = new Image();
@@ -49,6 +50,8 @@
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
   }
 
   function containsPointer(x, y) {
