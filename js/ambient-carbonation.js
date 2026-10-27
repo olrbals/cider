@@ -1,5 +1,5 @@
 /* Continuous, full-viewport rising soda carbonation.
- * Reference: translucent air bubbles with bright rims and dark refracted edges.
+ * Reference: many delicate white/translucent droplets with soft bright rims.
  * Independent of mouse-local V6 bubbles, citrus fountain and page scroll effects.
  */
 (() => {
@@ -28,65 +28,56 @@
   let targetCount = 0, spawnCredit = 0, frame = 0, lastTime = 0;
   let active = false;
 
-  // Cached illustrated glass bubbles: translucent interior, silver shadow rim,
-  // asymmetric white reflective crescents. Only drawImage runs each animation frame.
+  // Cached white, translucent soda bubbles. Both variants are generated once:
+  // soft glass rings and softly filled pearl-like droplets, never dark outlines.
   function makeBubbleSprite(variant) {
     const sprite = document.createElement('canvas');
     sprite.width = sprite.height = 96;
     const brush = sprite.getContext('2d');
     if (!brush) return sprite;
     const center = 48, radius = 32;
+    const pearl = variant === 1;
 
-    const halo = brush.createRadialGradient(center + 1, center + 2, 26, center, center, 39);
-    halo.addColorStop(0, 'rgba(12,30,38,0)');
-    halo.addColorStop(.52, 'rgba(12,30,38,0)');
-    halo.addColorStop(.82, variant === 0 ? 'rgba(32,47,57,.22)' : 'rgba(32,47,57,.34)');
-    halo.addColorStop(1, 'rgba(32,47,57,0)');
+    const halo = brush.createRadialGradient(center, center, radius * .7, center, center, radius + 8);
+    halo.addColorStop(0, 'rgba(255,255,255,0)');
+    halo.addColorStop(.67, 'rgba(255,255,255,.07)');
+    halo.addColorStop(.85, 'rgba(255,255,255,.16)');
+    halo.addColorStop(1, 'rgba(255,255,255,0)');
     brush.fillStyle = halo;
     brush.fillRect(0, 0, 96, 96);
 
-    // The inner area stays transparent so typography and images remain visible.
-    const sheen = brush.createRadialGradient(center - 11, center - 13, 0, center, center, radius);
-    sheen.addColorStop(0, 'rgba(255,255,255,.13)');
-    sheen.addColorStop(.63, 'rgba(255,255,255,.015)');
-    sheen.addColorStop(1, 'rgba(255,255,255,.035)');
+    // Transparent interior, with slightly stronger white fill on tiny droplets.
+    const sheen = brush.createRadialGradient(center - 11, center - 12, 1, center, center, radius);
+    sheen.addColorStop(0, pearl ? 'rgba(255,255,255,.43)' : 'rgba(255,255,255,.14)');
+    sheen.addColorStop(.6, pearl ? 'rgba(255,255,255,.24)' : 'rgba(255,255,255,.055)');
+    sheen.addColorStop(1, pearl ? 'rgba(255,255,255,.09)' : 'rgba(255,255,255,.025)');
     brush.beginPath();
     brush.arc(center, center, radius, 0, Math.PI * 2);
     brush.fillStyle = sheen;
     brush.fill();
 
-    const rim = brush.createLinearGradient(15, 12, 82, 86);
-    rim.addColorStop(0, 'rgba(255,255,255,.96)');
-    rim.addColorStop(.34, 'rgba(245,252,255,.6)');
-    rim.addColorStop(.59, 'rgba(37,49,63,.46)');
-    rim.addColorStop(1, 'rgba(10,23,31,.78)');
+    const rim = brush.createLinearGradient(15, 14, 80, 83);
+    rim.addColorStop(0, 'rgba(255,255,255,.95)');
+    rim.addColorStop(.37, 'rgba(255,255,255,.72)');
+    rim.addColorStop(.7, 'rgba(255,255,255,.3)');
+    rim.addColorStop(1, 'rgba(255,255,255,.8)');
     brush.beginPath();
     brush.arc(center, center, radius, 0, Math.PI * 2);
     brush.strokeStyle = rim;
-    brush.lineWidth = variant === 0 ? 2.1 : 3;
+    brush.lineWidth = pearl ? 2.2 : 2.6;
     brush.stroke();
 
+    // Uneven crescent highlights keep the white bubbles lively, not flat dots.
     brush.beginPath();
-    brush.arc(center - .4, center - .4, radius - 2.9, Math.PI * 1.03, Math.PI * 1.52);
-    brush.strokeStyle = 'rgba(255,255,255,.97)';
-    brush.lineWidth = variant === 0 ? 3.5 : 4.5;
+    brush.arc(center - .5, center - .5, radius - 3, Math.PI * 1.08, Math.PI * 1.52);
+    brush.strokeStyle = 'rgba(255,255,255,.88)';
+    brush.lineWidth = pearl ? 2.8 : 3.5;
     brush.lineCap = 'round';
     brush.stroke();
 
     brush.beginPath();
-    brush.arc(center + .8, center + .8, radius - 2.4, -.13, 1.12);
-    brush.strokeStyle = 'rgba(29,40,50,.35)';
-    brush.lineWidth = 2.2;
-    brush.stroke();
-
-    brush.beginPath();
-    brush.ellipse(center - 13, center - 18, 5.4, 2.8, -.6, 0, Math.PI * 2);
-    brush.fillStyle = 'rgba(255,255,255,.82)';
-    brush.fill();
-
-    brush.beginPath();
-    brush.arc(center + 17, center + 17, 2.1, 0, Math.PI * 2);
-    brush.fillStyle = 'rgba(255,255,255,.52)';
+    brush.ellipse(center - 13, center - 17, 5.4, 2.4, -.6, 0, Math.PI * 2);
+    brush.fillStyle = 'rgba(255,255,255,.8)';
     brush.fill();
 
     return sprite;
@@ -94,16 +85,16 @@
   const sprites = [makeBubbleSprite(0), makeBubbleSprite(1)];
 
   function desiredCount() {
-    // Full-screen distribution like the reference, subdued enough for legible type.
-    return clamp(Math.round((width * height / 5600) * densityFactor), 80, lowPower ? 150 : 280);
+    // 2.5x the previous bubble count on every viewport, with low-power caps.
+    return clamp(Math.round((width * height / 2240) * densityFactor), 200, lowPower ? 375 : 700);
   }
 
   function makeParticle(distribute = false, around = null) {
     const choice = Math.random();
-    // Fine, densely distributed soda bubbles: mostly tiny rings, rare medium bubbles.
-    const radius = choice < .55 ? random(.9, 2.2) :
-      choice < .88 ? random(2.3, 4.6) :
-      choice < .975 ? random(4.7, 7.2) : random(7.3, 10.2);
+    // Approximately 15% smaller, retaining mostly tiny rings with rare medium pearls.
+    const radius = choice < .55 ? random(.75, 1.9) :
+      choice < .88 ? random(1.95, 3.95) :
+      choice < .975 ? random(4, 6.2) : random(6.3, 8.7);
     const depth = choice < .65 ? 0 : 1;
     const rise = random(55, 145) * (depth ? 1.1 : .9);
     const x = around === null ? random(-8, width + 8) : around + random(-28, 28);
