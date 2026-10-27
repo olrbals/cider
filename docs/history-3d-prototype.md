@@ -2,7 +2,7 @@
 
 ## 실행
 
-프로젝트 루트에서 `node experiments/serve-local.mjs`를 실행하고 `http://127.0.0.1:8767/index.html#history-3d`에 접속합니다.
+프로젝트 루트에서 `node experiments/serve-local.mjs`를 실행하고 `http://127.0.0.1:8767/index.html#history-3d`에 접속합니다. 3D 동작만 보려면 `http://127.0.0.1:8767/experiments/history-3d-1950-1960.html`을 엽니다. HTML 파일을 더블클릭해 `file:///` 주소로 열면 브라우저가 모듈 스크립트를 차단해 배경·캔·스크롤이 나타나지 않습니다.
 
 ## 구성
 
