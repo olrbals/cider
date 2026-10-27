@@ -15,7 +15,12 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   // Each word/letter has its own stretch of the pinned scroll timeline.
   // Sampled poses (not CSS animations) mean reverse scroll reverses the motion.
-  const typeParts = [
+  // liquid-typography-global.js clones and replaces headline markup.
+  // Bind only after all defer scripts finish, so we animate the live DOM nodes,
+  // never detached originals (or hidden clones with copied inline opacity).
+  let typeParts = [];
+  function bindTypeParts() {
+    typeParts = [
     { nodes: [...korea.querySelectorAll('.korea-word-feel')], start: .00, end: .32, angle: -8, rise: 1.02 },
     { nodes: [...korea.querySelectorAll('.korea-word-the')], start: .22, end: .57, angle: 7, rise: 1.08 },
     ...[ -12, 10, -9, 12 ].map((angle, index) => ({
@@ -25,7 +30,8 @@
       angle,
       rise: 1.13
     }))
-  ];
+    ];
+  }
 
   const typePoseKeys = [
     { at: 0,    y: 1,    sx: .86, sy: 1.30, rotate: 1,     opacity: 0 },
@@ -85,17 +91,39 @@
       window.requestAnimationFrame(updateSequence);
     }
   }
-  // JS is initialized only after the heading is present in the DOM.
-  // No timer: motion pauses at its exact scroll position and reverses on scroll-up.
-  if (!reducedMotion.matches) {
-    scrubType(0);
-    korea.classList.add('is-type-ready');
+  // Important: the global cursor effect replaces .korea-type children in a
+  // later deferred script. Wait for DOMContentLoaded before binding live spans.
+  // Without this, the cloned markup keeps opacity:0 forever.
+  function initKoreaMotion() {
+    bindTypeParts();
+    if (!reducedMotion.matches && typeParts.every(part => part.nodes.length > 0)) {
+      korea.classList.add('is-type-ready');
+    }
+    requestScrollTick();
   }
 
   window.addEventListener('scroll', requestScrollTick, { passive: true });
   window.addEventListener('resize', requestScrollTick, { passive: true });
-  reducedMotion.addEventListener('change', requestScrollTick);
-  requestScrollTick();
-
-
+  reducedMotion.addEventListener('change', () => {
+    if (reducedMotion.matches) {
+      korea.classList.remove('is-type-ready');
+      typeParts.forEach(part => part.nodes.forEach(node => {
+        node.style.opacity = '';
+        node.style.transform = '';
+      }));
+      korea.style.removeProperty('--korea-fill');
+      korea.style.removeProperty('--korea-shift');
+    } else {
+      korea.classList.add('is-type-ready');
+      requestScrollTick();
+    }
+  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initKoreaMotion, { once: true });
+  } else if (document.readyState === 'interactive') {
+    // Deferred scripts are still pending while readyState is interactive.
+    document.addEventListener('DOMContentLoaded', initKoreaMotion, { once: true });
+  } else {
+    initKoreaMotion();
+  }
 })();
