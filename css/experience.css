@@ -40,8 +40,8 @@
   min-height: 1100px;
   max-height: none;
   padding: 0;
-  background: #ffc1ff;
-  color: #ff0837;
+  background: #fff;
+  color: #149f5c;
   isolation: isolate;
   overflow: clip;
   touch-action: pan-y;
@@ -68,7 +68,7 @@
   width: 92%;
   margin: 0;
   transform: translateX(-50%);
-  color: #ff0837;
+  color: #149f5c;
   font-family: var(--font-family-display);
   /* Figma 300px type at 1440×900; scale down on shorter viewports. */
   font-size: min(20.83333vw, 33.33333svh, 300px);
@@ -88,7 +88,7 @@
   pointer-events: none;
 }
 .identity.experience-02 .identity-liquid-type {
-  color: rgba(255,249,253,.92);
+  color: rgba(99, 211, 154, .94);
   z-index: 2;
   -webkit-mask-image: radial-gradient(ellipse 230px 210px at var(--cursor-x) var(--cursor-y), black 15%, rgba(0,0,0,.9) 48%, transparent 100%);
   mask-image: radial-gradient(ellipse 230px 210px at var(--cursor-x) var(--cursor-y), black 15%, rgba(0,0,0,.9) 48%, transparent 100%);
@@ -101,15 +101,15 @@
   height: 320px;
   transform: translate(-50%,-50%) scale(calc(.93 + .07 * var(--cursor-pressure, 0)));
   border-radius: 47% 55% 56% 44% / 58% 45% 55% 42%;
-  background: radial-gradient(ellipse at 30% 26%, rgba(255,255,255,.25), rgba(255,230,245,.13) 38%, rgba(255,8,55,.10) 70%, transparent 73%);
-  border: 1px solid rgba(255,255,255,.16);
-  box-shadow: inset 21px 25px 40px rgba(255,255,255,.10), inset -22px -20px 30px rgba(197,25,81,.1), 0 0 45px rgba(244,82,160,.12);
+  background: radial-gradient(ellipse at 30% 26%, rgba(255,255,255,.48), rgba(155,229,188,.16) 38%, rgba(20,159,92,.10) 70%, transparent 73%);
+  border: 1px solid rgba(20,159,92,.14);
+  box-shadow: inset 21px 25px 40px rgba(255,255,255,.15), inset -22px -20px 30px rgba(17,125,75,.08), 0 0 45px rgba(20,159,92,.1);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   will-change: transform, left, top;
 }
 
-/* Figma 02main / 03: small white Archivo labels on both viewport edges. */
+/* Figma 02main / 03: Archivo labels on both viewport edges. */
 .section-edge-label {
   position: absolute;
   z-index: 6;
@@ -124,8 +124,8 @@
   pointer-events: none;
   user-select: none;
 }
-/* Seven Stars edge labels match the pink Figma frame; Fizz labels remain white. */
-.identity-stage .section-edge-label { color: #ff0837; }
+/* SEVEN STARS: Figma white / #149f5c; FIZZ edge labels remain white. */
+.identity-stage .section-edge-label { color: #149f5c; }
 .section-edge-label--top-left,
 .section-edge-label--bottom-left { left: 3.0556%; }
 .section-edge-label--top-right,

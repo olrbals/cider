@@ -113,7 +113,7 @@
     const particle = document.createElement('span');
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
-    const darkBackground = !activeScene.matches('.product-explorer, .pop-stage');
+    const darkBackground = !activeScene.matches('.identity-stage, .product-explorer, .pop-stage');
     const tint = darkBackground
       ? 'rgba(255, 255, 255, .96)' : 'rgba(19, 131, 91, .8)';
     const angle = Math.random() * Math.PI * 2;
@@ -154,7 +154,7 @@
   }
 
   function colorFor(scene) {
-    if (scene.matches('.identity-stage')) return '255, 230, 245';
+    if (scene.matches('.identity-stage')) return '132, 218, 174';
     if (scene.matches('.korea-stage')) return '210, 245, 255';
     if (scene.matches('.pop-stage')) return '255, 248, 210';
     if (scene.matches('.product-explorer')) return '166, 255, 198';

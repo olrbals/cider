@@ -30,7 +30,7 @@
   if (!ctx) return;
   document.body.append(canvas);
 
-  const MAX_FRUIT = 105; // Slightly reduced density, bigger high-quality fruit.
+  const MAX_FRUIT = 68; // 65% of prior cap (105), preserving quality and behavior.
   const particles = [];
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const random = (a, b) => a + Math.random() * (b - a);
@@ -42,6 +42,15 @@
   let headingX = 1, headingY = 0, speed = 0;
   let lastFrameTime = 0, frame = 0;
   let pixelRatio = 1;
+  let emissionCarry = 0;
+
+  // Fractional carry keeps the long-run emitted fruit count at exactly 65%.
+  function scaledEmission(count) {
+    emissionCarry += count * .65;
+    const emitted = Math.floor(emissionCarry);
+    emissionCarry -= emitted;
+    return emitted;
+  }
 
   function resize() {
     pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -123,8 +132,9 @@
     const moving = now - lastMoveTime < 135;
     const gap = moving ? 60 : 185;
     if (now - lastSpawnTime >= gap) {
-      // Slightly softer emission: moving 5/8/10, idle 3, without an attached fruit image.
-      emit(moving ? (speed > 1.15 ? 10 : speed > .5 ? 8 : 5) : 3, moving ? 1 : 0);
+      // Preserve burst cadence, velocities and fruit sizes; emit 65% as many.
+      const baseCount = moving ? (speed > 1.15 ? 10 : speed > .5 ? 8 : 5) : 3;
+      emit(scaledEmission(baseCount), moving ? 1 : 0);
       lastSpawnTime = now;
     }
 
