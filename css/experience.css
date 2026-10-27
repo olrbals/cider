@@ -150,45 +150,17 @@
   clip-path: inset(calc(100% - var(--korea-fill)) 0 0 0);
   will-change: clip-path;
 }
-/* FEEL → THE → FIZZ: staged carbonation-inspired typography entrance.
-   Both cream/base and green/reveal layers share identical markup for alignment. */
+/* FEEL → THE → FIZZ: scroll-scrubbed rise, tilt and elastic rebounds.
+   JS drives both stacked text layers identically for a perfectly aligned green fill.
+   Keep the original text visible if scripts are unavailable. */
 .korea-type-line { display: block; white-space: nowrap; }
 .korea-word, .korea-letter { display: inline-block; }
 .korea-word-fizz { white-space: nowrap; }
-
-/* Only conceal text once JS is ready; without JS the heading remains readable. */
-.korea-scene.is-type-ready:not(.is-type-visible) .korea-word-feel,
-.korea-scene.is-type-ready:not(.is-type-visible) .korea-word-the,
-.korea-scene.is-type-ready:not(.is-type-visible) .korea-letter {
-  opacity: 0;
-  transform: translate3d(0, .5em, 0) scaleY(1.09);
-}
-.korea-scene.is-type-visible .korea-word-feel {
-  animation: korea-type-rise .78s cubic-bezier(.2, .9, .25, 1) both;
-}
-.korea-scene.is-type-visible .korea-word-the {
-  animation: korea-type-rise .72s cubic-bezier(.2, .9, .25, 1) .26s both;
-}
-.korea-scene.is-type-visible .korea-letter {
-  animation: korea-fizz-pop .76s cubic-bezier(.2, .9, .25, 1) both;
-}
-.korea-scene.is-type-visible .korea-letter:nth-child(1) { animation-delay: .53s; }
-.korea-scene.is-type-visible .korea-letter:nth-child(2) { animation-delay: .61s; }
-.korea-scene.is-type-visible .korea-letter:nth-child(3) { animation-delay: .69s; }
-.korea-scene.is-type-visible .korea-letter:nth-child(4) { animation-delay: .77s; }
-
-@keyframes korea-type-rise {
-  0%   { opacity: 0; transform: translate3d(0, .5em, 0) scaleY(1.09); }
-  58%  { opacity: 1; }
-  76%  { opacity: 1; transform: translate3d(0, -.045em, 0) scaleY(.98); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) scaleY(1); }
-}
-@keyframes korea-fizz-pop {
-  0%   { opacity: 0; transform: translate3d(0, .55em, 0) scaleY(1.16); }
-  56%  { opacity: 1; }
-  70%  { opacity: 1; transform: translate3d(0, -.065em, 0) scaleY(.94); }
-  86%  { opacity: 1; transform: translate3d(0, .012em, 0) scaleY(1.02); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) scaleY(1); }
+.korea-scene.is-type-ready .korea-word-feel,
+.korea-scene.is-type-ready .korea-word-the,
+.korea-scene.is-type-ready .korea-letter {
+  transform-origin: 50% 82%;
+  will-change: transform, opacity;
 }
 @media (prefers-reduced-motion: reduce) {
   .korea-scene .korea-word-feel,
@@ -196,7 +168,7 @@
   .korea-scene .korea-letter {
     opacity: 1 !important;
     transform: none !important;
-    animation: none !important;
+    will-change: auto;
   }
 }
 
