@@ -1,0 +1,99 @@
+/* Global liquid-cursor effects. Independent of the SVG displacement renderer. */
+.site-liquid-cursor-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: soft-light;
+  background: radial-gradient(
+    ellipse var(--liquid-glow-radius-x, 52px) var(--liquid-glow-radius-y, 47px) at var(--liquid-glow-x, 50vw) var(--liquid-glow-y, 50vh),
+    rgba(var(--liquid-glow-rgb, 220, 255, 233), .64) 0%,
+    rgba(var(--liquid-glow-rgb, 220, 255, 233), .29) 47%,
+    transparent 76%
+  );
+  transition: opacity .25s ease;
+}
+.site-liquid-cursor-glow.is-visible { opacity: 1; }
+
+/* The original element keeps all its existing Figma typography/layout rules.
+   Its two child layers inherit identical font metrics and line breaks. */
+.site-liquid-outline-target { isolation: isolate; }
+.site-liquid-type-fill,
+.site-liquid-type-outline {
+  display: block;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  white-space: inherit;
+  text-align: inherit;
+  width: 100%;
+  pointer-events: none;
+}
+.site-liquid-type-fill {
+  position: relative;
+  color: inherit;
+}
+.site-liquid-type-outline {
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: clamp(1px, .13vw, 2px) var(--site-liquid-stroke-color, #ffffff);
+  paint-order: stroke fill;
+}
+.site-liquid-clip-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.site-liquid-cursor-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  overflow: hidden;
+  pointer-events: none;
+}
+.site-liquid-cursor-bubble, .site-liquid-cursor-ripple {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: 1.4px solid var(--liquid-particle-color, rgba(245,255,250,.94));
+}
+.site-liquid-cursor-bubble {
+  background: rgba(255,255,255,.055);
+  box-shadow: 0 0 4px rgba(255,255,255,.19),
+              inset 1px 1px 2px rgba(255,255,255,.34);
+  animation: site-liquid-bubble-rise var(--liquid-bubble-duration, 500ms)
+    cubic-bezier(.19,.61,.3,1) forwards;
+}
+.site-liquid-cursor-ripple {
+  opacity: 0;
+  animation: site-liquid-ripple .4s ease-out forwards;
+}
+@keyframes site-liquid-bubble-rise {
+  0% { opacity: 0; transform: translate(-50%, -50%) translateY(3px) scale(.68); }
+  18% { opacity: .9; }
+  68% { opacity: .65; }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate(var(--liquid-bubble-dx, 0px), var(--liquid-bubble-dy, -24px))
+      scale(.54);
+  }
+}
+@keyframes site-liquid-ripple {
+  0% { opacity: .48; transform: translate(-50%, -50%) scale(.74); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.9); }
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .site-liquid-cursor-glow, .site-liquid-cursor-particles { display: none; }
+  .site-liquid-type-outline { display: none; }
+  .site-liquid-type-fill { clip-path: none !important; }
+}
