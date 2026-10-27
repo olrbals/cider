@@ -9,11 +9,13 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (!stage || !finePointer.matches || reducedMotion.matches) return;
 
-  // 2.5x Figma-original transparent PNGs replace 60px low-detail WebP sprites.
+  // Eight crisp citrus assets: six Figma slice views plus two user-provided
+  // whole fruits optimized from 1254px transparent originals to 256px WebP.
   const SOURCES = [
     'img/fruit/hq/lemon-slice.png', 'img/fruit/hq/lemon-half.png',
     'img/fruit/hq/lemon-side.png', 'img/fruit/hq/lime-slice.png',
-    'img/fruit/hq/lime-half.png', 'img/fruit/hq/lime-side.png'
+    'img/fruit/hq/lime-half.png', 'img/fruit/hq/lime-side.png',
+    'img/fruit/hq/lemon-whole.webp', 'img/fruit/hq/lime-whole.webp'
   ];
   const images = SOURCES.map(src => {
     const img = new Image();
@@ -60,7 +62,7 @@
     return hit instanceof Element && hit.closest('.korea-stage') === stage;
   }
 
-  // Shuffle bags distribute all six fruit views naturally, without long repeats.
+  // Shuffle bags distribute all eight fruit views naturally, without long repeats.
   function nextImage() {
     if (!bag.length) {
       bag = images.map((_, i) => i);
