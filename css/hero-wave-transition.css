@@ -1,48 +1,61 @@
-/* Hero → SEVEN STARS scroll transition.
-   The actual white section rises naturally while its top edge behaves like liquid.
-   Scoped to #identity; Hero splash, global carbonation and cursor remain untouched. */
-#identity.identity.experience-02 {
-  overflow: visible; /* The wave projects above the section boundary. */
+/* Repeating liquid-screen transitions after Hero.
+   Each real section rises naturally with scrolling and carries its own soft wave crest.
+   The interior interactions stay untouched; no transform/clip applied to sticky stages. */
+#identity.identity.experience-02,
+#korea.korea-scene,
+#history.history,
+#products.products,
+#pop.pop-scene,
+#footer.outro {
   position: relative;
-  z-index: 2; /* New scene passes in front of the Hero scene. */
+  isolation: isolate;
+  overflow: visible;
 }
-#identity > .identity-transition-wave {
+#identity.identity.experience-02 { z-index: 2; }
+#korea.korea-scene { z-index: 3; }
+#history.history { z-index: 4; }
+#products.products { z-index: 5; background: #f9f4e7; }
+#pop.pop-scene { z-index: 6; }
+#footer.outro { z-index: 7; }
+
+/* Allow the new crest to reach ahead of its section without blocking any controls. */
+.section-wave {
   position: absolute;
-  top: -154px;
+  top: -172px;
   left: 0;
   width: 100%;
-  height: 220px;
-  display: block;
+  height: 244px;
+  z-index: 10;
   overflow: visible;
-  z-index: 1;
+  display: block;
   pointer-events: none;
   user-select: none;
 }
-#identity .identity-stage {
-  z-index: 2;
-  background: #fff;
-}
-#identity .identity-wave-fill {
-  fill: url(#identity-wave-grad);
-}
-#identity .identity-wave-rim {
+.section-wave-fill { fill: var(--wave-color); }
+.section-wave-rim {
   fill: none;
-  stroke: rgba(39, 161, 99, .28);
-  stroke-width: 2;
+  stroke: var(--wave-rim, rgba(255,255,255,.8));
+  stroke-width: 2.3;
   vector-effect: non-scaling-stroke;
 }
-#identity .identity-wave-glint {
+.section-wave-glint {
   fill: none;
-  stroke: rgba(255, 255, 255, .9);
-  stroke-width: 3;
+  stroke: var(--wave-glint, rgba(255,255,255,.45));
+  stroke-width: 5;
   vector-effect: non-scaling-stroke;
-  transform: translateY(4px);
-  opacity: .82;
+  opacity: .55;
+  transform: translateY(5px);
 }
+#identity .identity-stage { position: sticky; z-index: 1; background: #fff; }
+#korea .korea-stage { z-index: 1; }
+/* Footer originally clips an oversized background star. Clip the star itself
+   at its old section boundary while letting the wave extend upward. */
+#footer.outro > .outro-star { clip-path: inset(35% 0 0 0); }
 @media (max-width: 700px) {
-  #identity > .identity-transition-wave { top: -128px; height: 186px; }
-  #identity .identity-wave-glint { display: none; }
+  .section-wave { top: -130px; height: 190px; }
+  .section-wave-rim { stroke-width: 1.7; }
+  .section-wave-glint { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #identity > .identity-transition-wave { display: none; }
+  .section-wave { display: none !important; }
 }
