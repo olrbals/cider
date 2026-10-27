@@ -95,15 +95,15 @@
 
   function desiredCount() {
     // Full-screen distribution like the reference, subdued enough for legible type.
-    return clamp(Math.round((width * height / 7900) * densityFactor), 52, lowPower ? 115 : 205);
+    return clamp(Math.round((width * height / 5600) * densityFactor), 80, lowPower ? 150 : 280);
   }
 
   function makeParticle(distribute = false, around = null) {
     const choice = Math.random();
-    // Around 20-25% smaller than the original; retain a varied soda-bubble mix.
-    const radius = choice < .55 ? random(1.2, 3.0) :
-      choice < .88 ? random(3.1, 6.4) :
-      choice < .975 ? random(6.5, 10) : random(10, 14.5);
+    // Fine, densely distributed soda bubbles: mostly tiny rings, rare medium bubbles.
+    const radius = choice < .55 ? random(.9, 2.2) :
+      choice < .88 ? random(2.3, 4.6) :
+      choice < .975 ? random(4.7, 7.2) : random(7.3, 10.2);
     const depth = choice < .65 ? 0 : 1;
     const rise = random(55, 145) * (depth ? 1.1 : .9);
     const x = around === null ? random(-8, width + 8) : around + random(-28, 28);
