@@ -109,31 +109,37 @@
   let lastRender = 0;
   let lastFrame = 0;
   let burstAt = 0;
+  let afterFizzAt = 0;
   let stopArmed = false;
   let recoil = 0;
   let recoilVelocity = 0;
 
   function spawnParticle(isRipple = false) {
-    if (!activeScene || bubbles.childElementCount >= 16) return;
+    // Small rings appear behind the moving droplet, never as a confetti cloud.
+    if (!activeScene || bubbles.childElementCount >= 64) return;
     const particle = document.createElement('span');
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
-    const tint = activeScene.matches('.product-explorer, .pop-stage')
-      ? 'rgba(23, 140, 94, .68)' : 'rgba(243, 255, 249, .83)';
+    const darkBackground = !activeScene.matches('.product-explorer, .pop-stage');
+    const tint = darkBackground
+      ? 'rgba(255, 255, 255, .96)' : 'rgba(19, 131, 91, .8)';
     const angle = Math.random() * Math.PI * 2;
-    const distance = 6 + Math.random() * (isRipple ? 0 : 22);
-    const size = isRipple ? 22 : 2.5 + Math.random() * 3.5;
-    particle.style.left = (x + Math.cos(angle) * distance).toFixed(1) + 'px';
-    particle.style.top = (y + Math.sin(angle) * distance).toFixed(1) + 'px';
+    const trail = isRipple ? 0 : Math.random() * (14 + velocity * 42);
+    const scatter = isRipple ? 0 : 8 + Math.random() * (17 + velocity * 14);
+    const size = isRipple ? 22 : 2.7 + Math.random() * 5.4;
+    particle.style.left = (x - directionX * trail +
+      Math.cos(angle) * scatter).toFixed(1) + 'px';
+    particle.style.top = (y - directionY * trail +
+      Math.sin(angle) * scatter).toFixed(1) + 'px';
     particle.style.width = size.toFixed(1) + 'px';
     particle.style.height = size.toFixed(1) + 'px';
     particle.style.setProperty('--liquid-particle-color', tint);
     particle.style.setProperty('--liquid-bubble-dx',
-      (Math.random() * 42 - 21).toFixed(1) + 'px');
+      (Math.random() * 54 - 27).toFixed(1) + 'px');
     particle.style.setProperty('--liquid-bubble-dy',
-      (-18 - Math.random() * 28).toFixed(1) + 'px');
+      (-22 - Math.random() * 35).toFixed(1) + 'px');
     particle.style.setProperty('--liquid-bubble-duration',
-      (380 + Math.random() * 250).toFixed(0) + 'ms');
+      (550 + Math.random() * 350).toFixed(0) + 'ms');
     particle.addEventListener('animationend', () => particle.remove(), { once: true });
     bubbles.append(particle);
   }
@@ -195,10 +201,11 @@
       if (activeScene) glow.style.setProperty('--liquid-glow-rgb', colorFor(activeScene));
       if (!activeScene) all.forEach(clear);
     }
-    // A few individual bubbles instead of a constant particle trail.
-    if (activeScene && instantaneousSpeed > .18 && now - burstAt > 105) {
-      spawnBubbles(instantaneousSpeed > .6 ? 2 : 1);
+    // Denser, speed-responsive carbonation without filling the whole screen.
+    if (activeScene && instantaneousSpeed > .14 && now - burstAt > 58) {
+      spawnBubbles(instantaneousSpeed > .68 ? 5 : instantaneousSpeed > .35 ? 4 : 3);
       burstAt = now;
+      afterFizzAt = 0;
     }
     if (activeScene && !frame) frame = requestAnimationFrame(render);
   }
@@ -220,8 +227,13 @@
       stopArmed = false;
       // One restrained 5-8% squash followed by damped restoration.
       recoilVelocity = -.042;
-      spawnBubbles(2);
+      spawnBubbles(6);
       spawnParticle(true);
+      afterFizzAt = now + 215;
+    }
+    if (idle && afterFizzAt && now >= afterFizzAt) {
+      spawnBubbles(3);
+      afterFizzAt = 0;
     }
     const units = dt / 16.667;
     recoilVelocity += -recoil * .19 * units;
@@ -311,6 +323,7 @@
     recoil = 0;
     recoilVelocity = 0;
     burstAt = 0;
+    afterFizzAt = 0;
   }
   window.addEventListener('pointermove', updatePointer, { passive: true });
   document.addEventListener('pointerleave', reset);
