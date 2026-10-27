@@ -40,8 +40,8 @@
   min-height: 1100px;
   max-height: none;
   padding: 0;
-  background: #009dff;
-  color: #0004ff;
+  background: #ffc1ff;
+  color: #ff0837;
   isolation: isolate;
   overflow: clip;
   touch-action: pan-y;
@@ -68,9 +68,10 @@
   width: 92%;
   margin: 0;
   transform: translateX(-50%);
-  color: #0004ff;
+  color: #ff0837;
   font-family: var(--font-family-display);
-  font-size: clamp(155px, 20.83333vw, 400px);
+  /* Figma 300px type at 1440×900; scale down on shorter viewports. */
+  font-size: min(20.83333vw, 33.33333svh, 300px);
   font-weight: 400;
   line-height: 1.0867;
   letter-spacing: 0;
@@ -87,7 +88,7 @@
   pointer-events: none;
 }
 .identity.experience-02 .identity-liquid-type {
-  color: rgba(219,241,255,.86);
+  color: rgba(255,249,253,.92);
   z-index: 2;
   -webkit-mask-image: radial-gradient(ellipse 230px 210px at var(--cursor-x) var(--cursor-y), black 15%, rgba(0,0,0,.9) 48%, transparent 100%);
   mask-image: radial-gradient(ellipse 230px 210px at var(--cursor-x) var(--cursor-y), black 15%, rgba(0,0,0,.9) 48%, transparent 100%);
@@ -100,9 +101,9 @@
   height: 320px;
   transform: translate(-50%,-50%) scale(calc(.93 + .07 * var(--cursor-pressure, 0)));
   border-radius: 47% 55% 56% 44% / 58% 45% 55% 42%;
-  background: radial-gradient(ellipse at 30% 26%, rgba(255,255,255,.25), rgba(191,236,255,.09) 38%, rgba(0,51,215,.13) 70%, transparent 73%);
+  background: radial-gradient(ellipse at 30% 26%, rgba(255,255,255,.25), rgba(255,230,245,.13) 38%, rgba(255,8,55,.10) 70%, transparent 73%);
   border: 1px solid rgba(255,255,255,.16);
-  box-shadow: inset 21px 25px 40px rgba(255,255,255,.10), inset -22px -20px 30px rgba(7,28,215,.12), 0 0 45px rgba(11,108,245,.14);
+  box-shadow: inset 21px 25px 40px rgba(255,255,255,.10), inset -22px -20px 30px rgba(197,25,81,.1), 0 0 45px rgba(244,82,160,.12);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   will-change: transform, left, top;
@@ -135,7 +136,8 @@
   margin: 0;
   transform: translateX(-50%);
   font-family: var(--font-family-display);
-  font-size: clamp(120px, 19.44444vw, 400px);
+  /* Figma 280px type: fit both viewport width and height for bottom clearance. */
+  font-size: min(19.44444vw, 31.11111svh, 280px);
   font-weight: 400;
   line-height: 1.0867;
   letter-spacing: 0;
@@ -178,6 +180,36 @@
 .korea-spark-three { left: 7.7778%;  top: 16.4444%; }
 .korea-spark-four  { left: 83.9583%; top: 55.6667%; }
 .korea-spark-five  { left: 74.1667%; top: 27.4444%; }
+
+/* Figma 03scroll citrus pair — follows mouse in FEEL THE FIZZ only.
+   Existing global liquid refraction and bubbles remain unchanged. */
+.korea-citrus-cursor {
+  position: fixed;
+  z-index: 10001;
+  top: 0; left: 0;
+  width: 151px; height: 121px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform;
+  filter: drop-shadow(0 8px 11px rgba(43, 97, 37, .13));
+  transition: opacity .18s ease, visibility .18s ease;
+}
+.korea-citrus-cursor.is-visible { opacity: 1; visibility: visible; }
+.korea-citrus-cursor img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.korea-citrus-cursor .citrus-lemon { width: 100px; height: 100px; left: 0; top: 0; }
+.korea-citrus-cursor .citrus-lime { width: 105px; height: 105px; left: 46px; top: 16px; }
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .korea-citrus-cursor { display: none !important; }
+}
 
 /* Section-scoped liquid interaction takes precedence over the legacy jelly cursor. */
 body[data-experience-hover="true"] .jelly-cursor-canvas { opacity: 0 !important; }

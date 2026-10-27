@@ -154,7 +154,8 @@
   }
 
   function colorFor(scene) {
-    if (scene.matches('.identity-stage, .korea-stage')) return '210, 245, 255';
+    if (scene.matches('.identity-stage')) return '255, 230, 245';
+    if (scene.matches('.korea-stage')) return '210, 245, 255';
     if (scene.matches('.pop-stage')) return '255, 248, 210';
     if (scene.matches('.product-explorer')) return '166, 255, 198';
     if (scene.matches('.rich-scene')) return '255, 250, 228';
