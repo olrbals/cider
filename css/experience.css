@@ -150,6 +150,28 @@
   clip-path: inset(calc(100% - var(--korea-fill)) 0 0 0);
   will-change: clip-path;
 }
+/* FEEL → THE → FIZZ: scroll-scrubbed rise, tilt and elastic rebounds.
+   JS drives both stacked text layers identically for a perfectly aligned green fill.
+   Keep the original text visible if scripts are unavailable. */
+.korea-type-line { display: block; white-space: nowrap; }
+.korea-word, .korea-letter { display: inline-block; }
+.korea-word-fizz { white-space: nowrap; }
+.korea-scene.is-type-ready .korea-word-feel,
+.korea-scene.is-type-ready .korea-word-the,
+.korea-scene.is-type-ready .korea-letter {
+  transform-origin: 50% 82%;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .korea-scene .korea-word-feel,
+  .korea-scene .korea-word-the,
+  .korea-scene .korea-letter {
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto;
+  }
+}
+
 .korea-star {
   position: absolute;
   z-index: 3;
