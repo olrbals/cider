@@ -1,0 +1,17 @@
+/* Continuous viewport-wide carbonation. No image backdrop or pointer interception. */
+.site-ambient-carbonation {
+  position: fixed;
+  inset: 0;
+  z-index: 22;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+  opacity: .7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-ambient-carbonation { display: none !important; }
+}
