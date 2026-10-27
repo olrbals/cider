@@ -7,15 +7,15 @@
 #top .hero-splash-tab { position: absolute; left: 19%; top: 34%; width: 64%; height: 29%; border: 3px solid #b7c9bb; border-radius: 55% 55% 42% 42%; background: linear-gradient(#f7fff5,#82a597); box-shadow: 0 2px 4px #16493888; transform-origin: 50% 85%; transform: rotateX(calc(var(--hs-tab) * 73deg)) translateY(calc(var(--hs-tab) * -10px)); }
 
 #top .hero-splash-effects { position: absolute; z-index: 5; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-#top .hs-jet { stroke: rgba(255,255,255,.68); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 2px 3px rgba(13,85,66,.3)); }
-#top .hs-jet-glow { fill: none; stroke: rgba(237,255,250,.42); stroke-width: 6; filter: url(#hs-soft-glint); vector-effect: non-scaling-stroke; }
+#top .hs-jet { stroke: rgba(255,255,255,.72); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 2px 3px rgba(61,72,67,.2)); }
+#top .hs-jet-glow { fill: none; stroke: rgba(255,255,255,.48); stroke-width: 6; filter: url(#hs-soft-glint); vector-effect: non-scaling-stroke; }
 #top .hs-sheet { stroke: rgba(250,255,253,.66); stroke-width: 2.4; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 #top .hs-sheet-glint { fill: none; stroke: rgba(255,255,255,.78); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 #top .hs-droplet { stroke: rgba(255,255,255,.55); stroke-width: 1.3; vector-effect: non-scaling-stroke; }
 #top .hs-droplet-glint { fill: rgba(255,255,255,.85); }
 
-#top .hs-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(1.2px) brightness(1.045) saturate(1.04); -webkit-backdrop-filter: blur(1.2px) brightness(1.045) saturate(1.04); }
-#top .hs-jet-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(2px) brightness(1.12) saturate(1.04); -webkit-backdrop-filter: blur(2px) brightness(1.12) saturate(1.04); }
+#top .hs-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(1.2px) brightness(1.045) saturate(.94); -webkit-backdrop-filter: blur(1.2px) brightness(1.045) saturate(.94); }
+#top .hs-jet-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(2px) brightness(1.12) saturate(.92); -webkit-backdrop-filter: blur(2px) brightness(1.12) saturate(.92); }
 @media (max-width: 700px) {
   #top .hs-jet-glow, #top .hs-sheet-glint, #top .hs-refraction, #top .hs-jet-refraction { display: none; }
 }

@@ -155,10 +155,11 @@
       glint.setAttribute('r', number(radius * .18));
     });
 
-    // The original blue of SEVEN STARS is exposed as the water passes off screen.
-    const reveal = phase(p, .84, 1);
-    const start = [20, 159, 92], end = [0, 157, 255];
-    stage.style.backgroundColor = `rgb(${start.map((value, i) => Math.round(value + (end[i] - value) * reveal)).join(',')})`;
+    // The clear film brightens the hero into the updated white Seven Stars scene.
+    const brighten = phase(p, .68, 1);
+    const reveal = phase(p, .82, 1);
+    const start = [20, 159, 92], end = [255, 255, 255];
+    stage.style.backgroundColor = `rgb(${start.map((value, i) => Math.round(value + (end[i] - value) * brighten)).join(',')})`;
     hero.style.setProperty('--hs-reveal', reveal.toFixed(4));
   }
 
