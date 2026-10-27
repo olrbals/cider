@@ -94,7 +94,7 @@
     // Mostly smaller bubbles, preserving a rare larger pearl for visual depth.
     const radius = choice < .55 ? random(.6, 1.5) :
       choice < .88 ? random(1.55, 3.0) :
-      choice < .975 ? random(3.1, 4.8) : random(4.9, 6.8);
+      choice < .975 ? random(3.1, 4.8) : random(4.9, 8.0);
     const depth = choice < .65 ? 0 : 1;
     const rise = random(55, 145) * (depth ? 1.1 : .9);
     const x = around === null ? random(-8, width + 8) : around + random(-28, 28);
