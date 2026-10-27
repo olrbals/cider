@@ -1,0 +1,109 @@
+/* All selectors and progress variables belong to the hero scene. */
+#top.hero {
+  height: 200svh;
+  max-height: none;
+  min-height: 0;
+  overflow: clip;
+  --hs-tab: 0;
+  --hs-jet: 0;
+  --hs-spread: 0;
+  --hs-curtain: 0;
+}
+
+#top .hero-splash-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: #149f5c;
+}
+
+#top .hero-can-top-slot {
+  left: 50%;
+  top: 0;
+  width: 28%;
+  height: 7%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+#top .hero-splash-tab {
+  position: absolute;
+  left: 19%;
+  top: 34%;
+  width: 64%;
+  height: 29%;
+  border: 3px solid #b7c9bb;
+  border-radius: 55% 55% 42% 42%;
+  background: linear-gradient(#f7fff5, #82a597);
+  box-shadow: 0 2px 4px #16493888;
+  transform-origin: 50% 85%;
+  transform: rotateX(calc(var(--hs-tab) * 73deg)) translateY(calc(var(--hs-tab) * -10px));
+}
+
+#top .hero-splash-effects {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#top .hero-splash-jet {
+  position: absolute;
+  left: 50%;
+  bottom: 82%;
+  width: clamp(34px, 5vw, 86px);
+  height: 82%;
+  border-radius: 48% 52% 38% 44% / 75% 70% 15% 12%;
+  background: linear-gradient(90deg, #0076de 0%, #35c9ff 23%, #c7f8ff 39%, #009dff 62%, #005ee6 100%);
+  box-shadow: 0 0 24px #8feaffaa, inset -9px 0 16px #005bd8aa;
+  opacity: var(--hs-jet);
+  transform: translateX(-50%) scaleX(calc(.45 + var(--hs-jet) * .55)) scaleY(var(--hs-jet));
+  transform-origin: bottom center;
+}
+
+#top .hero-splash-bubbles {
+  position: absolute;
+  left: calc(50% - 110px);
+  bottom: 76%;
+  width: 220px;
+  height: 60%;
+  opacity: var(--hs-jet);
+  transform: translateY(calc((1 - var(--hs-jet)) * 32%));
+  background:
+    radial-gradient(circle at 16% 69%, #e7ffff 0 4px, transparent 5px),
+    radial-gradient(circle at 70% 47%, #d6faff 0 8px, transparent 9px),
+    radial-gradient(circle at 26% 25%, #ecffff 0 6px, transparent 7px),
+    radial-gradient(circle at 88% 12%, #aeefff 0 4px, transparent 5px),
+    radial-gradient(circle at 53% 78%, #fff 0 3px, transparent 4px);
+}
+
+#top .hero-splash-crown {
+  position: absolute;
+  top: -8%;
+  left: 50%;
+  width: 112%;
+  height: 27%;
+  border-radius: 0 0 49% 51% / 0 0 27% 32%;
+  background: radial-gradient(ellipse at 50% 95%, #bff5ff 0, #25c6ff 28%, #009dff 62%, #006ee8 100%);
+  box-shadow: 0 12px 32px #007ce677;
+  opacity: var(--hs-spread);
+  transform: translateX(-50%) scaleX(calc(.02 + var(--hs-spread) * .98));
+  transform-origin: center top;
+}
+
+#top .hero-splash-curtain {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(96deg, #007be9 0%, #23baff 23%, #009dff 55%, #0069e7 100%);
+  clip-path: inset(0 0 calc(100% - var(--hs-curtain) * 100%) 0 round 0 0 47% 53%);
+  box-shadow: inset 0 0 60px #b1f4ff55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #top.hero { height: 100svh; }
+  #top .hero-splash-effects { display: none; }
+}

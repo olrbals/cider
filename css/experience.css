@@ -1,39 +1,6 @@
 /* Figma 02main / 02cursor / 03, design baseline 1440x900.
    Dedicated layer; original product selection and 1950-1960 Three.js stay untouched. */
 
-.hero-liquid-layer {
-  z-index: 6;
-  left: 0;
-  right: 0;
-  top: -10%;
-  height: 122%;
-  background: #009dff;
-  border-radius: 0 0 48% 52% / 0 0 8% 10%;
-  transform: translate3d(0, var(--liquid-offset, -112%), 0);
-  will-change: transform;
-}
-.hero-liquid-layer::before {
-  content: "";
-  position: absolute;
-  left: -5%;
-  right: -5%;
-  bottom: -4.5%;
-  height: 9%;
-  border-radius: 48% 52% 50% 50%;
-  background: #009dff;
-}
-.hero-liquid-layer::after {
-  content: "";
-  position: absolute;
-  right: 17%;
-  top: 7%;
-  width: 9%;
-  height: 50%;
-  background: rgba(255,255,255,.10);
-  filter: blur(28px);
-  transform: rotate(12deg);
-}
-
 .identity.experience-02 {
   height: 100svh;
   min-height: 700px;
@@ -182,7 +149,6 @@ body[data-experience-hover="true"] .identity { cursor: none; }
   .korea-scene { min-height: 1000px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-liquid-layer { transform: translate3d(0,-112%,0) !important; }
   .identity-liquid-layer { display: none; }
   .korea-type-reveal { clip-path: none; opacity: 0; }
   .korea-star { transform: none; }
