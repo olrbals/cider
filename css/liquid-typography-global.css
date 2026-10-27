@@ -39,7 +39,7 @@
   inset: 0;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: clamp(1px, .13vw, 2px) currentColor;
+  -webkit-text-stroke: clamp(1px, .13vw, 2px) var(--site-liquid-stroke-color, #ffffff);
   paint-order: stroke fill;
 }
 .site-liquid-clip-defs {
