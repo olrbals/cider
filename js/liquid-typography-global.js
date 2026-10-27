@@ -26,13 +26,6 @@
   glow.setAttribute('aria-hidden', 'true');
   document.body.append(glow);
 
-  // Separate from the broad glow: a small specular highlight gives the gel
-  // a clear center without amplifying the whole screen's brightness.
-  const core = document.createElement('div');
-  core.className = 'site-liquid-cursor-core';
-  core.setAttribute('aria-hidden', 'true');
-  document.body.append(core);
-
   // Lightweight CSS-animated ring bubbles, independent of the WebGL/DOM gel.
   // They do not intercept pointer, click, scroll, or Three.js events.
   const bubbles = document.createElement('div');
@@ -87,10 +80,10 @@
     restRadius: 18,
     movingRadius: 105,
     maxSpeed: .8,
-    idleDelayMs: 110,
-    expandMs: 80,
-    shrinkMs: 290,
-    followMs: 125
+    idleDelayMs: 145,
+    expandMs: 100,
+    shrinkMs: 390,
+    followMs: 155
   };
   let targetX = innerWidth * .5;
   let targetY = innerHeight * .5;
@@ -116,7 +109,7 @@
 
   function spawnParticle(isRipple = false) {
     // Small rings appear behind the moving droplet, never as a confetti cloud.
-    if (!activeScene || bubbles.childElementCount >= 64) return;
+    if (!activeScene || bubbles.childElementCount >= 90) return;
     const particle = document.createElement('span');
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
@@ -125,8 +118,8 @@
       ? 'rgba(255, 255, 255, .96)' : 'rgba(19, 131, 91, .8)';
     const angle = Math.random() * Math.PI * 2;
     const trail = isRipple ? 0 : Math.random() * (14 + velocity * 42);
-    const scatter = isRipple ? 0 : 8 + Math.random() * (17 + velocity * 14);
-    const size = isRipple ? 22 : 2.7 + Math.random() * 5.4;
+    const scatter = isRipple ? 0 : 9 + Math.random() * (21 + velocity * 16);
+    const size = isRipple ? 22 : 3.5 + Math.random() * 7;
     particle.style.left = (x - directionX * trail +
       Math.cos(angle) * scatter).toFixed(1) + 'px';
     particle.style.top = (y - directionY * trail +
@@ -139,7 +132,7 @@
     particle.style.setProperty('--liquid-bubble-dy',
       (-22 - Math.random() * 35).toFixed(1) + 'px');
     particle.style.setProperty('--liquid-bubble-duration',
-      (550 + Math.random() * 350).toFixed(0) + 'ms');
+      (650 + Math.random() * 400).toFixed(0) + 'ms');
     particle.addEventListener('animationend', () => particle.remove(), { once: true });
     bubbles.append(particle);
   }
@@ -197,13 +190,12 @@
     if (next !== activeScene) {
       activeScene = next;
       glow.classList.toggle('is-visible', Boolean(activeScene));
-      core.classList.toggle('is-visible', Boolean(activeScene));
       if (activeScene) glow.style.setProperty('--liquid-glow-rgb', colorFor(activeScene));
       if (!activeScene) all.forEach(clear);
     }
     // Denser, speed-responsive carbonation without filling the whole screen.
-    if (activeScene && instantaneousSpeed > .14 && now - burstAt > 58) {
-      spawnBubbles(instantaneousSpeed > .68 ? 5 : instantaneousSpeed > .35 ? 4 : 3);
+    if (activeScene && instantaneousSpeed > .14 && now - burstAt > 52) {
+      spawnBubbles(instantaneousSpeed > .68 ? 8 : instantaneousSpeed > .35 ? 6 : 5);
       burstAt = now;
       afterFizzAt = 0;
     }
@@ -227,12 +219,12 @@
       stopArmed = false;
       // One restrained 5-8% squash followed by damped restoration.
       recoilVelocity = -.042;
-      spawnBubbles(6);
+      spawnBubbles(9);
       spawnParticle(true);
       afterFizzAt = now + 215;
     }
     if (idle && afterFizzAt && now >= afterFizzAt) {
-      spawnBubbles(3);
+      spawnBubbles(5);
       afterFizzAt = 0;
     }
     const units = dt / 16.667;
@@ -243,7 +235,7 @@
       recoil = 0;
       recoilVelocity = 0;
     }
-    velocity *= Math.exp(-dt / (idle ? 155 : 430));
+    velocity *= Math.exp(-dt / (idle ? 205 : 495));
     const desired = MOTION.restRadius + (MOTION.movingRadius - MOTION.restRadius) * velocity;
     const responseMs = desired > radius ? MOTION.expandMs : MOTION.shrinkMs;
     radius += (desired - radius) * (1 - Math.exp(-dt / responseMs));
@@ -257,12 +249,6 @@
     const lightSize = 32 + radius * 1.1 * squash;
     glow.style.setProperty('--liquid-glow-radius-x', lightSize.toFixed(1) + 'px');
     glow.style.setProperty('--liquid-glow-radius-y', (lightSize * .88).toFixed(1) + 'px');
-    const coreSize = 14 + radius * .38;
-    core.style.width = coreSize.toFixed(1) + 'px';
-    core.style.height = coreSize.toFixed(1) + 'px';
-    core.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' +
-      y.toFixed(1) + 'px,0) translate(-50%,-50%) scale(' +
-      squash.toFixed(3) + ')';
 
     // 30fps for SVG masks; cursor positioning remains smooth at display refresh rate.
     if (now - lastRender < 32) return;
@@ -308,7 +294,6 @@
   function reset() {
     activeScene = null;
     glow.classList.remove('is-visible');
-    core.classList.remove('is-visible');
     bubbles.replaceChildren();
     all.forEach(clear);
     if (frame) cancelAnimationFrame(frame);
@@ -338,7 +323,6 @@
     if (next !== activeScene) {
       activeScene = next;
       glow.classList.toggle('is-visible', Boolean(activeScene));
-      core.classList.toggle('is-visible', Boolean(activeScene));
       all.forEach(clear);
       if (activeScene) {
         glow.style.setProperty('--liquid-glow-rgb', colorFor(activeScene));
