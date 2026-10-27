@@ -67,8 +67,15 @@
     const viewport = Math.max(1, window.innerHeight);
     const koreaRect = korea.getBoundingClientRect();
     const available = Math.max(1, koreaRect.height - viewport);
+    // The yellow section is visible well before its sticky top reaches the viewport.
+    // Start the kinetic headline during that entry instead of leaving a blank screen.
+    // Finish at sticky exit, so scrolling up reverses every pose.
+    const entryOffset = viewport * .85;
+    const textProgress = clamp((entryOffset - koreaRect.top) / (entryOffset + available));
+    scrubType(textProgress);
+
+    // Preserve the original independent cream-to-green fill timeline.
     const progress = clamp(-koreaRect.top / available);
-    scrubType(progress);
     korea.style.setProperty('--korea-fill', (ease(progress) * 100).toFixed(2) + '%');
     korea.style.setProperty('--korea-shift', (progress * 55).toFixed(2) + 'px');
   }
