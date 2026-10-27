@@ -1,5 +1,5 @@
 /* Continuous, full-viewport rising soda carbonation.
- * Reference: many delicate white/translucent droplets with soft bright rims.
+ * Sparse, readable soda rings instead of a field of snow-like white specks.
  * Independent of mouse-local V6 bubbles, citrus fountain and page scroll effects.
  */
 (() => {
@@ -28,56 +28,41 @@
   let targetCount = 0, spawnCredit = 0, frame = 0, lastTime = 0;
   let active = false;
 
-  // Cached white, translucent soda bubbles. Both variants are generated once:
-  // soft glass rings and softly filled pearl-like droplets, never dark outlines.
+  // Cache two sizes of the same clear bubble. A green outer rim reads on white
+  // sections, while the white inner rim and glint read on green sections.
   function makeBubbleSprite(variant) {
     const sprite = document.createElement('canvas');
     sprite.width = sprite.height = 96;
     const brush = sprite.getContext('2d');
     if (!brush) return sprite;
-    const center = 48, radius = 32;
-    const pearl = variant === 1;
+    const center = 48, radius = 31;
+    const small = variant === 1;
 
-    const halo = brush.createRadialGradient(center, center, radius * .7, center, center, radius + 8);
-    halo.addColorStop(0, 'rgba(255,255,255,0)');
-    halo.addColorStop(.67, 'rgba(255,255,255,.12)');
-    halo.addColorStop(.85, 'rgba(255,255,255,.24)');
-    halo.addColorStop(1, 'rgba(255,255,255,0)');
-    brush.fillStyle = halo;
-    brush.fillRect(0, 0, 96, 96);
-
-    // Transparent interior, with slightly stronger white fill on tiny droplets.
-    const sheen = brush.createRadialGradient(center - 11, center - 12, 1, center, center, radius);
-    sheen.addColorStop(0, pearl ? 'rgba(255,255,255,.60)' : 'rgba(255,255,255,.24)');
-    sheen.addColorStop(.6, pearl ? 'rgba(255,255,255,.34)' : 'rgba(255,255,255,.12)');
-    sheen.addColorStop(1, pearl ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.05)');
+    const sheen = brush.createRadialGradient(38, 35, 2, center, center, radius);
+    sheen.addColorStop(0, 'rgba(255,255,255,.34)');
+    sheen.addColorStop(.62, 'rgba(255,255,255,.06)');
+    sheen.addColorStop(1, 'rgba(91,204,154,.12)');
     brush.beginPath();
     brush.arc(center, center, radius, 0, Math.PI * 2);
     brush.fillStyle = sheen;
     brush.fill();
 
-    const rim = brush.createLinearGradient(15, 14, 80, 83);
-    rim.addColorStop(0, 'rgba(255,255,255,1)');
-    rim.addColorStop(.37, 'rgba(255,255,255,.88)');
-    rim.addColorStop(.7, 'rgba(255,255,255,.48)');
-    rim.addColorStop(1, 'rgba(255,255,255,.92)');
     brush.beginPath();
     brush.arc(center, center, radius, 0, Math.PI * 2);
-    brush.strokeStyle = rim;
-    brush.lineWidth = pearl ? 2.2 : 2.6;
+    brush.strokeStyle = 'rgba(5,148,91,.72)';
+    brush.lineWidth = small ? 4 : 3.5;
     brush.stroke();
 
-    // Uneven crescent highlights keep the white bubbles lively, not flat dots.
     brush.beginPath();
-    brush.arc(center - .5, center - .5, radius - 3, Math.PI * 1.08, Math.PI * 1.52);
+    brush.arc(center - 1, center - 1, radius - 4, Math.PI * 1.06, Math.PI * 1.7);
     brush.strokeStyle = 'rgba(255,255,255,.98)';
-    brush.lineWidth = pearl ? 2.8 : 3.5;
+    brush.lineWidth = small ? 6 : 5;
     brush.lineCap = 'round';
     brush.stroke();
 
     brush.beginPath();
-    brush.ellipse(center - 13, center - 17, 5.4, 2.4, -.6, 0, Math.PI * 2);
-    brush.fillStyle = 'rgba(255,255,255,.8)';
+    brush.ellipse(center - 12, center - 15, 5, 2.6, -.6, 0, Math.PI * 2);
+    brush.fillStyle = 'rgba(255,255,255,.96)';
     brush.fill();
 
     return sprite;
@@ -85,27 +70,25 @@
   const sprites = [makeBubbleSprite(0), makeBubbleSprite(1)];
 
   function desiredCount() {
-    // 2x the last Preview density at standard viewport sizes, with safe caps.
-    return clamp(Math.round((width * height / 1120) * densityFactor), 400, lowPower ? 750 : 1400);
+    return clamp(Math.round((width * height / 18500) * densityFactor), 35, lowPower ? 65 : 110);
   }
 
   function makeParticle(distribute = false, around = null) {
     const choice = Math.random();
-    // Mostly smaller bubbles, preserving a rare larger pearl for visual depth.
-    const radius = choice < .55 ? random(.6, 1.5) :
-      choice < .88 ? random(1.55, 3.0) :
-      choice < .975 ? random(3.1, 4.8) : random(4.9, 8.0);
-    const depth = choice < .65 ? 0 : 1;
-    const rise = random(55, 145) * (depth ? 1.1 : .9);
+    // Readable rings with a few small companion bubbles, never pixel-sized dots.
+    const radius = choice < .18 ? random(3.2, 4.5) :
+      choice < .75 ? random(5, 8.5) : random(9, 14);
+    const depth = choice < .18 ? 1 : 0;
+    const rise = random(50, 115) * (depth ? 1.18 : 1);
     const x = around === null ? random(-8, width + 8) : around + random(-28, 28);
     const y = distribute ? random(-radius, height + radius) : height + radius * random(2, 7);
     return {
       x, y, radius, rise,
-      side: random(-11, 11),
+      side: random(-8, 8),
       phase: random(0, Math.PI * 2),
-      wobble: random(.35, 1.3),
-      amp: random(2, 11),
-      alpha: random(depth ? .62 : .48, depth ? .98 : .82),
+      wobble: random(.8, 1.7),
+      amp: random(4, 14),
+      alpha: random(depth ? .63 : .74, depth ? .8 : 1),
       kind: depth,
       age: random(0, 10)
     };
@@ -146,22 +129,22 @@
         continue;
       }
 
-      // Asymmetric drift: no rigid columns, with an occasional tiny bubble cluster.
+      // Uneven floating paths and a few small bubble streams.
       const sway = Math.sin(p.age * p.wobble + p.phase) * p.amp;
       const topFade = clamp((p.y + p.radius * 3) / 80, 0, 1);
       const bottomFade = clamp((height + p.radius - p.y) / 75, 0, 1);
       ctx.globalAlpha = p.alpha * topFade * bottomFade;
-      const drawSize = p.radius * 2.85;
+      const drawSize = p.radius * 3.05;
       ctx.drawImage(sprites[p.kind], p.x + sway - drawSize / 2,
         p.y - drawSize / 2, drawSize, drawSize);
     }
     ctx.globalAlpha = 1;
 
     // Keep a steady density; replacement bubbles originate below the viewport.
-    // 22% of new bubbles join small streams, instead of all being evenly spaced.
+    // Some bubbles travel together as carbonation streams.
     spawnCredit += (targetCount / Math.max(2, height / 110)) * dt;
     while (spawnCredit >= 1 && particles.length < targetCount) {
-      const cluster = Math.random() < .22 && particles.length > 0 ?
+      const cluster = Math.random() < .38 && particles.length > 0 ?
         particles[Math.floor(Math.random() * particles.length)].x : null;
       particles.push(makeParticle(false, cluster));
       spawnCredit -= 1;
