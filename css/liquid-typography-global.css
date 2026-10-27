@@ -1,0 +1,56 @@
+/* Global liquid-cursor effects. Independent of the SVG displacement renderer. */
+.site-liquid-cursor-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: soft-light;
+  background: radial-gradient(
+    circle 290px at var(--liquid-glow-x, 50vw) var(--liquid-glow-y, 50vh),
+    rgba(var(--liquid-glow-rgb, 220, 255, 233), .72) 0%,
+    rgba(var(--liquid-glow-rgb, 220, 255, 233), .29) 47%,
+    transparent 76%
+  );
+  transition: opacity .25s ease;
+}
+.site-liquid-cursor-glow.is-visible { opacity: 1; }
+
+/* The original element keeps all its existing Figma typography/layout rules.
+   Its two child layers inherit identical font metrics and line breaks. */
+.site-liquid-outline-target { isolation: isolate; }
+.site-liquid-type-fill,
+.site-liquid-type-outline {
+  display: block;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  white-space: inherit;
+  text-align: inherit;
+  width: 100%;
+  pointer-events: none;
+}
+.site-liquid-type-fill {
+  position: relative;
+  color: inherit;
+}
+.site-liquid-type-outline {
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: clamp(1px, .13vw, 2px) var(--site-liquid-stroke-color, #ffffff);
+  paint-order: stroke fill;
+}
+.site-liquid-clip-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .site-liquid-cursor-glow { display: none; }
+  .site-liquid-type-outline { display: none; }
+  .site-liquid-type-fill { clip-path: none !important; }
+}
