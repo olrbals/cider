@@ -10,7 +10,12 @@
   background: transparent;
   pointer-events: none;
   user-select: none;
+  opacity: 0;
+  visibility: hidden;
+}
+.site-ambient-carbonation.is-active {
   opacity: .54;
+  visibility: visible;
 }
 @media (prefers-reduced-motion: reduce) {
   .site-ambient-carbonation { display: none !important; }

@@ -6,6 +6,7 @@
   'use strict';
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const hero = document.querySelector('.hero');
   if (reducedMotion.matches) return;
 
   const canvas = document.createElement('canvas');
@@ -191,18 +192,34 @@
     frame = window.requestAnimationFrame(step);
   }
 
+  // Show ambient carbonation after HERO has fully left the viewport.
+  function syncHeroBoundary() {
+    const beyondHero = !hero || hero.getBoundingClientRect().bottom <= 0;
+    const show = beyondHero && !document.hidden && !reducedMotion.matches;
+    canvas.classList.toggle('is-active', show);
+    if (show) resume();
+    else suspend();
+  }
+
+  let scrollFrame = 0;
+  window.addEventListener('scroll', () => {
+    if (scrollFrame) return;
+    scrollFrame = window.requestAnimationFrame(() => {
+      scrollFrame = 0;
+      syncHeroBoundary();
+    });
+  }, { passive: true });
+
   let resizeFrame = 0;
   window.addEventListener('resize', () => {
     if (resizeFrame) return;
     resizeFrame = window.requestAnimationFrame(() => {
       resizeFrame = 0;
       resize();
+      syncHeroBoundary();
     });
   }, { passive: true });
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) suspend();
-    else resume();
-  });
+  document.addEventListener('visibilitychange', syncHeroBoundary);
   reducedMotion.addEventListener('change', () => {
     if (reducedMotion.matches) {
       suspend();
@@ -210,10 +227,10 @@
     } else {
       canvas.style.display = '';
       resize();
-      resume();
     }
+    syncHeroBoundary();
   });
 
   resize();
-  resume();
+  syncHeroBoundary();
 })();

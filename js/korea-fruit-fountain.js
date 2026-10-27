@@ -30,7 +30,7 @@
   if (!ctx) return;
   document.body.append(canvas);
 
-  const MAX_FRUIT = 120; // Triple original capacity; bounded for performance.
+  const MAX_FRUIT = 105; // Slightly reduced density, bigger high-quality fruit.
   const particles = [];
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const random = (a, b) => a + Math.random() * (b - a);
@@ -78,7 +78,7 @@
     for (let i = 0; i < count && particles.length < MAX_FRUIT; i++) {
       const img = nextImage();
       if (!img.complete || !img.naturalWidth) continue;
-      const size = random(movement ? 26 : 24, movement ? 115 : 100);
+      const size = random(movement ? 42 : 38, movement ? 150 : 130);
       const horizontal = random(-100, 100) - headingX * movement * random(8, 38);
       particles.push({
         img,
@@ -123,8 +123,8 @@
     const moving = now - lastMoveTime < 135;
     const gap = moving ? 60 : 185;
     if (now - lastSpawnTime >= gap) {
-      // Triple each emission: moving 6/9/12, idle 3, without a fixed cursor image.
-      emit(moving ? (speed > 1.15 ? 12 : speed > .5 ? 9 : 6) : 3, moving ? 1 : 0);
+      // Slightly softer emission: moving 5/8/10, idle 3, without an attached fruit image.
+      emit(moving ? (speed > 1.15 ? 10 : speed > .5 ? 8 : 5) : 3, moving ? 1 : 0);
       lastSpawnTime = now;
     }
 
