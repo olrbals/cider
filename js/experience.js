@@ -31,6 +31,26 @@
       window.requestAnimationFrame(updateSequence);
     }
   }
+  // Animate typography once when the section first enters the viewport.
+  // Keep the existing scroll-based green fill and citrus cursor independent.
+  function setupTypeEntrance() {
+    if (reducedMotion.matches || !('IntersectionObserver' in window)) return;
+    korea.classList.add('is-type-ready');
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      korea.classList.add('is-type-visible');
+      observer.disconnect();
+    }, { rootMargin: '0px 0px -14% 0px', threshold: .12 });
+    observer.observe(korea);
+    reducedMotion.addEventListener('change', () => {
+      if (reducedMotion.matches) {
+        korea.classList.add('is-type-visible');
+        observer.disconnect();
+      }
+    });
+  }
+  setupTypeEntrance();
+
   window.addEventListener('scroll', requestScrollTick, { passive: true });
   window.addEventListener('resize', requestScrollTick, { passive: true });
   reducedMotion.addEventListener('change', requestScrollTick);
