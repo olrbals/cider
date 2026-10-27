@@ -14,7 +14,7 @@
   visibility: hidden;
 }
 .site-ambient-carbonation.is-active {
-  opacity: .54;
+  opacity: .72;
   visibility: visible;
 }
 @media (prefers-reduced-motion: reduce) {

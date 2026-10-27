@@ -40,27 +40,27 @@
 
     const halo = brush.createRadialGradient(center, center, radius * .7, center, center, radius + 8);
     halo.addColorStop(0, 'rgba(255,255,255,0)');
-    halo.addColorStop(.67, 'rgba(255,255,255,.07)');
-    halo.addColorStop(.85, 'rgba(255,255,255,.16)');
+    halo.addColorStop(.67, 'rgba(255,255,255,.12)');
+    halo.addColorStop(.85, 'rgba(255,255,255,.24)');
     halo.addColorStop(1, 'rgba(255,255,255,0)');
     brush.fillStyle = halo;
     brush.fillRect(0, 0, 96, 96);
 
     // Transparent interior, with slightly stronger white fill on tiny droplets.
     const sheen = brush.createRadialGradient(center - 11, center - 12, 1, center, center, radius);
-    sheen.addColorStop(0, pearl ? 'rgba(255,255,255,.43)' : 'rgba(255,255,255,.14)');
-    sheen.addColorStop(.6, pearl ? 'rgba(255,255,255,.24)' : 'rgba(255,255,255,.055)');
-    sheen.addColorStop(1, pearl ? 'rgba(255,255,255,.09)' : 'rgba(255,255,255,.025)');
+    sheen.addColorStop(0, pearl ? 'rgba(255,255,255,.60)' : 'rgba(255,255,255,.24)');
+    sheen.addColorStop(.6, pearl ? 'rgba(255,255,255,.34)' : 'rgba(255,255,255,.12)');
+    sheen.addColorStop(1, pearl ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.05)');
     brush.beginPath();
     brush.arc(center, center, radius, 0, Math.PI * 2);
     brush.fillStyle = sheen;
     brush.fill();
 
     const rim = brush.createLinearGradient(15, 14, 80, 83);
-    rim.addColorStop(0, 'rgba(255,255,255,.95)');
-    rim.addColorStop(.37, 'rgba(255,255,255,.72)');
-    rim.addColorStop(.7, 'rgba(255,255,255,.3)');
-    rim.addColorStop(1, 'rgba(255,255,255,.8)');
+    rim.addColorStop(0, 'rgba(255,255,255,1)');
+    rim.addColorStop(.37, 'rgba(255,255,255,.88)');
+    rim.addColorStop(.7, 'rgba(255,255,255,.48)');
+    rim.addColorStop(1, 'rgba(255,255,255,.92)');
     brush.beginPath();
     brush.arc(center, center, radius, 0, Math.PI * 2);
     brush.strokeStyle = rim;
@@ -70,7 +70,7 @@
     // Uneven crescent highlights keep the white bubbles lively, not flat dots.
     brush.beginPath();
     brush.arc(center - .5, center - .5, radius - 3, Math.PI * 1.08, Math.PI * 1.52);
-    brush.strokeStyle = 'rgba(255,255,255,.88)';
+    brush.strokeStyle = 'rgba(255,255,255,.98)';
     brush.lineWidth = pearl ? 2.8 : 3.5;
     brush.lineCap = 'round';
     brush.stroke();
@@ -85,16 +85,16 @@
   const sprites = [makeBubbleSprite(0), makeBubbleSprite(1)];
 
   function desiredCount() {
-    // 2.5x the previous bubble count on every viewport, with low-power caps.
-    return clamp(Math.round((width * height / 2240) * densityFactor), 200, lowPower ? 375 : 700);
+    // 2x the last Preview density at standard viewport sizes, with safe caps.
+    return clamp(Math.round((width * height / 1120) * densityFactor), 400, lowPower ? 750 : 1400);
   }
 
   function makeParticle(distribute = false, around = null) {
     const choice = Math.random();
-    // Approximately 15% smaller, retaining mostly tiny rings with rare medium pearls.
-    const radius = choice < .55 ? random(.75, 1.9) :
-      choice < .88 ? random(1.95, 3.95) :
-      choice < .975 ? random(4, 6.2) : random(6.3, 8.7);
+    // Mostly smaller bubbles, preserving a rare larger pearl for visual depth.
+    const radius = choice < .55 ? random(.6, 1.5) :
+      choice < .88 ? random(1.55, 3.0) :
+      choice < .975 ? random(3.1, 4.8) : random(4.9, 6.8);
     const depth = choice < .65 ? 0 : 1;
     const rise = random(55, 145) * (depth ? 1.1 : .9);
     const x = around === null ? random(-8, width + 8) : around + random(-28, 28);
@@ -105,7 +105,7 @@
       phase: random(0, Math.PI * 2),
       wobble: random(.35, 1.3),
       amp: random(2, 11),
-      alpha: random(depth ? .48 : .35, depth ? .91 : .68),
+      alpha: random(depth ? .62 : .48, depth ? .98 : .82),
       kind: depth,
       age: random(0, 10)
     };
