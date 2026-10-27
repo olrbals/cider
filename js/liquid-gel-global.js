@@ -59,8 +59,8 @@
   panel.innerHTML = [
     '<button class="site-liquid-toggle" type="button" aria-label="액체 효과 설정" aria-controls="site-liquid-panel" aria-expanded="false">⚙</button>',
     '<div class="site-liquid-panel" id="site-liquid-panel" hidden>',
-    '<label><span class="site-liquid-label">점성 · 회복 지연 <output id="site-gel-viscosity-value">24</output></span>',
-    '<input id="site-gel-viscosity" type="range" min="1" max="25" step="1" value="24"></label>',
+    '<label><span class="site-liquid-label">점성 · 회복 지연 <output id="site-gel-viscosity-value">25</output></span>',
+    '<input id="site-gel-viscosity" type="range" min="1" max="25" step="1" value="25"></label>',
     '<label><span class="site-liquid-label">굴절 강도 <output id="site-gel-refraction-value">1</output></span>',
     '<input id="site-gel-refraction" type="range" min="-5" max="10" step="1" value="1"></label>',
     '<button class="site-liquid-reset" type="button">표면 초기화</button>',

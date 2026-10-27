@@ -313,3 +313,18 @@ body[data-experience-hover="true"] .identity { cursor: none; }
 @media(prefers-reduced-motion:reduce) {
   .site-header { transition: none; }
 }
+
+/* FEEL THE FIZZ six-fruit fountain — composited, pointer-transparent canvas. */
+.korea-fruit-fountain {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .18s ease, visibility .18s ease;
+}
+.korea-fruit-fountain.is-visible { visibility: visible; opacity: 1; }
+@media (pointer: coarse), (hover: none), (prefers-reduced-motion: reduce) {
+  .korea-fruit-fountain { display: none !important; }
+}

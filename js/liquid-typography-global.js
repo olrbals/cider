@@ -109,7 +109,7 @@
 
   function spawnParticle(isRipple = false) {
     // Small rings appear behind the moving droplet, never as a confetti cloud.
-    if (!activeScene || bubbles.childElementCount >= 90) return;
+    if (!activeScene || bubbles.childElementCount >= 220) return;
     const particle = document.createElement('span');
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
@@ -119,7 +119,7 @@
     const angle = Math.random() * Math.PI * 2;
     const trail = isRipple ? 0 : Math.random() * (14 + velocity * 42);
     const scatter = isRipple ? 0 : 9 + Math.random() * (21 + velocity * 16);
-    const size = isRipple ? 22 : 3.5 + Math.random() * 7;
+    const size = isRipple ? 22 : 3.5 + Math.random() * 12.5;
     particle.style.left = (x - directionX * trail +
       Math.cos(angle) * scatter).toFixed(1) + 'px';
     particle.style.top = (y - directionY * trail +
@@ -194,9 +194,9 @@
       if (activeScene) glow.style.setProperty('--liquid-glow-rgb', colorFor(activeScene));
       if (!activeScene) all.forEach(clear);
     }
-    // Denser, speed-responsive carbonation without filling the whole screen.
+    // V6: speed-responsive 10-15 transparent rings, capped at 220 active particles.
     if (activeScene && instantaneousSpeed > .14 && now - burstAt > 52) {
-      spawnBubbles(instantaneousSpeed > .68 ? 8 : instantaneousSpeed > .35 ? 6 : 5);
+      spawnBubbles(10 + Math.min(5, Math.floor(instantaneousSpeed * 6)));
       burstAt = now;
       afterFizzAt = 0;
     }
@@ -220,12 +220,12 @@
       stopArmed = false;
       // One restrained 5-8% squash followed by damped restoration.
       recoilVelocity = -.042;
-      spawnBubbles(9);
+      spawnBubbles(20);
       spawnParticle(true);
       afterFizzAt = now + 215;
     }
     if (idle && afterFizzAt && now >= afterFizzAt) {
-      spawnBubbles(5);
+      spawnBubbles(10);
       afterFizzAt = 0;
     }
     const units = dt / 16.667;
