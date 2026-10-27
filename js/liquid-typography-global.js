@@ -60,6 +60,8 @@
       (kind === 'fill' ? fill : outline).style.clipPath = 'url(#' + id + ')';
       paths.push(path);
     });
+    // Outline must use the original headline color, not its transparent fill.
+    node.style.setProperty('--site-liquid-stroke-color', getComputedStyle(node).color);
     node.replaceChildren(fill, outline);
     node.classList.add('site-liquid-outline-target');
     all.push({ node, fillPath: paths[0], outlinePath: paths[1], active: false });
