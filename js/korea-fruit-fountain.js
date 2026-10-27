@@ -1,6 +1,6 @@
-/* FEEL THE FIZZ: six user-supplied lemon/lime slices rising around the cursor.
- * A single bounded canvas avoids a DOM element per fruit. The existing Figma
- * citrus cursor, V6 carbonation, gel, and scroll-fill remain independent.
+/* FEEL THE FIZZ: cursor-positioned fruit fountain using six lemon/lime slices.
+ * Tripled emission versus the original fountain; no attached fruit pair.
+ * Bounded canvas keeps V6 carbonation, gel, typography and scroll intact.
  */
 (() => {
   'use strict';
@@ -27,7 +27,7 @@
   if (!ctx) return;
   document.body.append(canvas);
 
-  const MAX_FRUIT = 40;
+  const MAX_FRUIT = 120; // Triple original capacity; bounded for performance.
   const particles = [];
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const random = (a, b) => a + Math.random() * (b - a);
@@ -73,11 +73,11 @@
     for (let i = 0; i < count && particles.length < MAX_FRUIT; i++) {
       const img = nextImage();
       if (!img.complete || !img.naturalWidth) continue;
-      const size = random(movement ? 28 : 26, movement ? 72 : 54);
+      const size = random(movement ? 26 : 24, movement ? 115 : 100);
       const horizontal = random(-100, 100) - headingX * movement * random(8, 38);
       particles.push({
         img,
-        x: cursorX + random(-29, 29) - headingX * movement * random(0, 15),
+        x: cursorX + random(-42, 42) - headingX * movement * random(0, 15),
         y: cursorY + random(8, 42),
         vx: horizontal,
         vy: random(-370, -215),
@@ -118,7 +118,8 @@
     const moving = now - lastMoveTime < 135;
     const gap = moving ? 60 : 185;
     if (now - lastSpawnTime >= gap) {
-      emit(moving ? (speed > 1.15 ? 4 : speed > .5 ? 3 : 2) : 1, moving ? 1 : 0);
+      // Triple each emission: moving 6/9/12, idle 3, without a fixed cursor image.
+      emit(moving ? (speed > 1.15 ? 12 : speed > .5 ? 9 : 6) : 3, moving ? 1 : 0);
       lastSpawnTime = now;
     }
 

@@ -181,36 +181,6 @@
 .korea-spark-four  { left: 83.9583%; top: 55.6667%; }
 .korea-spark-five  { left: 74.1667%; top: 27.4444%; }
 
-/* Figma 03scroll citrus pair — follows mouse in FEEL THE FIZZ only.
-   Existing global liquid refraction and bubbles remain unchanged. */
-.korea-citrus-cursor {
-  position: fixed;
-  z-index: 10001;
-  top: 0; left: 0;
-  width: 151px; height: 121px;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  will-change: transform;
-  filter: drop-shadow(0 8px 11px rgba(43, 97, 37, .13));
-  transition: opacity .18s ease, visibility .18s ease;
-}
-.korea-citrus-cursor.is-visible { opacity: 1; visibility: visible; }
-.korea-citrus-cursor img {
-  position: absolute;
-  display: block;
-  max-width: none;
-  object-fit: contain;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-.korea-citrus-cursor .citrus-lemon { width: 100px; height: 100px; left: 0; top: 0; }
-.korea-citrus-cursor .citrus-lime { width: 105px; height: 105px; left: 46px; top: 16px; }
-@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-  .korea-citrus-cursor { display: none !important; }
-}
-
 /* Section-scoped liquid interaction takes precedence over the legacy jelly cursor. */
 body[data-experience-hover="true"] .jelly-cursor-canvas { opacity: 0 !important; }
 body[data-experience-hover="true"] { cursor: default; }
