@@ -108,6 +108,35 @@
   -webkit-backdrop-filter: blur(2px);
   will-change: transform, left, top;
 }
+
+/* Figma 02main / 03: small white Archivo labels on both viewport edges. */
+.section-edge-label {
+  position: absolute;
+  z-index: 6;
+  color: #fff;
+  font-family: "Archivo", Arial, sans-serif;
+  font-size: clamp(12px, 1.3889vw, 20px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0;
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.section-edge-label--top-left,
+.section-edge-label--bottom-left { left: 3.0556%; }
+.section-edge-label--top-right,
+.section-edge-label--bottom-right { right: 3.125%; transform: rotate(180deg); }
+.section-edge-label--top-left,
+.section-edge-label--top-right { top: 7.1111%; }
+.section-edge-label--bottom-left { bottom: 10.1111%; }
+.section-edge-label--bottom-right { bottom: 10.6667%; }
+.korea-stage .section-edge-label--top-left,
+.korea-stage .section-edge-label--top-right { top: 6.2222%; }
+.korea-stage .section-edge-label--bottom-left { bottom: 10.9889%; }
+.korea-stage .section-edge-label--bottom-right { bottom: 11.5556%; }
+
 /* 03: Figma FEEL THE FIZZ, cream type revealing Chilsung green on scroll. */
 .korea-scene {
   position: relative;
@@ -130,14 +159,14 @@
 }
 .korea-type {
   position: absolute;
-  top: 13.78%;
+  top: 17.8889%;
   left: 50%;
-  width: 91%;
+  width: 92.2917%;
   margin: 0;
   transform: translateX(-50%);
   font-family: var(--font-family-display);
-  /* Figma 280px type: fit both viewport width and height for bottom clearance. */
-  font-size: min(19.44444vw, 31.11111svh, 280px);
+  /* Figma 03 is 260px at 1440×900; scale down to retain bottom whitespace. */
+  font-size: min(18.05556vw, 28.88889svh, 260px);
   font-weight: 400;
   line-height: 1.0867;
   letter-spacing: 0;
@@ -160,9 +189,11 @@
   pointer-events: none;
   transform: translate3d(0,calc(var(--korea-shift) * var(--star-rate,1)),0);
 }
-.korea-star-left { left: 10.20833%; top: 67.8889%; width: 34px; height: 34px; --star-rate: -.28; }
-.korea-star-top { left: 90.9028%; top: 22%; width: 34px; height: 34px; --star-rate: .24; }
-.korea-star-right { left: 88.5417%; top: 69.7778%; width: 40px; height: 40px; --star-rate: -.15; }
+.korea-star-left { left: 10.5556%; top: 76.4444%; width: 34px; height: 34px; --star-rate: -.28; }
+.korea-star-top { left: 18.125%; top: 22%; width: 34px; height: 34px; --star-rate: .24; }
+.korea-star-upper { left: 61.8056%; top: 9.1111%; width: 34px; height: 34px; --star-rate: -.12; }
+.korea-star-right { left: 91.25%; top: 27.5556%; width: 34px; height: 34px; --star-rate: -.15; }
+.korea-star-bottom-right { left: 88.8889%; top: 75.3333%; width: 40px; height: 40px; --star-rate: .18; }
 
 
 /* Five tiny Figma sparkle crops, kept separate from the future citrus cursor. */
@@ -175,10 +206,10 @@
   object-fit: contain;
   pointer-events: none;
 }
-.korea-spark-one   { left: 18.8889%; top: 52.8889%; }
-.korea-spark-two   { left: 29.5139%; top: 74.2222%; }
+.korea-spark-one   { left: 17.7083%; top: 47.2222%; }
+.korea-spark-two   { left: 30.5556%; top: 74.6667%; }
 .korea-spark-three { left: 7.7778%;  top: 16.4444%; }
-.korea-spark-four  { left: 83.9583%; top: 55.6667%; }
+.korea-spark-four  { left: 83.4028%; top: 60%; }
 .korea-spark-five  { left: 74.1667%; top: 27.4444%; }
 
 /* Section-scoped liquid interaction takes precedence over the legacy jelly cursor. */
@@ -242,13 +273,13 @@ body[data-experience-hover="true"] .identity { cursor: none; }
 .hero .hero-ring-outer {
   width: 46.875vw;
   height: 46.875vw;
-  left: 30.7639%;
+  left: 29.375%;
   top: 12.4444%;
 }
 .hero .hero-ring-inner {
   width: 36.1111vw;
   height: 36.1111vw;
-  left: 37.5%;
+  left: 36.1111%;
   top: 20.6667%;
   opacity: 1;
 }
@@ -269,10 +300,12 @@ body[data-experience-hover="true"] .identity { cursor: none; }
   object-fit: contain;
   pointer-events: none;
 }
-.hero-star-primary { left: 26.25%; top: 29.8889%; width: 130px; height: 130px; }
-.hero-star-secondary { left: 10.2083%; top: 67.3333%; width: 85px; height: 85px; }
-.hero-star-small { left: 7.8472%; top: 65.4444%; width: 34px; height: 34px; }
+.hero-star-primary { left: 24.8611%; top: 32.7778%; width: 130px; height: 130px; }
+.hero-star-secondary { left: 14.0278%; top: 70.7778%; width: 85px; height: 85px; }
+.hero-star-small { left: 21.9444%; top: 30.8889%; width: 52px; height: 52px; }
 .hero-star-right { left: 82.7778%; top: 59%; width: 85px; height: 85px; }
+.hero-star-mid-left { left: 8.75%; top: 45.1111%; width: 40px; height: 40px; }
+.hero-star-upper-right { left: 89.5833%; top: 39.5556%; width: 85px; height: 85px; }
 /* Navigation stays keyboard/pointer accessible without covering the designed poster. */
 .site-header {
   background: none;
