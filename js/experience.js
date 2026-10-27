@@ -20,6 +20,12 @@
     if (reducedMotion.matches) return;
     const viewport = Math.max(1, window.innerHeight);
     const koreaRect = korea.getBoundingClientRect();
+    if (korea.classList.contains('is-type-ready') &&
+        !korea.classList.contains('is-type-visible') &&
+        koreaRect.top <= viewport * .08 &&
+        koreaRect.bottom > viewport * .5) {
+      korea.classList.add('is-type-visible');
+    }
     const available = Math.max(1, koreaRect.height - viewport);
     const progress = clamp(-koreaRect.top / available);
     korea.style.setProperty('--korea-fill', (ease(progress) * 100).toFixed(2) + '%');
@@ -31,25 +37,9 @@
       window.requestAnimationFrame(updateSequence);
     }
   }
-  // Animate typography once when the section first enters the viewport.
-  // Keep the existing scroll-based green fill and citrus cursor independent.
-  function setupTypeEntrance() {
-    if (reducedMotion.matches || !('IntersectionObserver' in window)) return;
-    korea.classList.add('is-type-ready');
-    const observer = new IntersectionObserver(entries => {
-      if (!entries.some(entry => entry.isIntersecting)) return;
-      korea.classList.add('is-type-visible');
-      observer.disconnect();
-    }, { rootMargin: '0px 0px -14% 0px', threshold: .12 });
-    observer.observe(korea);
-    reducedMotion.addEventListener('change', () => {
-      if (reducedMotion.matches) {
-        korea.classList.add('is-type-visible');
-        observer.disconnect();
-      }
-    });
-  }
-  setupTypeEntrance();
+  // Delay the one-time typography entrance until both rows are visible.
+  // Green scroll-fill, parallax stars and fruit cursor remain independent.
+  if (!reducedMotion.matches) korea.classList.add('is-type-ready');
 
   window.addEventListener('scroll', requestScrollTick, { passive: true });
   window.addEventListener('resize', requestScrollTick, { passive: true });
