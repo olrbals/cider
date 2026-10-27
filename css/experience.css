@@ -107,56 +107,13 @@
   -webkit-backdrop-filter: blur(2px);
   will-change: transform, left, top;
 }
-.identity-liquid-star {
-  position: absolute;
-  display: block;
-  height: auto;
-  opacity: .9;
-  will-change: transform;
-}
-.identity-liquid-star-small {
-  width: 100px;
-  top: 84.55%;
-  left: 85.21%;
-  transform: translate3d(calc(var(--cursor-shift-x, 0px) * .08), calc(var(--cursor-shift-y, 0px) * .08),0);
-}
-.identity-liquid-star-large {
-  width: 120px;
-  top: 77.89%;
-  left: 80.35%;
-  transform: translate3d(calc(var(--cursor-shift-x, 0px) * -.1), calc(var(--cursor-shift-y, 0px) * -.1),0);
-}
-.identity-scroll-stars {
-  position: absolute;
-  z-index: 4;
-  inset: 0;
-  pointer-events: none;
-}
-.identity-scroll-stars img {
-  position: absolute;
-  display: block;
-  width: var(--star-width);
-  height: auto;
-  left: var(--star-left);
-  top: var(--star-top);
-  opacity: 0;
-  will-change: transform, opacity;
-}
-.identity-scroll-stars img:nth-child(1) { --star-width: 100px; --star-left: 85.2083%; --star-top: 84.5556%; }
-.identity-scroll-stars img:nth-child(2) { --star-width: 100px; --star-left: 85.2083%; --star-top: 79.2222%; }
-.identity-scroll-stars img:nth-child(3) { --star-width: 80px; --star-left: 78.125%; --star-top: 84.7778%; }
-.identity-scroll-stars img:nth-child(4) { --star-width: 60px; --star-left: 87.9861%; --star-top: 74.5556%; }
-.identity-scroll-stars img:nth-child(5) { --star-width: 60px; --star-left: 83.125%; --star-top: 88.4444%; }
-.identity-scroll-stars img:nth-child(6) { --star-width: 40px; --star-left: 85.9028%; --star-top: 76.7778%; }
-.identity-scroll-stars img:nth-child(7) { --star-width: 120px; --star-left: 80.3472%; --star-top: 77.8889%; }
-
-/* 03: faithful initial cream type and scroll-revealed orange variant. */
+/* 03: Figma FEEL THE FIZZ, cream type revealing Chilsung green on scroll. */
 .korea-scene {
   position: relative;
   height: 172svh;
   min-height: 1300px;
   color: #ece4d5;
-  background: #ffc800;
+  background: #ffdd00;
   --korea-fill: 0%;
   --korea-shift: 0px;
 }
@@ -167,7 +124,7 @@
   height: 100svh;
   min-height: 700px;
   overflow: hidden;
-  background: #ffc800;
+  background: #ffdd00;
   isolation: isolate;
 }
 .korea-type {
@@ -178,7 +135,7 @@
   margin: 0;
   transform: translateX(-50%);
   font-family: var(--font-family-display);
-  font-size: clamp(155px, 20.83333vw, 400px);
+  font-size: clamp(120px, 19.44444vw, 400px);
   font-weight: 400;
   line-height: 1.0867;
   letter-spacing: 0;
@@ -189,7 +146,7 @@
 .korea-type-base { z-index: 1; color: #ece4d5; }
 .korea-type-reveal {
   z-index: 2;
-  color: #ff5f00;
+  color: #149f5c;
   clip-path: inset(calc(100% - var(--korea-fill)) 0 0 0);
   will-change: clip-path;
 }
@@ -205,6 +162,23 @@
 .korea-star-top { left: 90.9028%; top: 22%; width: 34px; height: 34px; --star-rate: .24; }
 .korea-star-right { left: 88.5417%; top: 69.7778%; width: 40px; height: 40px; --star-rate: -.15; }
 
+
+/* Five tiny Figma sparkle crops, kept separate from the future citrus cursor. */
+.korea-spark {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  width: 40px;
+  height: 50px;
+  object-fit: contain;
+  pointer-events: none;
+}
+.korea-spark-one   { left: 18.8889%; top: 52.8889%; }
+.korea-spark-two   { left: 29.5139%; top: 74.2222%; }
+.korea-spark-three { left: 7.7778%;  top: 16.4444%; }
+.korea-spark-four  { left: 83.9583%; top: 55.6667%; }
+.korea-spark-five  { left: 74.1667%; top: 27.4444%; }
+
 /* Section-scoped liquid interaction takes precedence over the legacy jelly cursor. */
 body[data-experience-hover="true"] .jelly-cursor-canvas { opacity: 0 !important; }
 body[data-experience-hover="true"] { cursor: default; }
@@ -214,7 +188,6 @@ body[data-experience-hover="true"] .identity { cursor: none; }
   .identity.experience-02 { min-height: 900px; }
   .identity-stage, .korea-stage { min-height: 550px; }
   .korea-scene { min-height: 1000px; }
-  .identity-scroll-stars { transform: translateX(-75px) scale(.6); transform-origin: right bottom; }
 }
 @media (max-width: 600px) {
   .identity.experience-02 .identity-display,
@@ -228,7 +201,6 @@ body[data-experience-hover="true"] .identity { cursor: none; }
 @media (prefers-reduced-motion: reduce) {
   .hero-liquid-layer { transform: translate3d(0,-112%,0) !important; }
   .identity-liquid-layer { display: none; }
-  .identity-scroll-stars img { opacity: 1; transform: none !important; }
   .korea-type-reveal { clip-path: none; opacity: 0; }
   .korea-star { transform: none; }
 }
