@@ -1,0 +1,266 @@
+/* Figma 02main / 02cursor / 03, design baseline 1440x900.
+   Dedicated layer; original product selection and 1950-1960 Three.js stay untouched. */
+
+.hero-liquid-layer {
+  z-index: 6;
+  left: 0;
+  right: 0;
+  top: -10%;
+  height: 122%;
+  background: #009dff;
+  border-radius: 0 0 48% 52% / 0 0 8% 10%;
+  transform: translate3d(0, var(--liquid-offset, -112%), 0);
+  will-change: transform;
+}
+.hero-liquid-layer::before {
+  content: "";
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  bottom: -4.5%;
+  height: 9%;
+  border-radius: 48% 52% 50% 50%;
+  background: #009dff;
+}
+.hero-liquid-layer::after {
+  content: "";
+  position: absolute;
+  right: 17%;
+  top: 7%;
+  width: 9%;
+  height: 50%;
+  background: rgba(255,255,255,.10);
+  filter: blur(28px);
+  transform: rotate(12deg);
+}
+
+.identity.experience-02 {
+  height: 100svh;
+  min-height: 700px;
+  max-height: none;
+  padding: 0;
+  background: #009dff;
+  color: #0004ff;
+  isolation: isolate;
+  overflow: hidden;
+  touch-action: pan-y;
+  --cursor-x: 50%;
+  --cursor-y: 50%;
+  --cursor-intensity: 0;
+}
+.identity.experience-02::before { display:none; }
+.identity.experience-02 .identity-display,
+.identity.experience-02 .identity-liquid-type {
+  position: absolute;
+  top: 13.78%;
+  bottom: auto;
+  left: 50%;
+  width: 92%;
+  margin: 0;
+  transform: translateX(-50%);
+  color: #0004ff;
+  font-family: var(--font-family-display);
+  font-size: clamp(155px, 20.83333vw, 400px);
+  font-weight: 400;
+  line-height: 1.0867;
+  letter-spacing: 0;
+  white-space: nowrap;
+  text-align: center;
+  pointer-events: none;
+}
+.identity.experience-02 .identity-display { z-index: 1; }
+.identity-liquid-layer {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  opacity: var(--cursor-intensity);
+  pointer-events: none;
+}
+.identity.experience-02 .identity-liquid-type {
+  color: rgba(219,241,255,.86);
+  z-index: 2;
+  -webkit-mask-image: radial-gradient(ellipse 230px 210px at var(--cursor-x) var(--cursor-y), black 15%, rgba(0,0,0,.9) 48%, transparent 100%);
+  mask-image: radial-gradient(ellipse 230px 210px at var(--cursor-x) var(--cursor-y), black 15%, rgba(0,0,0,.9) 48%, transparent 100%);
+}
+.identity-liquid-gloss {
+  position: absolute;
+  left: var(--cursor-x);
+  top: var(--cursor-y);
+  width: 350px;
+  height: 320px;
+  transform: translate(-50%,-50%) scale(calc(.93 + .07 * var(--cursor-pressure, 0)));
+  border-radius: 47% 55% 56% 44% / 58% 45% 55% 42%;
+  background: radial-gradient(ellipse at 30% 26%, rgba(255,255,255,.25), rgba(191,236,255,.09) 38%, rgba(0,51,215,.13) 70%, transparent 73%);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: inset 21px 25px 40px rgba(255,255,255,.10), inset -22px -20px 30px rgba(7,28,215,.12), 0 0 45px rgba(11,108,245,.14);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  will-change: transform, left, top;
+}
+.identity-liquid-star {
+  position: absolute;
+  display: block;
+  height: auto;
+  opacity: .9;
+  will-change: transform;
+}
+.identity-liquid-star-small {
+  width: 100px;
+  top: 84.55%;
+  left: 85.21%;
+  transform: translate3d(calc(var(--cursor-shift-x, 0px) * .08), calc(var(--cursor-shift-y, 0px) * .08),0);
+}
+.identity-liquid-star-large {
+  width: 120px;
+  top: 77.89%;
+  left: 80.35%;
+  transform: translate3d(calc(var(--cursor-shift-x, 0px) * -.1), calc(var(--cursor-shift-y, 0px) * -.1),0);
+}
+
+/* 03: faithful initial cream type and scroll-revealed orange variant. */
+.korea-scene {
+  position: relative;
+  height: 172svh;
+  min-height: 1300px;
+  color: #ece4d5;
+  background: #ffc800;
+  --korea-fill: 0%;
+  --korea-shift: 0px;
+}
+.korea-stage {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  min-height: 700px;
+  overflow: hidden;
+  background: #ffc800;
+  isolation: isolate;
+}
+.korea-type {
+  position: absolute;
+  top: 13.78%;
+  left: 50%;
+  width: 91%;
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: var(--font-family-display);
+  font-size: clamp(155px, 20.83333vw, 400px);
+  font-weight: 400;
+  line-height: 1.0867;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.korea-type-base { z-index: 1; color: #ece4d5; }
+.korea-type-reveal {
+  z-index: 2;
+  color: #ff5f00;
+  clip-path: inset(calc(100% - var(--korea-fill)) 0 0 0);
+  will-change: clip-path;
+}
+.korea-star {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  transform: translate3d(0,calc(var(--korea-shift) * var(--star-rate,1)),0);
+}
+.korea-star-left { left: 10.20833%; top: 67.8889%; width: 34px; height: 34px; --star-rate: -.28; }
+.korea-star-top { left: 90.9028%; top: 22%; width: 34px; height: 34px; --star-rate: .24; }
+.korea-star-right { left: 88.5417%; top: 69.7778%; width: 40px; height: 40px; --star-rate: -.15; }
+
+/* Section-scoped liquid interaction takes precedence over the legacy jelly cursor. */
+body[data-experience-hover="true"] .jelly-cursor-canvas { opacity: 0 !important; }
+body[data-experience-hover="true"] { cursor: default; }
+body[data-experience-hover="true"] .identity { cursor: none; }
+
+@media (max-width: 900px) {
+  .identity.experience-02, .korea-stage { min-height: 550px; }
+  .korea-scene { min-height: 1000px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-liquid-layer { transform: translate3d(0,-112%,0) !important; }
+  .identity-liquid-layer { display: none; }
+  .korea-type-reveal { clip-path: none; opacity: 0; }
+  .korea-star { transform: none; }
+}
+
+/* 01 HERO: original Figma type, rings, upright product and star coordinates. */
+.hero {
+  background: #149f5c;
+  color: #fff;
+}
+.hero::before { display: none; }
+.hero .hero-type {
+  font-family: var(--font-family-display);
+  font-weight: 400;
+  line-height: 1.0867;
+  letter-spacing: 0;
+  color: #fff;
+}
+.hero .hero-type-top {
+  top: .44%;
+  left: 0;
+  right: auto;
+  font-size: clamp(160px, 16.9444vw, 350px);
+}
+.hero .hero-type-bottom {
+  left: 28.1944%;
+  right: auto;
+  top: 63.7778%;
+  bottom: auto;
+  font-size: clamp(200px, 20.8333vw, 420px);
+}
+.hero .hero-ring {
+  z-index: 1;
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 50%;
+  transform: none;
+}
+.hero .hero-ring-outer {
+  width: 46.875vw;
+  height: 46.875vw;
+  left: 30.7639%;
+  top: 12.4444%;
+}
+.hero .hero-ring-inner {
+  width: 36.1111vw;
+  height: 36.1111vw;
+  left: 37.5%;
+  top: 20.6667%;
+  opacity: 1;
+}
+.hero .hero-product-layer {
+  z-index: 4;
+  top: 12.5%;
+  left: 50%;
+  width: 450px;
+  height: 75%;
+  transform: translateX(-50%);
+  filter: drop-shadow(9px 11px 8px rgba(5,72,43,.18));
+}
+.hero .hero-bubble-layer { display: none; }
+.hero-figma-star {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+.hero-star-primary { left: 26.25%; top: 29.8889%; width: 130px; height: 130px; }
+.hero-star-secondary { left: 10.2083%; top: 67.3333%; width: 85px; height: 85px; }
+.hero-star-small { left: 7.8472%; top: 65.4444%; width: 34px; height: 34px; }
+.hero-star-right { left: 82.7778%; top: 59%; width: 85px; height: 85px; }
+/* Navigation stays keyboard/pointer accessible without covering the designed poster. */
+.site-header {
+  background: none;
+  opacity: 0;
+  transition: opacity .22s ease;
+}
+.site-header:hover,.site-header:focus-within { opacity: 1; }
+@media(prefers-reduced-motion:reduce) {
+  .site-header { transition: none; }
+}

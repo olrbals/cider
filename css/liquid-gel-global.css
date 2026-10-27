@@ -1,0 +1,81 @@
+/* Site-wide, live-DOM V4 gel distortion.
+   SVG feDisplacementMap bends rendered sections without flattening the HTML,
+   hiding the live Three.js canvas, or capturing a static poster. */
+.site-liquid-definitions {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.site-liquid-target {
+  filter: url("#site-liquid-gel-filter");
+  -webkit-filter: url("#site-liquid-gel-filter");
+}
+.site-liquid-tool {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 10020;
+  font-family: "Pretendard", Arial, sans-serif;
+  color: #fff;
+}
+.site-liquid-toggle {
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255,255,255,.44);
+  border-radius: 50%;
+  background: rgba(7,78,45,.88);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 15px rgba(0,0,0,.15);
+  font-size: 22px;
+  line-height: 1;
+}
+.site-liquid-panel {
+  display: grid;
+  gap: 14px;
+  position: absolute;
+  bottom: 52px;
+  right: 0;
+  width: 228px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,.34);
+  border-radius: 14px;
+  background: rgba(7,78,45,.96);
+  box-shadow: 0 8px 32px rgba(0,0,0,.19);
+}
+.site-liquid-panel[hidden] { display: none; }
+.site-liquid-panel label { display: grid; gap: 8px; }
+.site-liquid-label { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; }
+.site-liquid-panel input[type="range"] { width: 100%; accent-color: #b5ffb8; }
+.site-liquid-reset {
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: #efffe4;
+  color: #075b34;
+  font-weight: 800;
+  cursor: pointer;
+}
+.site-liquid-toggle:focus-visible,
+.site-liquid-reset:focus-visible,
+.site-liquid-panel input:focus-visible {
+  outline: 3px solid #ffe35b;
+  outline-offset: 3px;
+}
+@media (max-width: 650px) {
+  .site-liquid-tool { right: 12px; bottom: 12px; }
+}
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .site-liquid-tool { display: none; }
+  .site-liquid-target { filter: none; -webkit-filter: none; }
+}
+/* Hide the old preview lens. Global SVG displacement is the only gel. */
+.experience-02 .identity-liquid-gloss,
+.experience-02 .identity-liquid-type { display: none; }
+.experience-02 .identity-liquid-layer { opacity: 0; transition: opacity .24s ease; }
+.experience-02:hover .identity-liquid-layer { opacity: 1; }
