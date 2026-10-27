@@ -50,43 +50,6 @@
   pointer-events: none;
 }
 
-/* A small optical center: glancing highlight, not another broad spotlight. */
-.site-liquid-cursor-core {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 10001;
-  width: 22px;
-  height: 22px;
-  border-radius: 52% 48% 49% 51%;
-  pointer-events: none;
-  opacity: 0;
-  mix-blend-mode: screen;
-  background: radial-gradient(ellipse at 34% 28%,
-    rgba(255, 255, 255, .78) 0%,
-    rgba(243, 255, 252, .33) 22%,
-    rgba(243, 255, 252, .1) 53%,
-    rgba(255, 255, 255, .15) 72%,
-    transparent 86%);
-  box-shadow: inset -2px -3px 5px rgba(255,255,255,.12),
-              inset 2px 2px 5px rgba(255,255,255,.2);
-  transition: opacity .2s ease;
-  will-change: transform;
-}
-.site-liquid-cursor-core::after {
-  content: "";
-  position: absolute;
-  top: 19%;
-  left: 24%;
-  width: 23%;
-  height: 10%;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .72);
-  transform: rotate(-28deg);
-  filter: blur(.5px);
-}
-.site-liquid-cursor-core.is-visible { opacity: .85; }
-
 .site-liquid-cursor-particles {
   position: fixed;
   inset: 0;
@@ -100,11 +63,11 @@
   border-radius: 50%;
   box-sizing: border-box;
   pointer-events: none;
-  border: 1.25px solid var(--liquid-particle-color, rgba(245,255,250,.94));
+  border: 1.4px solid var(--liquid-particle-color, rgba(245,255,250,.94));
 }
 .site-liquid-cursor-bubble {
   background: rgba(255,255,255,.055);
-  box-shadow: 0 0 5px rgba(255,255,255,.22),
+  box-shadow: 0 0 4px rgba(255,255,255,.19),
               inset 1px 1px 2px rgba(255,255,255,.34);
   animation: site-liquid-bubble-rise var(--liquid-bubble-duration, 500ms)
     cubic-bezier(.19,.61,.3,1) forwards;
@@ -130,7 +93,7 @@
 }
 
 @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-  .site-liquid-cursor-glow, .site-liquid-cursor-core, .site-liquid-cursor-particles { display: none; }
+  .site-liquid-cursor-glow, .site-liquid-cursor-particles { display: none; }
   .site-liquid-type-outline { display: none; }
   .site-liquid-type-fill { clip-path: none !important; }
 }
