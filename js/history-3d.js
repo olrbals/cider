@@ -1,17 +1,16 @@
 import * as THREE from './vendor/three.module.js';
 
-// The connected background uses Figma frame 1261:1706 (1440 × 540 per era).
-// Crops are percentages of that frame; labels remain the original 2:1 UV maps.
+// Consistent archive panels use 1440 x 480 proportions; labels keep the original 2:1 UV maps.
 const HISTORY_ERAS = [
-  { year: '1950', background: 'img/history/history-bg-1950.png', crop: ['-8.85%', '-0.05%', '110.24%', '128.12%'], yearColor: 'rgba(199,26,48,.57)', packaging: 'img/history/1950packaging.png', fallback: 'img/history/1950-horizontal-reference.png', horizontalFallback: true },
-  { year: '1960', background: 'img/history/history-bg-1960.png', crop: ['-10.92%', '-62.4%', '141.74%', '164.71%'], yearColor: 'rgba(0,120,56,.57)', packaging: 'img/history/1960packaging.png', fallback: 'img/display/era-1960.png' },
-  { year: '1970', background: 'img/history/history-bg-1970.png', crop: ['-7.4%', '-29.03%', '136.02%', '158.07%'], yearColor: 'rgba(229,255,177,.57)', packaging: 'img/history/1970packaging.png', fallback: 'img/display/era-1970.png' },
-  { year: '1987', background: 'img/history/history-bg-1987.png', crop: ['-20.51%', '-24.64%', '128.62%', '149.47%'], yearColor: 'rgba(229,255,177,.57)', packaging: 'img/history/1987packaging.png', fallback: 'img/display/era-1987.png' },
-  { year: '1994', background: 'img/history/history-bg-1994.png', crop: ['0.01%', '-24.73%', '120.36%', '139.88%'], yearColor: 'rgba(255,255,255,.57)', packaging: 'img/history/1994packaging.png', fallback: 'img/display/era-1994.png' },
-  { year: '2000', background: 'img/history/history-bg-2000.png', crop: ['0.01%', '-24.73%', '120.36%', '139.88%'], yearColor: 'rgba(20,159,92,.57)', packaging: 'img/history/2000packaging.png', fallback: 'img/display/era-2000.png', uvShift: -0.11 },
-  { year: '2014', background: 'img/history/history-bg-2014.png', crop: ['-0.02%', '-6.8%', '120.36%', '139.88%'], yearColor: 'rgba(255,255,255,.57)', packaging: 'img/history/2014packaging-uv.png', fallback: 'img/display/era-2014.png' },
-  { year: '2024', background: 'img/history/history-bg-2024.png', crop: ['0%', '-7.25%', '107.33%', '124.73%'], yearColor: 'rgba(255,255,255,.57)', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
-];
+  { year: '1950', packaging: 'img/history/1950packaging.png', fallback: 'img/history/1950-horizontal-reference.png', horizontalFallback: true },
+  { year: '1960', packaging: 'img/history/1960packaging.png', fallback: 'img/display/era-1960.png' },
+  { year: '1970', packaging: 'img/history/1970packaging.png', fallback: 'img/display/era-1970.png' },
+  { year: '1987', packaging: 'img/history/1987packaging.png', fallback: 'img/display/era-1987.png' },
+  { year: '1994', packaging: 'img/history/1994packaging.png', fallback: 'img/display/era-1994.png' },
+  { year: '2000', packaging: 'img/history/2000packaging.png', fallback: 'img/display/era-2000.png', uvShift: -0.11 },
+  { year: '2014', packaging: 'img/history/2014packaging-uv.png', fallback: 'img/display/era-2014.png' },
+  { year: '2024', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
+]
 
 const assetURL = path => new URL(`../${path}`, import.meta.url).href;
 
@@ -94,8 +93,12 @@ function makeCan(stage, track, images) {
   const rolling = new THREE.Group();
   carrier.add(rolling);
 
+  // Reduce the cylinder's axial length by about 8% without changing its diameter.
+  const canLength = 2.88;
+  const capCenter = canLength / 2 + 0.0375;
+  const rimCenter = capCenter + 0.045;
   const label = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.68, 0.68, 3.14, 128, 1, true),
+    new THREE.CylinderGeometry(0.68, 0.68, canLength, 128, 1, true),
     new THREE.MeshStandardMaterial({ map: labelTexture, metalness: 0.22, roughness: 0.42 })
   );
   rolling.add(label);
@@ -104,21 +107,21 @@ function makeCan(stage, track, images) {
   const inset = new THREE.MeshStandardMaterial({ color: 0xc2c9ca, emissive: 0x343a3a, metalness: 0.58, roughness: 0.31 });
   for (const sign of [-1, 1]) {
     const end = new THREE.Mesh(new THREE.CylinderGeometry(0.70, 0.70, 0.075, 128), metal);
-    end.position.y = sign * 1.60;
+    end.position.y = sign * capCenter;
     rolling.add(end);
     const innerDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.59, 0.59, 0.012, 96), inset);
-    innerDisc.position.y = sign * 1.645;
+    innerDisc.position.y = sign * rimCenter;
     rolling.add(innerDisc);
     const rim = new THREE.Mesh(new THREE.TorusGeometry(0.63, 0.027, 12, 96), metal);
     rim.rotation.x = Math.PI / 2;
-    rim.position.y = sign * 1.645;
+    rim.position.y = sign * rimCenter;
     rolling.add(rim);
   }
 
   // A restrained ring on the visible end adds depth without altering either label.
   const pullRing = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.018, 8, 40), metal);
   pullRing.rotation.x = Math.PI / 2;
-  pullRing.position.set(0, 1.659, 0.05);
+  pullRing.position.set(0, rimCenter + 0.014, 0.05);
   rolling.add(pullRing);
 
   let frustumHeight = 3.1;
@@ -162,24 +165,15 @@ async function initHistory(section) {
   const track = section.querySelector('.history-3d-track');
   if (!stage || !track) return;
   const fallbackImage = stage.querySelector('.history-3d-fallback img');
-  const eras = HISTORY_ERAS.map(({ year, background, crop, yearColor, packaging }) => {
+  const eras = HISTORY_ERAS.map(({ year, packaging }) => {
     const era = document.createElement('article');
     era.className = 'history-3d-era';
     era.dataset.year = year;
     era.dataset.packaging = packaging;
-    const backdrop = document.createElement('img');
-    backdrop.className = 'history-3d-era-background';
-    backdrop.src = assetURL(background);
-    backdrop.alt = '';
-    backdrop.setAttribute('aria-hidden', 'true');
-    ['left', 'top', 'width', 'height'].forEach((name, index) => {
-      era.style.setProperty(`--background-${name}`, crop[index]);
-    });
-    era.style.setProperty('--year-color', yearColor);
     const yearLabel = document.createElement('span');
     yearLabel.className = 'history-3d-year';
     yearLabel.textContent = year;
-    era.append(backdrop, yearLabel);
+    era.append(yearLabel);
     track.append(era);
     return era;
   });
