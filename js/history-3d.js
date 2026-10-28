@@ -166,13 +166,13 @@ function makeCan(stage, track, images) {
 function createArchiveCounter(stage, years) {
   const labels = [
     '국산 사이다의 시작',
-    '새로운 패키지',
-    '시대를 따라 변화하는 디자인',
-    '이어지는 패키징의 변화',
-    '또 다른 모습의 칠성사이다',
-    '새로운 밀레니엄',
-    '계속되는 청량함',
-    '오늘의 칠성사이다'
+    '사이다 한 병의 행복',
+    '일상을 식힌 청량함',
+    '레몬라임향의 시작',
+    '자연을 담은 디자인',
+    '50주년 라벨 리뉴얼',
+    '맑고 깨끗한 역사',
+    '큰 별로 새롭게'
   ];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const overlay = document.createElement('div');
