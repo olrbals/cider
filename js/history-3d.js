@@ -12,30 +12,6 @@ const HISTORY_ERAS = [
   { year: '2024', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
 ]
 
-// Editorial palette follows the exact same crossfade as the package texture.
-// Keep this separate from the can data to avoid changing mesh/UV/rolling behavior.
-const HISTORY_BACKGROUND_COLORS = [
-  { year: '1950', background: '#EBCBC4', outline: '#996F6D' },
-  { year: '1960', background: '#EED9CD', outline: '#967A70' },
-  { year: '1970', background: '#EBE5CF', outline: '#8A856E' },
-  { year: '1987', background: '#DBEBD7', outline: '#6E957F' },
-  { year: '1994', background: '#D1ECDD', outline: '#5E997E' },
-  { year: '2000', background: '#C8F0E1', outline: '#4E987B' },
-  { year: '2014', background: '#C3F3E3', outline: '#409A79' },
-  { year: '2024', background: '#B9F5E6', outline: '#329D7D' }
-];
-
-const interpolateHex = (from, to, amount, alpha = 1) => {
-  const channel = offset => Math.round(
-    parseInt(from.slice(offset, offset + 2), 16) * (1 - amount) +
-    parseInt(to.slice(offset, offset + 2), 16) * amount
-  );
-  const [r, g, b] = [1, 3, 5].map(channel);
-  return alpha === 1
-    ? `rgb(${r}, ${g}, ${b})`
-    : `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
 const assetURL = path => new URL(`../${path}`, import.meta.url).href;
 
 const clamp = value => Math.min(1, Math.max(0, value));
@@ -178,7 +154,13 @@ function makeCan(stage, track, images) {
     const screenY = documentY - progress * scrollDistance;
     carrier.position.y = frustumHeight * (0.5 - screenY / viewportHeight);
     // Scrolling down always rolls in the same direction: two turns per era.
-    rolling.rotation.y = Math.PI + 0.28 + progress * Math.PI * 4 * (images.length - 1);
+    // A very subtle phase lead makes rolling feel ~8% snappier at the start
+    // of each era, while preserving exactly two turns and the label's
+    // front-facing orientation at every year marker.
+    const rollPoint = progress * (images.length - 1);
+    const rollFraction = rollPoint - Math.floor(rollPoint);
+    const phaseLead = 0.025 * Math.sin(Math.PI * rollFraction);
+    rolling.rotation.y = Math.PI + 0.28 + (rollPoint + phaseLead) * Math.PI * 4;
     renderer.render(scene, camera);
   }
 
@@ -204,6 +186,17 @@ async function initHistory(section) {
     track.append(era);
     return era;
   });
+  // Keep the global carbonation canvas off only while archive content
+  // occupies the viewport center; unaffected elsewhere.
+  const syncArchiveFocus = () => {
+    const rect = section.getBoundingClientRect();
+    const center = window.innerHeight * 0.5;
+    document.body.classList.toggle('is-history-archive-focused',
+      rect.top <= center && rect.bottom >= center);
+  };
+  window.addEventListener('scroll', syncArchiveFocus, { passive: true });
+  window.addEventListener('resize', syncArchiveFocus, { passive: true });
+  syncArchiveFocus();
   const years = eras.map(era => era.dataset.year);
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
   let can = null;
@@ -225,18 +218,14 @@ async function initHistory(section) {
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
     const blend = smoothstep(0.38, 0.62, local);
-    // Share the texture's existing smoothstep window; no independent animation.
-    // Values are a pure function of scroll progress, including reverse scrolling.
-    const currentBackdrop = HISTORY_BACKGROUND_COLORS[pair];
-    const nextBackdrop = HISTORY_BACKGROUND_COLORS[pair + 1];
-    const background = interpolateHex(currentBackdrop.background, nextBackdrop.background, blend);
-    const outline = interpolateHex(currentBackdrop.outline, nextBackdrop.outline, blend, 0.42);
-    if (section.style.getPropertyValue('--history-era-bg') !== background) {
-      section.style.setProperty('--history-era-bg', background);
-    }
-    if (section.style.getPropertyValue('--history-era-outline') !== outline) {
-      section.style.setProperty('--history-era-outline', outline);
-    }
+    // Scroll-scrubbed year entry: each incoming year rises 46px and fades
+    // into the Figma bottom-right position. Reverse scroll restores it.
+    eras.forEach((era, index) => {
+      const appear = index === 0 ? 1 : smoothstep(index - 0.68, index - 0.05, point);
+      const year = era.querySelector('.history-3d-year');
+      year.style.setProperty('--history-year-rise', ((1 - appear) * 46).toFixed(1) + 'px');
+      year.style.setProperty('--history-year-opacity', appear.toFixed(3));
+    });
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = blend < 0.5 ? pair : pair + 1;
     section.dataset.activeYear = years[activeIndex];
