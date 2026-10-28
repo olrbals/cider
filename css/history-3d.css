@@ -1,4 +1,5 @@
 /* Brand archive: shared 1440 x 480 art direction, responsive below desktop. */
+#history.history{background:#f7faf7}
 .history-3d{position:relative;isolation:isolate;background:#f7faf7}
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
 .history-3d-track{position:relative;z-index:0}
