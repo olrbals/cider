@@ -1,9 +1,9 @@
-/* History minimal test: identical solid green + outlined year for all eras.
+/* Editorial history palette: dusty rose develops into fresh mint.
    Keep the existing 1440 x 480 panel proportion and 0.7x rolling can. */
 /* The shared background is owned by the history root, not by each
    individual panel; this prevents hard seams during scroll interpolation. */
-#history.history{background:#F0EBE1}
-#history .history-3d{background:var(--history-era-bg,#F0EBE1)}
+#history.history{background:#EBCBC4}
+#history .history-3d{background:var(--history-era-bg,#EBCBC4)}
 #history .history-3d-track,
 #history .history-3d-era{background:transparent}
 .history-3d{position:relative;isolation:isolate}
