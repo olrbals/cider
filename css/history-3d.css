@@ -2,24 +2,34 @@
 #history.history{background:#f7faf7}
 .history-3d{position:relative;isolation:isolate;background:#f7faf7}
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
+/* One fixed Chilsung star for the entire history experience, not one per panel. */
+.history-3d-stage::before{content:"";position:absolute;z-index:0;top:clamp(55px,13svh,145px);right:7.5%;width:clamp(58px,8vw,115px);aspect-ratio:1;background-color:var(--archive-star-color,#188956);-webkit-mask:url("../img/figma/star-100.svg") center/contain no-repeat;mask:url("../img/figma/star-100.svg") center/contain no-repeat;opacity:.56;transform:rotate(-13deg);transition:background-color .55s ease;pointer-events:none}
+.history-3d[data-active-year="1950"]{--archive-star-color:#b5756a}
+.history-3d[data-active-year="1960"]{--archive-star-color:#79a68c}
+.history-3d[data-active-year="1970"]{--archive-star-color:#9da85f}
+.history-3d[data-active-year="1987"]{--archive-star-color:#88ad69}
+.history-3d[data-active-year="1994"]{--archive-star-color:#6da98f}
+.history-3d[data-active-year="2000"]{--archive-star-color:#42ad79}
+.history-3d[data-active-year="2014"]{--archive-star-color:#49b977}
+.history-3d[data-active-year="2024"]{--archive-star-color:#239967}
 .history-3d-track{position:relative;z-index:0}
-.history-3d-era{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate;background:#f7faf7}
-.history-3d-era::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 29% 76% at 50% 52%,var(--archive-glow,rgba(155,207,176,.35)) 0%,transparent 84%);pointer-events:none}
+.history-3d-era{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate;background:linear-gradient(108deg,transparent 27%,var(--archive-wash,transparent) 100%),#f7faf7}
+.history-3d-era::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 38% 93% at 49% 52%,var(--archive-glow,rgba(155,207,176,.35)) 0%,transparent 81%);pointer-events:none}
 .history-3d-era::after{content:"";position:absolute;left:4.167%;right:4.167%;bottom:0;height:1px;background:rgba(15,112,67,.08);pointer-events:none}
 .history-3d-year{position:absolute;z-index:1;top:50%;left:50%;transform:translate(-50%,-50%);font:700 24vw/1 "Archivo Black",Arial,sans-serif;letter-spacing:-.07em;color:var(--archive-year,#b6d7c2);white-space:nowrap;user-select:none;pointer-events:none}
-.history-3d-era[data-year="1950"]{--archive-year:#d0e1d5;--archive-glow:rgba(211,205,199,.30)}
-.history-3d-era[data-year="1960"]{--archive-year:#ccdfd2;--archive-glow:rgba(192,210,195,.28)}
-.history-3d-era[data-year="1970"]{--archive-year:#add2bb;--archive-glow:rgba(141,198,160,.48)}
-.history-3d-era[data-year="1987"]{--archive-year:#a7ceb6;--archive-glow:rgba(129,195,150,.48)}
-.history-3d-era[data-year="1994"]{--archive-year:#b4d6c0;--archive-glow:rgba(157,203,172,.43)}
-.history-3d-era[data-year="2000"]{--archive-year:#a5d9bf;--archive-glow:rgba(132,216,173,.42)}
-.history-3d-era[data-year="2014"]{--archive-year:#a1dbbd;--archive-glow:rgba(120,220,165,.42)}
-.history-3d-era[data-year="2024"]{--archive-year:#a5d9c1;--archive-glow:rgba(126,216,173,.44)}
-.history-3d-canvas{position:absolute;inset:0;pointer-events:none}
+.history-3d-era[data-year="1950"]{--archive-year:#d9bcb7;--archive-glow:rgba(223,161,147,.33);--archive-wash:rgba(229,177,161,.13)}
+.history-3d-era[data-year="1960"]{--archive-year:#bfd5c4;--archive-glow:rgba(164,203,174,.35);--archive-wash:rgba(151,198,171,.12)}
+.history-3d-era[data-year="1970"]{--archive-year:#cbd5a8;--archive-glow:rgba(202,215,151,.42);--archive-wash:rgba(191,211,150,.14)}
+.history-3d-era[data-year="1987"]{--archive-year:#bbd6a4;--archive-glow:rgba(179,210,133,.40);--archive-wash:rgba(165,206,138,.14)}
+.history-3d-era[data-year="1994"]{--archive-year:#afdaca;--archive-glow:rgba(146,211,185,.41);--archive-wash:rgba(147,210,192,.13)}
+.history-3d-era[data-year="2000"]{--archive-year:#9ed8b9;--archive-glow:rgba(110,218,156,.42);--archive-wash:rgba(114,218,170,.15)}
+.history-3d-era[data-year="2014"]{--archive-year:#a5d9bd;--archive-glow:rgba(126,213,160,.40);--archive-wash:rgba(134,217,173,.14)}
+.history-3d-era[data-year="2024"]{--archive-year:#a5dfc5;--archive-glow:rgba(117,215,170,.43);--archive-wash:rgba(114,213,179,.15)}
+.history-3d-canvas{position:absolute;z-index:1;inset:0;pointer-events:none}
 .history-3d-canvas canvas{display:block;width:100%;height:100%}
-.history-3d-fallback{display:none;position:absolute;inset:0;align-items:center;justify-content:center;pointer-events:none}
-.history-3d-fallback img{width:auto;height:min(70vw,650px);max-height:78vh;transform:rotate(-90deg);filter:drop-shadow(22px 25px 15px rgba(47,26,20,.25))}
-.history-3d-fallback img.is-horizontal{width:min(70vw,820px);height:auto;transform:none}
+.history-3d-fallback{display:none;position:absolute;z-index:1;inset:0;align-items:center;justify-content:center;pointer-events:none}
+.history-3d-fallback img{width:auto;height:min(70vw,650px);max-height:78vh;transform:rotate(-90deg) scale(.7);filter:drop-shadow(22px 25px 15px rgba(47,26,20,.25))}
+.history-3d-fallback img.is-horizontal{width:min(70vw,820px);height:auto;transform:scale(.7)}
 .history-3d[data-fallback="true"] .history-3d-fallback{display:flex}
 .history-prototype-page{margin:0;min-width:0;overflow-x:hidden;font-family:Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 .history-prototype-page .history-3d-stage{min-height:0}
