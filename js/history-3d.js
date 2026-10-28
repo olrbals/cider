@@ -276,6 +276,14 @@ function createArchiveCounter(stage, years) {
     const direction = toIndex >= fromIndex ? 1 : -1;
     digits.forEach((item, index) => {
       item.animation?.cancel();
+      item.animation = null;
+      // Unchanged places stay perfectly still (e.g. 1950 → 1960 spins only 5 → 6).
+      // Also clear any reel left mid-animation by a rapid reverse scroll.
+      if (from[index] === to[index]) {
+        item.reel.replaceChildren(makeGlyph(to[index]));
+        item.reel.style.filter = '';
+        return;
+      }
       const startDigit = Number(from[index]);
       const endDigit = Number(to[index]);
       const remainder = direction > 0
