@@ -1,9 +1,15 @@
 /* Pinned history stage: paired left copy/year and right rolling 3D can.
    Layout follows the Figma archive's 1440px frame with 200px side gutters. */
 #history.history,#history .history-3d,
-#history .history-3d-track,#history .history-3d-era{background:#f7faf8}
+#history .history-3d-track,#history .history-3d-era{
+  background-color:var(--history-surface,#f7faf8)
+}
 .history-3d{position:relative;isolation:isolate}
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
+.history-3d-stage::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 34% 37% at 71% 50%,var(--history-halo,rgba(185,222,190,.15)),transparent 82%);
+}
 .history-3d-track{position:relative;z-index:0}
 /* Keep the horizontal archive layout, with ~30% more scroll room per era. */
 .history-3d-era{position:relative;width:100%;aspect-ratio:30/13;overflow:hidden;isolation:isolate}
@@ -49,6 +55,36 @@
   position:absolute;inset:0;display:block;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;
 }
+/* Minimal era indicator, anchored to the same 200px content gutters.
+   Its markers respond to scroll without intercepting mouse or touch events. */
+.history-3d-timeline{
+  position:absolute;z-index:3;left:clamp(24px,13.889vw,200px);
+  right:clamp(24px,13.889vw,200px);bottom:clamp(28px,5svh,52px);
+  pointer-events:none;font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;
+}
+.history-3d-timeline-rail{
+  position:absolute;left:0;right:0;top:4px;height:1px;
+  background:rgba(20,159,92,.2);
+}
+.history-3d-timeline-fill{
+  height:100%;width:100%;transform:scaleX(0);transform-origin:0 50%;
+  background:#149f5c;
+}
+.history-3d-timeline-years{position:relative;display:flex;justify-content:space-between;gap:8px}
+.history-3d-timeline-item{
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  min-width:36px;color:rgba(20,131,80,.46);
+  font-size:11px;font-weight:600;line-height:1.2;letter-spacing:.2px;
+}
+.history-3d-timeline-dot{
+  display:block;width:9px;height:9px;box-sizing:border-box;border-radius:50%;
+  border:1px solid #95cbb0;background:var(--history-surface,#f7faf8);
+}
+.history-3d-timeline-item.is-past .history-3d-timeline-dot{background:#8fc9a9;border-color:#8fc9a9}
+.history-3d-timeline-item.is-active{color:#149f5c;font-weight:800}
+.history-3d-timeline-item.is-active .history-3d-timeline-dot{
+  background:#149f5c;border-color:#149f5c;box-shadow:0 0 0 3px rgba(20,159,92,.1)
+}
 /* Site-wide ambient carbonation and liquid pointer effects remain enabled
    in history, just as in the other sections. */
 .history-3d-canvas{position:absolute;z-index:1;inset:0;pointer-events:none}
@@ -71,6 +107,12 @@
   }
   .history-3d-info{width:100%}
   .history-3d-caption{width:100%}
+  .history-3d-timeline{left:24px;right:24px;bottom:24px}
+  .history-3d-timeline-years{gap:3px}
+  .history-3d-timeline-item{min-width:0;flex:1;font-size:0}
+  .history-3d-timeline-item.is-active .history-3d-timeline-label{font-size:11px}
+  .history-3d-timeline-dot{width:8px;height:8px}
+  .history-3d-timeline-rail{top:3.5px}
   .history-3d-odometer{
     font-size:clamp(46px,calc(11vw + 4px),68px);letter-spacing:-1px;
   }
