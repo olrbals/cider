@@ -8,7 +8,7 @@
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
 .history-3d-stage::before{
   content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(ellipse 34% 37% at 71% 50%,var(--history-halo,rgba(185,222,190,.15)),transparent 82%);
+  background:radial-gradient(ellipse 27% 43% at 64% 50%,var(--history-halo,rgba(185,222,190,.15)),transparent 82%);
 }
 .history-3d-track{position:relative;z-index:0}
 /* Keep the horizontal archive layout, with ~30% more scroll room per era. */
@@ -90,8 +90,8 @@
 .history-3d-canvas{position:absolute;z-index:1;inset:0;pointer-events:none}
 .history-3d-canvas canvas{display:block;width:100%;height:100%}
 .history-3d-fallback{display:none;position:absolute;z-index:1;inset:0;align-items:center;justify-content:center;pointer-events:none}
-.history-3d-fallback img{width:auto;height:min(70vw,650px);max-height:78vh;transform:rotate(-90deg) scale(.588);filter:drop-shadow(22px 25px 15px rgba(47,26,20,.25))}
-.history-3d-fallback img.is-horizontal{width:min(70vw,820px);height:auto;transform:scale(.588)}
+.history-3d-fallback img{width:auto;height:min(70vw,650px);max-height:78vh;transform:scale(.588);filter:drop-shadow(22px 25px 15px rgba(47,26,20,.25))}
+.history-3d-fallback img.is-horizontal{width:min(70vw,820px);height:auto;transform:rotate(90deg) scale(.588)}
 @media(min-width:761px){
   /* Match the fallback image to the right-hand 3D can column. */
   .history-3d-fallback{padding-left:min(33.33vw,480px)}
