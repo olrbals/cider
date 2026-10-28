@@ -87,11 +87,12 @@ function makeCan(stage, track, images) {
   scene.add(edgeLight);
 
   const carrier = new THREE.Group();
-  // Enlarge the whole stationary can by 1.2x from 0.70 to 0.84.
-  carrier.scale.setScalar(0.84);
+  // Scale the preview can to 84% of the previous 0.84 model scale.
+  // Keep its 3D geometry, texture, and scroll rotation unchanged.
+  carrier.scale.setScalar(0.7056);
   carrier.rotation.z = -Math.PI / 2; // Blender's horizontal X-axis can.
   scene.add(carrier);
-  carrier.position.set(0, 0, 0); // Fixed in the center of the sticky viewport.
+  carrier.position.set(0, 0, 0); // Responsive right-column placement is set in resize().
   const rolling = new THREE.Group();
   carrier.add(rolling);
 
@@ -138,6 +139,18 @@ function makeCan(stage, track, images) {
     camera.top = frustumHeight / 2;
     camera.bottom = -frustumHeight / 2;
     camera.updateProjectionMatrix();
+    // Figma-inspired two-column history: both elements stay within the
+    // desktop 160px side gutters at a 1440px viewport.
+    if (viewportWidth <= 760) {
+      // Stack content on compact screens; leave the year above the can.
+      carrier.position.set(0, -frustumHeight * 0.13, 0);
+    } else {
+      const gutter = Math.min(160, viewportWidth * (160 / 1440));
+      const contentWidth = viewportWidth - gutter * 2;
+      const canCenterPx = gutter + contentWidth * 0.715;
+      const worldPerPixel = (camera.right - camera.left) / viewportWidth;
+      carrier.position.set((canCenterPx - viewportWidth / 2) * worldPerPixel, 0, 0);
+    }
     renderer.setSize(viewportWidth, viewportHeight, false);
   }
 
