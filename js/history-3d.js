@@ -88,8 +88,8 @@ function makeCan(stage, track, images) {
   scene.add(edgeLight);
 
   const carrier = new THREE.Group();
-  // Scale the entire can (body, rims and tab) to 70% of the previous preview.
-  carrier.scale.setScalar(0.7);
+  // Enlarge the whole stationary can by 1.2x from 0.70 to 0.84.
+  carrier.scale.setScalar(0.84);
   carrier.rotation.z = -Math.PI / 2; // Blender's horizontal X-axis can.
   scene.add(carrier);
   carrier.position.set(0, 0, 0); // Fixed in the center of the sticky viewport.
