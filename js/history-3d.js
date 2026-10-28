@@ -172,7 +172,7 @@ function makeCan(stage, track, images) {
 // only a digit that changes between adjacent years gets a vertical reel.
 function createArchiveCounter(stage, years) {
   const labels = [
-    '칠성사이다의 시작',
+    '국산 사이다의 시작',
     '새로운 패키지',
     '시대를 따라 변화하는 디자인',
     '이어지는 패키징의 변화',
@@ -186,9 +186,6 @@ function createArchiveCounter(stage, years) {
   overlay.className = 'history-3d-overlay';
   const caption = document.createElement('div');
   caption.className = 'history-3d-caption';
-  const eyebrow = document.createElement('span');
-  eyebrow.className = 'history-3d-caption-eyebrow';
-  eyebrow.textContent = 'CHILSUNG CIDER  /  BRAND HISTORY';
   const copyWindow = document.createElement('div');
   copyWindow.className = 'history-3d-caption-window';
   const copyCurrent = document.createElement('span');
@@ -196,7 +193,7 @@ function createArchiveCounter(stage, years) {
   copyCurrent.className = 'history-3d-caption-copy';
   copyNext.className = 'history-3d-caption-copy';
   copyWindow.append(copyCurrent, copyNext);
-  caption.append(eyebrow, copyWindow);
+  caption.append(copyWindow);
 
   const yearWindow = document.createElement('div');
   yearWindow.className = 'history-3d-odometer';
@@ -318,9 +315,11 @@ async function initHistory(section) {
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
     const blend = smoothstep(0.38, 0.62, local);
-    // The can and all four digit columns use the SAME reversible blend.
-    // Only columns whose character changes are vertically scrolled.
-    renderArchiveCounter(pair, blend);
+    // The package still uses its original 0.38–0.62 crossfade.
+    // Only the odometer/caption switch in a narrower 0.42–0.58 range:
+    // 33% less scroll distance, same midpoint, reversible in both directions.
+    const digitBlend = smoothstep(0.42, 0.58, local);
+    renderArchiveCounter(pair, digitBlend);
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = blend < 0.5 ? pair : pair + 1;
     section.dataset.activeYear = years[activeIndex];
