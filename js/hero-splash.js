@@ -16,7 +16,108 @@
   const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
   const phase = (value, start, end) => smooth((value - start) / (end - start));
   const number = value => Number(value.toFixed(2));
-  // WebGL keeps the existing late curtain; the opening and foam are DOM-bound to the can.
+  // WebGL keeps the existing late curtain. A separate, scroll-sampled canvas
+  // confines the brief pressure release to the measured can opening.
+  function createFizzSurface() {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'hs-fizz-surface';
+    canvas.setAttribute('aria-hidden', 'true');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    stage.append(canvas);
+    const seed = i => {
+      const v = Math.sin(i * 127.13 + 9.17) * 43758.5453;
+      return v - Math.floor(v);
+    };
+    const particles = Array.from({ length: 42 }, (_, i) => ({
+      start: .178 + seed(i + 1) * .038,
+      duration: .075 + seed(i + 11) * .055,
+      side: (seed(i + 23) - .5) * 2,
+      lift: 58 + seed(i + 41) * 68,
+      spread: 12 + seed(i + 59) * 38,
+      size: .45 + seed(i + 71) * 1.15,
+      tilt: seed(i + 83) * Math.PI
+    }));
+    function draw(p, x, y, openingWidth) {
+      const scale = Math.min(devicePixelRatio || 1, mobile.matches ? 1 : 1.5);
+      const width = stage.clientWidth, height = stage.clientHeight;
+      const w = Math.max(1, Math.round(width * scale));
+      const h = Math.max(1, Math.round(height * scale));
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w; canvas.height = h;
+      }
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      if (motion.matches || p < .17 || p > .37) return;
+      const pressure = phase(p, .17, .19) * (1 - phase(p, .235, .30));
+      const collar = phase(p, .17, .195) * (1 - phase(p, .28, .37));
+      const aperture = Math.max(18, Math.min(48, openingWidth * .46));
+      const unit = mobile.matches ? .78 : 1;
+
+      // A thin wet meniscus and subpixel foam cells, never a stack of puffs.
+      ctx.beginPath();
+      ctx.moveTo(x - aperture * .5, y + 1);
+      for (let i = 0; i <= 28; i++) {
+        ctx.lineTo(x - aperture * .5 + aperture * i / 28,
+          y - (1.4 + seed(i + 101) * 4.2) * collar);
+      }
+      ctx.lineTo(x + aperture * .5, y + 1);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(245,255,251,${collar * .32})`;
+      ctx.fill();
+      ctx.lineWidth = .65;
+      ctx.strokeStyle = `rgba(255,255,255,${collar * .72})`;
+      ctx.stroke();
+      for (let i = 0; i < 38; i++) {
+        const cx = x + (seed(i + 131) - .5) * aperture;
+        const cy = y - seed(i + 173) * 5.5 * collar;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, .35 + seed(i + 197) * .75, .35, seed(i + 211), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${collar * (.2 + seed(i + 227) * .48)})`;
+        ctx.fill();
+      }
+
+      // Short asymmetric liquid slivers show the pressure at its source.
+      for (let i = 0; i < (mobile.matches ? 4 : 7); i++) {
+        const root = x + (seed(i + 251) - .5) * aperture * .65;
+        const dx = (seed(i + 263) - .5) * 25 * unit * pressure;
+        const lift = (13 + seed(i + 277) * 27) * unit * pressure;
+        ctx.beginPath();
+        ctx.moveTo(root - .7, y);
+        ctx.quadraticCurveTo(root + dx * .25 - 1.2, y - lift * .65, root + dx, y - lift);
+        ctx.quadraticCurveTo(root + dx * .35 + .8, y - lift * .45, root + .7, y);
+        ctx.fillStyle = `rgba(250,255,253,${pressure * .6})`;
+        ctx.fill();
+      }
+
+      const count = mobile.matches ? 26 : particles.length;
+      for (let i = 0; i < count; i++) {
+        const bead = particles[i];
+        const t = (p - bead.start) / bead.duration;
+        if (t < 0 || t > 1) continue;
+        const fade = phase(t, 0, .12) * (1 - phase(t, .48, 1));
+        const px = x + bead.side * (aperture * .16 + bead.spread * t) * unit;
+        const py = y + (-bead.lift * t + 58 * t * t) * unit;
+        const angle = Math.atan2(-bead.lift + 116 * t, bead.side * bead.spread);
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(angle + bead.tilt * .12);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bead.size * (1.5 + (1 - t) * 1.3), bead.size * .48, 0, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(241,253,248,${fade * .62})`;
+        ctx.fill();
+        ctx.lineWidth = .45;
+        ctx.strokeStyle = `rgba(38,101,76,${fade * .24})`;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-bead.size, -.3); ctx.lineTo(bead.size * .7, -.3);
+        ctx.strokeStyle = `rgba(255,255,255,${fade * .9})`;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+    return { draw, clear: () => ctx.clearRect(0, 0, canvas.width, canvas.height) };
+  }
   function createLiquidSurface() {
     const canvas = document.createElement('canvas');
     canvas.className = 'hs-liquid-webgl';
@@ -139,24 +240,7 @@
   const aperture=document.createElement('span');
   aperture.className='hs-can-aperture';
   canSlot.prepend(aperture);
-  const foam=document.createElement('span');
-  foam.className='hs-foam-burst';
-  foam.setAttribute('aria-hidden','true');
-  const foamBeads=[
-    [35,8,22],[48,17,25],[57,7,20],[26,24,13],[69,22,15],
-    [42,39,17],[58,43,13],[31,52,11],[73,47,9],[51,61,12],
-    [17,38,7],[82,34,8],[37,70,7],[64,73,6],[52,87,5],
-    [22,65,5],[77,63,6],[45,29,9]
-  ];
-  for (const [left,bottom,size] of foamBeads) {
-    const puff=document.createElement('i');
-    puff.style.left=`${left}%`;
-    puff.style.bottom=`${bottom}px`;
-    puff.style.width=`${size}px`;
-    puff.style.height=`${size*.85}px`;
-    foam.append(puff);
-  }
-  canSlot.append(foam);
+  const fizzSurface = createFizzSurface();
   const sprayFilm=document.createElement('div');
   sprayFilm.className='hs-spray-film';
   sprayFilm.setAttribute('aria-hidden','true');
@@ -186,8 +270,6 @@
     hero.style.setProperty('--hs-tab', phase(p, .075, .18).toFixed(4));
     hero.style.setProperty('--hs-can-scale', (1 + .14 * focus - .1 * settle).toFixed(4));
     hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * (.17 * phase(p, .015, .14) + .115 * topView - .05 * settle))}px`);
-    hero.style.setProperty('--hs-foam', (phase(p, .17, .22) * (1 - phase(p, .31, .41))).toFixed(4));
-    hero.style.setProperty('--hs-foam-bloom', phase(p, .18, .30).toFixed(4));
 
     // Read the transformed opening so the liquid stays attached to the can.
     const stageBox = stage.getBoundingClientRect();
@@ -195,11 +277,12 @@
     const mouthX = (opening.left + opening.width * .5 - stageBox.left) / stageBox.width * 1000;
     const mouthY = (opening.top + opening.height * .53 - stageBox.top) / stageBox.height * 1000;
     liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
+    fizzSurface?.draw(p, mouthX / 1000 * stageBox.width, mouthY / 1000 * stageBox.height, opening.width);
 
     // A feathered wet film starts at the opening after the foam pops. It has
     // no visible ring; the retained top curtain takes over as it spreads.
-    const spray=phase(p,.30,.60);
-    const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.31,.69));
+    const spray=phase(p,.255,.60);
+    const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.27,.69));
     const mask=`radial-gradient(circle ${radius}px at ${number(mouthX/10)}% ${number(mouthY/10)}%, #000 15%, rgba(0,0,0,.82) 55%, transparent 100%)`;
     sprayFilm.style.maskImage=mask;
     sprayFilm.style.webkitMaskImage=mask;
@@ -282,12 +365,11 @@
       hero.style.removeProperty('--hs-focus');
       hero.style.removeProperty('--hs-can-scale');
       hero.style.removeProperty('--hs-can-shift');
-      hero.style.removeProperty('--hs-foam');
-      hero.style.removeProperty('--hs-foam-bloom');
       hero.style.removeProperty('--hs-reveal');
       stage.style.removeProperty('background-color');
       refract.style.opacity = '0';
       sprayFilm.style.opacity = '0';
+      fizzSurface?.clear();
     } else if (!window.ScrollTrigger?.getById('hero-splash-only')) {
       initialize();
     }
