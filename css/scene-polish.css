@@ -118,9 +118,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label {
   .korea-scene { min-height: 1400px; }
 }
 @media (max-width: 600px) {
-  .identity-outline-star:nth-child(3),
-  .identity-outline-star:nth-child(7) { display: none; }
-  .identity-outline-star { --star-size: 24px; }
+  .identity-outline-star { max-width: 30px; max-height: 30px; }
   .scene-edge-overlay .scene-edge-label { font-size: 12px; }
   .scene-edge-label--top-left,
   .scene-edge-label--bottom-left { left: 18px; }
