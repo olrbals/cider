@@ -87,9 +87,10 @@ function makeCan(stage, track, images) {
   scene.add(edgeLight);
 
   const carrier = new THREE.Group();
-  // Scale the preview can to 84% of the previous 0.84 model scale.
-  // Keep its 3D geometry, texture, and scroll rotation unchanged.
-  carrier.scale.setScalar(0.7056);
+  // At 1440px and above, the can is 84% of its previous model scale.
+  // Compact desktop sizes adapt slightly further to keep the side gutters clear.
+  const baseCanScale = 0.7056;
+  carrier.scale.setScalar(baseCanScale);
   carrier.rotation.z = -Math.PI / 2; // Blender's horizontal X-axis can.
   scene.add(carrier);
   carrier.position.set(0, 0, 0); // Responsive right-column placement is set in resize().
@@ -141,6 +142,8 @@ function makeCan(stage, track, images) {
     camera.updateProjectionMatrix();
     // Figma-inspired two-column history: both elements stay within the
     // desktop 160px side gutters at a 1440px viewport.
+    const desktopFit = Math.min(1, Math.max(0.8, viewportWidth / 1440));
+    carrier.scale.setScalar(baseCanScale * (viewportWidth <= 760 ? 1 : desktopFit));
     if (viewportWidth <= 760) {
       // Stack content on compact screens; leave the year above the can.
       carrier.position.set(0, -frustumHeight * 0.13, 0);
