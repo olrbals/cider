@@ -6,16 +6,46 @@
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
 .history-3d-track{position:relative;z-index:0}
 .history-3d-era{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate}
-.history-3d-year{
-  position:absolute;z-index:1;
-  right:clamp(24px,4.167vw,60px);bottom:clamp(24px,4.167vw,60px);
-  top:auto;left:auto;
+/* Both labels stay at fixed screen coordinates while history scrolls. */
+.history-3d-overlay{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  color:#149f5c;user-select:none;
+}
+.history-3d-odometer{
+  position:absolute;right:clamp(24px,4.167vw,60px);
+  bottom:clamp(24px,4.167vw,60px);
+  display:flex;align-items:flex-end;overflow:hidden;
   font:400 clamp(56px,6.944vw,100px)/1.3 "Archivo Black",Arial,sans-serif;
-  letter-spacing:-2px;text-align:right;white-space:nowrap;
-  color:#149f5c;-webkit-text-fill-color:#149f5c;-webkit-text-stroke:0;
-  opacity:var(--history-year-opacity,1);
-  transform:translate3d(0,var(--history-year-rise,0px),0);
-  will-change:transform,opacity;pointer-events:none;user-select:none;
+  font-variant-numeric:tabular-nums;letter-spacing:-2px;
+  color:#149f5c;white-space:nowrap;
+}
+.history-3d-digit{
+  position:relative;display:block;flex:0 0 1ch;
+  height:1.3em;overflow:hidden;
+}
+.history-3d-digit-reel{display:flex;flex-direction:column;align-items:stretch}
+.history-3d-digit-glyph{
+  display:block;flex:0 0 1.3em;height:1.3em;line-height:1.3;
+  text-align:center;
+}
+.history-3d-caption{
+  position:absolute;left:clamp(24px,4.167vw,60px);
+  bottom:clamp(29px,5.4vw,78px);
+  width:min(40%,430px);
+  font-family:"Pretendard",Arial,sans-serif;
+}
+.history-3d-caption-eyebrow{
+  display:block;margin-bottom:9px;
+  font:500 clamp(9px,.82vw,12px)/1.5 "Archivo",Arial,sans-serif;
+  letter-spacing:.13em;color:#438568;
+}
+.history-3d-caption-window{
+  position:relative;height:1.55em;overflow:hidden;
+  font:600 clamp(13px,1.25vw,18px)/1.55 "Pretendard",Arial,sans-serif;
+  letter-spacing:-.02em;
+}
+.history-3d-caption-copy{
+  position:absolute;inset:0;display:block;white-space:nowrap;
 }
 /* Suppress the global ambient bubble canvas only while history is centered
    in the viewport; it remains unchanged on every other section. */
@@ -30,13 +60,17 @@ body.is-history-archive-focused .site-ambient-carbonation.is-active{opacity:0;vi
 .history-prototype-page .history-3d-stage{min-height:0}
 @media(max-width:640px){
   .history-3d-era{min-height:260px}
-  .history-3d-year{
+  .history-3d-odometer{
     right:24px;bottom:28px;
     font-size:clamp(48px,14vw,76px);letter-spacing:-1px;
   }
+  .history-3d-caption{
+    left:24px;bottom:116px;width:calc(100% - 48px);
+  }
+  .history-3d-caption-eyebrow{font-size:9px}
+  .history-3d-caption-window{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){
-  .history-3d-year{
-    transform:none!important;opacity:1!important;
-  }
+  .history-3d-digit-reel{transition:none!important;transform:none!important}
+  .history-3d-caption-copy{transition:none!important}
 }
