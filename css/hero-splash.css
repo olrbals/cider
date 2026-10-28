@@ -17,7 +17,7 @@
 #top .hs-droplet-glint { fill: rgba(255,255,255,.85); }
 
 #top .hs-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(1.2px) brightness(1.045) saturate(.94); -webkit-backdrop-filter: blur(1.2px) brightness(1.045) saturate(.94); }
-#top .hs-jet-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(2px) brightness(1.12) saturate(.92); -webkit-backdrop-filter: blur(2px) brightness(1.12) saturate(.92); }
+#top .hs-jet-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(2.5px) brightness(.93) contrast(1.05) saturate(.92); -webkit-backdrop-filter: blur(2.5px) brightness(.93) contrast(1.05) saturate(.92); }
 @media (max-width: 700px) {
   #top.hero, #top .hero-splash-stage { width: 100vw; }
   #top .hero-product-layer { width: min(68vw, 280px); height: min(62svh, 540px); top: 19%; }
