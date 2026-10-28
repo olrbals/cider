@@ -108,9 +108,9 @@ export async function createHeroCan(hero) {
   function update(p,activity=0,vibrationPhase=0){
     progress=p;const w=host.clientWidth,h=Math.round(host.clientHeight*overscan);if(!w||!h)return;
     if(w!==width||h!==height){width=w;height=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
-    // A fixed elevated view keeps the lid legible without making the upright
-    // can appear to tip towards the viewer as the scroll advances.
-    const angle=.38,distance=6.6;
+    // A fixed, nearly frontal view keeps the can upright; a slight elevation
+    // leaves the lid and raised ring visible without a forward-leaning impression.
+    const angle=.12,distance=6.6;
     camera.position.set(0,Math.sin(angle)*distance,Math.cos(angle)*distance);camera.lookAt(0,0,0);
     const rect=renderer.domElement.getBoundingClientRect();
     const pressure=phase(p,.025,.34)*(1-phase(p,.37,.39));
