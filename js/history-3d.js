@@ -175,7 +175,40 @@ async function initHistory(section) {
     const yearLabel = document.createElement('span');
     yearLabel.className = 'history-3d-year';
     yearLabel.textContent = year;
-    era.append(yearLabel);
+    if (year === '1950') {
+      // Pilot art direction: a single orbit, an archival caption and one
+      // eight-point Chilsung star (the existing pinned star is hidden here).
+      const orbit = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      orbit.classList.add('history-3d-1950-orbit');
+      orbit.setAttribute('viewBox', '0 0 1440 480');
+      orbit.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+      orbit.setAttribute('aria-hidden', 'true');
+      const orbitPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      orbitPath.setAttribute('d', 'M -80 360 C 160 402 322 258 552 270 S 910 377 1158 228 S 1430 112 1518 150');
+      orbitPath.setAttribute('fill', 'none');
+      orbitPath.setAttribute('stroke', '#4b8667');
+      orbitPath.setAttribute('stroke-width', '1.6');
+      orbitPath.setAttribute('opacity', '.43');
+      orbit.append(orbitPath);
+      const star = document.createElement('span');
+      star.className = 'history-3d-1950-star';
+      star.setAttribute('aria-hidden', 'true');
+      const eyebrow = document.createElement('span');
+      eyebrow.className = 'history-3d-1950-eyebrow';
+      eyebrow.textContent = 'CHILSUNG CIDER  /  BRAND ARCHIVE';
+      const title = document.createElement('span');
+      title.className = 'history-3d-1950-title';
+      title.textContent = '칠성사이다의 시작';
+      const index = document.createElement('span');
+      index.className = 'history-3d-1950-index';
+      index.textContent = '01 / 08  ·  SINCE 1950';
+      const footer = document.createElement('span');
+      footer.className = 'history-3d-1950-footer';
+      footer.textContent = 'ROLLING THROUGH TIME';
+      era.append(orbit, star, yearLabel, eyebrow, title, index, footer);
+    } else {
+      era.append(yearLabel);
+    }
     track.append(era);
     return era;
   });
