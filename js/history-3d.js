@@ -15,14 +15,14 @@ const HISTORY_ERAS = [
 // Editorial palette follows the exact same crossfade as the package texture.
 // Keep this separate from the can data to avoid changing mesh/UV/rolling behavior.
 const HISTORY_BACKGROUND_COLORS = [
-  { year: '1950', background: '#F0EBE1', outline: '#776E5B' },
-  { year: '1960', background: '#F4E8D4', outline: '#947E64' },
-  { year: '1970', background: '#ECE3BB', outline: '#888051' },
-  { year: '1987', background: '#C8E6D5', outline: '#43856B' },
-  { year: '1994', background: '#E8F2E9', outline: '#5F9477' },
-  { year: '2000', background: '#D8F5E6', outline: '#318D6A' },
-  { year: '2014', background: '#F3F9F3', outline: '#6A9274' },
-  { year: '2024', background: '#F7F3E8', outline: '#7E9076' }
+  { year: '1950', background: '#EBCBC4', outline: '#996F6D' },
+  { year: '1960', background: '#EED9CD', outline: '#967A70' },
+  { year: '1970', background: '#EBE5CF', outline: '#8A856E' },
+  { year: '1987', background: '#DBEBD7', outline: '#6E957F' },
+  { year: '1994', background: '#D1ECDD', outline: '#5E997E' },
+  { year: '2000', background: '#C8F0E1', outline: '#4E987B' },
+  { year: '2014', background: '#C3F3E3', outline: '#409A79' },
+  { year: '2024', background: '#B9F5E6', outline: '#329D7D' }
 ];
 
 const interpolateHex = (from, to, amount, alpha = 1) => {
