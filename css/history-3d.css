@@ -1,30 +1,20 @@
-/* Brand archive: shared 1440 x 480 art direction, responsive below desktop. */
-#history.history{background:#f7faf7}
-.history-3d{position:relative;isolation:isolate;background:#f7faf7}
+/* History minimal test: identical solid green + outlined year for all eras.
+   Keep the existing 1440 x 480 panel proportion and 0.7x rolling can. */
+#history.history,
+#history .history-3d,
+#history .history-3d-track,
+#history .history-3d-era{background:#149F5C}
+.history-3d{position:relative;isolation:isolate}
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
-/* One fixed Chilsung star for the entire history experience, not one per panel. */
-.history-3d-stage::before{content:"";position:absolute;z-index:0;top:clamp(55px,13svh,145px);right:7.5%;width:clamp(58px,8vw,115px);aspect-ratio:1;background-color:var(--archive-star-color,#188956);-webkit-mask:url("../img/figma/star-100.svg") center/contain no-repeat;mask:url("../img/figma/star-100.svg") center/contain no-repeat;opacity:.56;transform:rotate(-13deg);transition:background-color .55s ease;pointer-events:none}
-.history-3d[data-active-year="1950"]{--archive-star-color:#b5756a}
-.history-3d[data-active-year="1960"]{--archive-star-color:#79a68c}
-.history-3d[data-active-year="1970"]{--archive-star-color:#9da85f}
-.history-3d[data-active-year="1987"]{--archive-star-color:#88ad69}
-.history-3d[data-active-year="1994"]{--archive-star-color:#6da98f}
-.history-3d[data-active-year="2000"]{--archive-star-color:#42ad79}
-.history-3d[data-active-year="2014"]{--archive-star-color:#49b977}
-.history-3d[data-active-year="2024"]{--archive-star-color:#239967}
 .history-3d-track{position:relative;z-index:0}
-.history-3d-era{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate;background:linear-gradient(108deg,transparent 27%,var(--archive-wash,transparent) 100%),#f7faf7}
-.history-3d-era::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 38% 93% at 49% 52%,var(--archive-glow,rgba(155,207,176,.35)) 0%,transparent 81%);pointer-events:none}
-.history-3d-era::after{content:"";position:absolute;left:4.167%;right:4.167%;bottom:0;height:1px;background:rgba(15,112,67,.08);pointer-events:none}
-.history-3d-year{position:absolute;z-index:1;top:50%;left:50%;transform:translate(-50%,-50%);font:700 24vw/1 "Archivo Black",Arial,sans-serif;letter-spacing:-.07em;color:var(--archive-year,#b6d7c2);white-space:nowrap;user-select:none;pointer-events:none}
-.history-3d-era[data-year="1950"]{--archive-year:#d9bcb7;--archive-glow:rgba(223,161,147,.33);--archive-wash:rgba(229,177,161,.13)}
-.history-3d-era[data-year="1960"]{--archive-year:#bfd5c4;--archive-glow:rgba(164,203,174,.35);--archive-wash:rgba(151,198,171,.12)}
-.history-3d-era[data-year="1970"]{--archive-year:#cbd5a8;--archive-glow:rgba(202,215,151,.42);--archive-wash:rgba(191,211,150,.14)}
-.history-3d-era[data-year="1987"]{--archive-year:#bbd6a4;--archive-glow:rgba(179,210,133,.40);--archive-wash:rgba(165,206,138,.14)}
-.history-3d-era[data-year="1994"]{--archive-year:#afdaca;--archive-glow:rgba(146,211,185,.41);--archive-wash:rgba(147,210,192,.13)}
-.history-3d-era[data-year="2000"]{--archive-year:#9ed8b9;--archive-glow:rgba(110,218,156,.42);--archive-wash:rgba(114,218,170,.15)}
-.history-3d-era[data-year="2014"]{--archive-year:#a5d9bd;--archive-glow:rgba(126,213,160,.40);--archive-wash:rgba(134,217,173,.14)}
-.history-3d-era[data-year="2024"]{--archive-year:#a5dfc5;--archive-glow:rgba(117,215,170,.43);--archive-wash:rgba(114,213,179,.15)}
+.history-3d-era{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate}
+.history-3d-year{
+  position:absolute;z-index:1;top:50%;left:50%;transform:translate(-50%,-50%);
+  font:700 24vw/1 "Archivo Black",Arial,sans-serif;letter-spacing:-.07em;
+  color:transparent;-webkit-text-fill-color:transparent;
+  -webkit-text-stroke:2px rgba(255,255,255,.78);
+  white-space:nowrap;user-select:none;pointer-events:none;
+}
 .history-3d-canvas{position:absolute;z-index:1;inset:0;pointer-events:none}
 .history-3d-canvas canvas{display:block;width:100%;height:100%}
 .history-3d-fallback{display:none;position:absolute;z-index:1;inset:0;align-items:center;justify-content:center;pointer-events:none}
@@ -33,67 +23,7 @@
 .history-3d[data-fallback="true"] .history-3d-fallback{display:flex}
 .history-prototype-page{margin:0;min-width:0;overflow-x:hidden;font-family:Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 .history-prototype-page .history-3d-stage{min-height:0}
-@media(max-width:640px){.history-3d-era{min-height:260px}.history-3d-year{font-size:27vw}}
-
-/* 1950 concept pilot — editorial order + one expressive brand-star orbit.
-   Scoped to the first panel; all subsequent eras keep the V3 treatment. */
-.history-3d-era[data-year="1950"]{
-  --archive-year:#bed0c1;
-  background:
-    radial-gradient(ellipse 34% 86% at 50% 57%,rgba(149,194,162,.24),rgba(149,194,162,0) 82%),
-    radial-gradient(ellipse 23% 80% at 96% 34%,rgba(187,115,102,.14),rgba(187,115,102,0) 84%),
-    linear-gradient(110deg,#f9f7f0 0%,#f7f5ed 54%,#f4f0e7 100%);
-}
-.history-3d-era[data-year="1950"]::before{
-  background:linear-gradient(90deg,rgba(15,105,62,.045) 0 1px,transparent 1px) 0 0/25% 100%;
-}
-.history-3d-era[data-year="1950"]::after{background:rgba(32,98,63,.17)}
-.history-3d-era[data-year="1950"] .history-3d-year{
-  left:5.4%;top:47%;transform:translateY(-50%);font-size:clamp(120px,20vw,288px);
-  letter-spacing:-.07em;color:#b7cdbb;opacity:.84;
-}
-.history-3d-1950-orbit{position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;overflow:hidden;pointer-events:none}
-.history-3d-1950-star{
-  position:absolute;z-index:1;top:49%;right:-5.2%;width:clamp(190px,25vw,360px);
-  aspect-ratio:1;transform:translateY(-50%) rotate(-12deg);background-color:#629b76;
-  -webkit-mask:url("../img/figma/outline-star-130.svg") center/contain no-repeat;
-  mask:url("../img/figma/outline-star-130.svg") center/contain no-repeat;
-  opacity:.65;pointer-events:none;
-}
-/* Never double the iconic star when the 1950 panel is active. */
-.history-3d[data-active-year="1950"] .history-3d-stage::before{opacity:0}
-.history-3d-1950-eyebrow,.history-3d-1950-title,
-.history-3d-1950-index,.history-3d-1950-footer{
-  position:absolute;z-index:3;display:block;pointer-events:none;
-}
-.history-3d-1950-eyebrow{
-  top:8.2%;left:5.4%;font:600 clamp(9px,.87vw,13px)/1.25 "Archivo",Arial,sans-serif;
-  letter-spacing:.20em;color:#236b48;
-}
-.history-3d-1950-eyebrow::before{
-  content:"";display:inline-block;width:22px;height:3px;margin-right:13px;
-  vertical-align:middle;background:#bb7267;
-}
-.history-3d-1950-title{
-  left:5.4%;bottom:8.9%;font:600 clamp(13px,1.4vw,20px)/1.4 Pretendard,sans-serif;
-  letter-spacing:-.02em;color:#155d3c;
-}
-.history-3d-1950-index{
-  right:5.4%;top:8.2%;font:500 clamp(9px,.87vw,13px)/1.25 "Archivo",Arial,sans-serif;
-  letter-spacing:.17em;color:#527967;
-}
-.history-3d-1950-footer{
-  right:5.4%;bottom:9.3%;font:500 clamp(9px,.87vw,13px)/1.25 "Archivo",Arial,sans-serif;
-  letter-spacing:.18em;color:#527967;
-}
 @media(max-width:640px){
-  .history-3d-era[data-year="1950"] .history-3d-year{
-    left:5%;top:44%;font-size:26vw;opacity:.78;
-  }
-  .history-3d-1950-star{width:43vw;right:-12%;top:51%}
-  .history-3d-1950-eyebrow{top:10%;left:5%;max-width:70%;font-size:8px;letter-spacing:.09em}
-  .history-3d-1950-eyebrow::before{width:12px;height:2px;margin-right:6px}
-  .history-3d-1950-index{right:5%;top:20%;font-size:8px}
-  .history-3d-1950-title{left:5%;bottom:8%;font-size:12px}
-  .history-3d-1950-footer{right:5%;bottom:8%;font-size:8px;letter-spacing:.05em}
+  .history-3d-era{min-height:260px}
+  .history-3d-year{font-size:27vw;-webkit-text-stroke:1.5px rgba(255,255,255,.78)}
 }
