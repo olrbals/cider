@@ -154,7 +154,7 @@ function makeCan(stage, track, images) {
     const viewportHeight = Math.max(1, bounds.height);
     const aspect = viewportWidth / viewportHeight;
     // An upright can is narrower than the old horizontal model. On phones,
-    // reserve enough vertical room for the headline above and timeline below.
+    // reserve enough vertical room for the headline and upright can.
     frustumHeight = viewportWidth <= 760
       ? Math.max(4.4, 2.3 / aspect)
       : Math.max(3.1, 3.85 / aspect);
@@ -303,45 +303,6 @@ function createArchiveCounter(stage, years) {
   return setYear;
 }
 
-// Eight passive progress markers keep the period legible without competing
-// with the animated typography or interfering with the page's scroll.
-function createArchiveTimeline(stage, years) {
-  const timeline = document.createElement('div');
-  timeline.className = 'history-3d-timeline';
-  timeline.setAttribute('aria-hidden', 'true');
-  const rail = document.createElement('div');
-  rail.className = 'history-3d-timeline-rail';
-  const fill = document.createElement('div');
-  fill.className = 'history-3d-timeline-fill';
-  rail.append(fill);
-  const row = document.createElement('div');
-  row.className = 'history-3d-timeline-years';
-  const markers = years.map(year => {
-    const marker = document.createElement('span');
-    marker.className = 'history-3d-timeline-item';
-    const dot = document.createElement('span');
-    dot.className = 'history-3d-timeline-dot';
-    const label = document.createElement('span');
-    label.className = 'history-3d-timeline-label';
-    label.textContent = year;
-    marker.append(dot, label);
-    row.append(marker);
-    return marker;
-  });
-  timeline.append(rail, row);
-  stage.append(timeline);
-  let previous = -1;
-  return (progress, activeIndex) => {
-    fill.style.transform = `scaleX(${progress.toFixed(4)})`;
-    if (activeIndex === previous) return;
-    markers.forEach((marker, index) => {
-      marker.classList.toggle('is-active', index === activeIndex);
-      marker.classList.toggle('is-past', index < activeIndex);
-    });
-    previous = activeIndex;
-  };
-}
-
 async function initHistory(section) {
   const stage = section.querySelector('.history-3d-stage');
   const track = section.querySelector('.history-3d-track');
@@ -358,7 +319,6 @@ async function initHistory(section) {
   });
   const years = eras.map(era => era.dataset.year);
   const renderArchiveCounter = createArchiveCounter(stage, years);
-  const renderTimeline = createArchiveTimeline(stage, years);
   const historyRoot = section.closest('.history') || section;
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
   let can = null;
@@ -386,7 +346,6 @@ async function initHistory(section) {
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = Math.min(eras.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0));
     section.dataset.activeYear = years[activeIndex];
-    renderTimeline(progress, activeIndex);
 
     // Interpolate the quiet background through the same transition, instead
     // of jumping between independent sections or adding distracting graphics.
