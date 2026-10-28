@@ -10,7 +10,7 @@
   const palette = [
     { id: 'identity', color: '#ffffff', accent: '#b9ebce', edge: '#a3debf' },
     { id: 'korea', color: '#ffdd00', accent: '#fff4a0', edge: '#fff0a7' },
-    { id: 'history', color: '#f7faf7', accent: '#cfe8d7', edge: '#b7ddc7' },
+    { id: 'history', color: '#149F5C', accent: '#64c993', edge: '#c8f1d8' },
     { id: 'products', color: '#f9f4e7', accent: '#ffffff', edge: '#ffffff' },
     { id: 'pop', color: '#ece4d5', accent: '#ffffff', edge: '#fff9eb' },
     { id: 'footer', color: '#0e6b3c', accent: '#48b77e', edge: '#9fe0b8' }
