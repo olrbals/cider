@@ -21,6 +21,157 @@
   const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
   const phase = (value, start, end) => smooth((value - start) / (end - start));
   const number = value => Number(value.toFixed(2));
+  // The SVG remains a fallback. The primary surface is a transparent WebGL
+  // distance field: one connected jet, then an irregular curtain with real
+  // thickness-dependent transmission and narrow specular edges.
+  function createLiquidSurface() {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'hs-liquid-webgl';
+    canvas.setAttribute('aria-hidden', 'true');
+    const gl = canvas.getContext('webgl', {
+      alpha: true, antialias: false, depth: false, stencil: false,
+      premultipliedAlpha: false, powerPreference: 'low-power'
+    });
+    if (!gl) return null;
+    const vertex = `attribute vec2 a_position;
+      void main() { gl_Position = vec4(a_position, 0.0, 1.0); }`;
+    const fragment = `precision highp float;
+      uniform vec2 u_resolution;
+      uniform vec2 u_mouth;
+      uniform float u_progress;
+      float sat(float v) { return clamp(v, 0.0, 1.0); }
+      float phase(float v, float a, float b) {
+        float t = sat((v-a)/(b-a)); return t*t*(3.0-2.0*t);
+      }
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
+      float noise(vec2 p) {
+        vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
+        return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x),
+          mix(hash(i+vec2(0.0,1.0)),hash(i+1.0),f.x),f.y);
+      }
+      float capsule(vec2 p, vec2 a, vec2 b, float ra, float rb) {
+        vec2 ab=b-a; float t=sat(dot(p-a,ab)/max(dot(ab,ab),.00001));
+        return length(p-a-ab*t)-mix(ra,rb,t);
+      }
+      float unite(float a,float b,float k) {
+        float h=sat(.5+.5*(b-a)/k); return mix(b,a,h)-k*h*(1.0-h);
+      }
+      void main() {
+        vec2 uv=gl_FragCoord.xy/u_resolution;
+        uv.y=1.0-uv.y;
+        float p=u_progress;
+        float rise=phase(p,.10,.47), fork=phase(p,.27,.45);
+        float spread=phase(p,.44,.68), flow=phase(p,.56,.96);
+        float mouthY=u_mouth.y;
+        float topY=mix(mouthY,.012,rise);
+        float stemT=sat((mouthY-uv.y)/max(mouthY-topY,.01));
+        float sway=(noise(vec2(stemT*3.8,p*3.2))-.5)*.024*rise;
+        vec2 warped=uv;
+        warped.x-=sway+(noise(uv*vec2(18.0,13.0)+vec2(p*4.0,0.0))-.5)*.008*rise;
+        vec2 root=vec2(u_mouth.x,mouthY+.012);
+        vec2 crown=vec2(u_mouth.x+.008*fork,topY+.026);
+        float jet=capsule(warped,root,crown,.018,.027);
+        float branchLeft=capsule(warped,crown,vec2(crown.x-.055*fork,topY+.009),.024,.010);
+        float branchRight=capsule(warped,crown,vec2(crown.x+.052*fork,topY-.006),.025,.012);
+        jet=unite(jet,branchLeft,.022);
+        jet=unite(jet,branchRight,.022);
+        jet+=(noise(uv*vec2(33.0,17.0)+vec2(p*7.0,2.0))-.5)*.006*rise;
+        float jetVisible=phase(p,.11,.18)*(1.0-phase(p,.65,.81));
+
+        float halfWidth=mix(.025,.64,spread);
+        float lateral=abs(uv.x-u_mouth.x);
+        float irregular=(noise(vec2(uv.x*7.0,p*2.1))-.5)*.18
+          +(noise(vec2(uv.x*19.0,p*1.3+5.0))-.5)*.045;
+        float front=-.035+flow*1.19+irregular*flow;
+        float side=lateral-halfWidth-(noise(vec2(uv.y*6.0,p*2.0))-.5)*.014*spread;
+        float sheet=max(side,uv.y-front);
+        // Local tongues keep the advancing edge rounded and uneven.
+        for (int i=0;i<4;i++) {
+          float fi=float(i);
+          float lane=.08+.84*hash(vec2(fi,9.0));
+          float x=mix(u_mouth.x-halfWidth,u_mouth.x+halfWidth,lane);
+          float reach=front+.018+.07*hash(vec2(fi,3.0))*flow;
+          float tongue=capsule(uv,vec2(x,front-.025),vec2(x+.024*(hash(vec2(fi,7.0))-.5),reach),.012,.008);
+          sheet=unite(sheet,tongue,.014);
+        }
+        float sheetVisible=spread*phase(p,.59,.68);
+        float dj=jet+(1.0-jetVisible)*.12, ds=sheet+(1.0-sheetVisible)*.12;
+        float d=min(dj,ds);
+        float body=1.0-smoothstep(-.005,.003,d);
+        float edge=exp(-abs(d)*145.0)*sat(max(jetVisible,sheetVisible));
+        float inner=body*(.18+.10*noise(uv*vec2(5.0,8.0)+p*2.0));
+        float bright=phase(p,.77,.99);
+        float alpha=inner+edge*.37+body*bright*.47;
+        float glint=exp(-abs(d+.013)*210.0)*body*.15;
+        alpha+=glint;
+        vec3 color=mix(vec3(.75,.94,.85),vec3(1.0),.55+bright*.42);
+        color=mix(color,vec3(.42,.78,.62),edge*.25);
+        color+=vec3(glint*.4);
+        // Only a few detached beads; their motion is fully scroll reversible.
+        float beads=0.0;
+        for (int i=0;i<4;i++) {
+          float fi=float(i);
+          float flight=phase(p,.20+fi*.047,.44+fi*.02);
+          float fade=phase(p,.21+fi*.047,.27+fi*.047)*(1.0-phase(p,.48,.62));
+          vec2 bead=vec2(u_mouth.x+(fi-1.5)*.024*flight,
+            mouthY-flight*(.13+fi*.035));
+          float bd=length(uv-bead)-(.0038+fi*.0005);
+          beads+=fade*(1.0-smoothstep(-.002,.002,bd))*.52;
+        }
+        alpha=sat(alpha+beads);
+        gl_FragColor=vec4(color,alpha);
+      }`;
+    function compile(type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.warn('Hero liquid shader:', gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    }
+    const vs=compile(gl.VERTEX_SHADER,vertex), fs=compile(gl.FRAGMENT_SHADER,fragment);
+    if (!vs || !fs) return null;
+    const program=gl.createProgram();
+    gl.attachShader(program,vs); gl.attachShader(program,fs); gl.linkProgram(program);
+    if (!gl.getProgramParameter(program,gl.LINK_STATUS)) return null;
+    const buffer=gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+    gl.useProgram(program);
+    const position=gl.getAttribLocation(program,'a_position');
+    gl.enableVertexAttribArray(position);
+    gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
+    const resolution=gl.getUniformLocation(program,'u_resolution');
+    const mouth=gl.getUniformLocation(program,'u_mouth');
+    const progress=gl.getUniformLocation(program,'u_progress');
+    stage.append(canvas);
+    stage.classList.add('hs-webgl-ready');
+    canvas.addEventListener('webglcontextlost', event => {
+      event.preventDefault();
+      stage.classList.remove('hs-webgl-ready');
+      canvas.remove();
+    }, { once: true });
+    function draw(p,x,y) {
+      const scale=mobile.matches ? Math.min(devicePixelRatio||1,1) : Math.min(devicePixelRatio||1,1.25);
+      const w=Math.max(1,Math.round(stage.clientWidth*scale));
+      const h=Math.max(1,Math.round(stage.clientHeight*scale));
+      if (canvas.width!==w || canvas.height!==h) {
+        canvas.width=w; canvas.height=h;
+        gl.viewport(0,0,w,h);
+      }
+      gl.clearColor(0,0,0,0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniform2f(resolution,w,h);
+      gl.uniform2f(mouth,x,y);
+      gl.uniform1f(progress,p);
+      gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    }
+    return {draw,canvas};
+  }
+  const liquidSurface=createLiquidSurface();
   const drops = Array.from({ length: 5 }, (_, index) => {
     const group = document.createElementNS(ns, 'g');
     const body = document.createElementNS(ns, 'circle');
@@ -52,13 +203,14 @@
     hero.style.setProperty('--hs-tab', phase(p, .015, .15).toFixed(4));
     const settle = phase(p, .025, .23);
     hero.style.setProperty('--hs-can-scale', (1 - .1 * settle).toFixed(4));
-    hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * .065 * settle)}px`);
+    hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * .12 * settle)}px`);
 
     // Read the transformed opening so the liquid stays attached to the can.
     const stageBox = stage.getBoundingClientRect();
     const opening = canSlot.getBoundingClientRect();
     const mouthX = (opening.left + opening.width * .5 - stageBox.left) / stageBox.width * 1000;
     const mouthY = (opening.top + opening.height * .53 - stageBox.top) / stageBox.height * 1000;
+    liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
 
     const spread = phase(p, .46, .70);
     const rise = phase(p, .10, .47);
@@ -156,7 +308,7 @@
     });
 
     // The clear film brightens the hero into the updated white Seven Stars scene.
-    const brighten = phase(p, .68, 1);
+    const brighten = phase(p, .88, 1);
     const reveal = phase(p, .82, 1);
     const start = [20, 159, 92], end = [255, 255, 255];
     stage.style.backgroundColor = `rgb(${start.map((value, i) => Math.round(value + (end[i] - value) * brighten)).join(',')})`;
