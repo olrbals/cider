@@ -92,6 +92,7 @@ function makeCan(stage, track, images) {
   carrier.scale.setScalar(0.7);
   carrier.rotation.z = -Math.PI / 2; // Blender's horizontal X-axis can.
   scene.add(carrier);
+  carrier.position.set(0, 0, 0); // Fixed in the center of the sticky viewport.
   const rolling = new THREE.Group();
   carrier.add(rolling);
 
@@ -127,16 +128,11 @@ function makeCan(stage, track, images) {
   rolling.add(pullRing);
 
   let frustumHeight = 3.1;
-  let viewportHeight = 1;
-  let panelHeight = 1;
-  let scrollDistance = 1;
   function resize() {
     const bounds = stage.getBoundingClientRect();
     const viewportWidth = Math.max(1, bounds.width);
-    viewportHeight = Math.max(1, bounds.height);
+    const viewportHeight = Math.max(1, bounds.height);
     const aspect = viewportWidth / viewportHeight;
-    panelHeight = Math.max(1, track.firstElementChild?.getBoundingClientRect().height || 1);
-    scrollDistance = Math.max(0, track.getBoundingClientRect().height - viewportHeight);
     frustumHeight = Math.max(3.1, 3.85 / aspect);
     camera.left = -frustumHeight * aspect / 2;
     camera.right = frustumHeight * aspect / 2;
@@ -148,11 +144,8 @@ function makeCan(stage, track, images) {
 
   function render(progress, pair, blend) {
     blendLabels(pair, blend);
-    // In document space the can passes through each connected frame's center.
-    // Its screen position gradually descends while the backgrounds scroll behind it.
-    const documentY = panelHeight * (0.5 + progress * (images.length - 1));
-    const screenY = documentY - progress * scrollDistance;
-    carrier.position.y = frustumHeight * (0.5 - screenY / viewportHeight);
+    // Keep the entire can exactly at the stage's center while its label and
+    // rotation continue responding to the existing scroll progress.
     // Scrolling down always rolls in the same direction: two turns per era.
     // A very subtle phase lead makes rolling feel ~8% snappier at the start
     // of each era, while preserving exactly two turns and the label's
@@ -282,17 +275,6 @@ async function initHistory(section) {
     track.append(era);
     return era;
   });
-  // Keep the global carbonation canvas off only while archive content
-  // occupies the viewport center; unaffected elsewhere.
-  const syncArchiveFocus = () => {
-    const rect = section.getBoundingClientRect();
-    const center = window.innerHeight * 0.5;
-    document.body.classList.toggle('is-history-archive-focused',
-      rect.top <= center && rect.bottom >= center);
-  };
-  window.addEventListener('scroll', syncArchiveFocus, { passive: true });
-  window.addEventListener('resize', syncArchiveFocus, { passive: true });
-  syncArchiveFocus();
   const years = eras.map(era => era.dataset.year);
   const renderArchiveCounter = createArchiveCounter(stage, years);
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
