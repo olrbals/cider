@@ -18,7 +18,6 @@
   const fivePoint = 'M50 6 L61.7 36 H93 L68 55.3 L77.5 86.5 L50 68.2 L22.5 86.5 L32 55.3 L7 36 H38.3 Z';
   const svgStar = (className) =>
     '<svg class="' + className + '" viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
-      '<defs><clipPath id="identity-main-star-clip"><path d="' + fivePoint + '"/></clipPath></defs>' +
       '<path class="identity-main-star-liquid" d="' + fivePoint + '"/>' +
       '<path class="identity-main-star-outline" d="' + fivePoint + '"/>' +
     '</svg>';
@@ -72,6 +71,7 @@
     const rect = identity.getBoundingClientRect();
     const available = Math.max(1, rect.height - height);
     const p = reduce.matches ? 1 : clamp(-rect.top / available);
+    identity.classList.toggle('is-seven-complete', p >= .77 && rect.bottom > 0 && rect.top < height);
     // First a tiny outlined star is born between T and R, then the
     // growing slot pushes them apart rather than overlapping the letters.
     const growth = smooth((p - .075) / .46);
