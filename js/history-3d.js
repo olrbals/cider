@@ -68,7 +68,9 @@ function makeCan(stage, track, images) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-2, 2, 2, -2, 0.1, 40);
-  camera.position.set(0.9, 0, 8.5);
+  // Reduce the side-on camera angle so the horizontal can looks level.
+  // Preserve a slight end-cap reveal for depth without a conspicuous skew.
+  camera.position.set(0.35, 0, 8.5);
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
@@ -142,15 +144,17 @@ function makeCan(stage, track, images) {
     camera.updateProjectionMatrix();
     // Figma-inspired two-column history: both elements stay within the
     // desktop 160px side gutters at a 1440px viewport.
-    const desktopFit = Math.min(1, Math.max(0.8, viewportWidth / 1440));
-    carrier.scale.setScalar(baseCanScale * (viewportWidth <= 760 ? 1 : desktopFit));
+    const desktopFit = Math.min(1, viewportWidth / 1440);
+    const mobileFit = Math.min(1, viewportWidth / 760);
+    carrier.scale.setScalar(baseCanScale * (viewportWidth <= 760 ? mobileFit : desktopFit));
     if (viewportWidth <= 760) {
       // Stack content on compact screens; leave the year above the can.
       carrier.position.set(0, -frustumHeight * 0.13, 0);
     } else {
-      const gutter = Math.min(160, viewportWidth * (160 / 1440));
+      const gutter = Math.min(200, viewportWidth * (200 / 1440));
       const contentWidth = viewportWidth - gutter * 2;
-      const canCenterPx = gutter + contentWidth * 0.715;
+      // Center the can in the right half of the padded content grid.
+      const canCenterPx = gutter + contentWidth * 0.75;
       const worldPerPixel = (camera.right - camera.left) / viewportWidth;
       carrier.position.set((canCenterPx - viewportWidth / 2) * worldPerPixel, 0, 0);
     }
@@ -220,7 +224,11 @@ function createArchiveCounter(stage, years) {
   const screenReaderYear = document.createElement('span');
   screenReaderYear.className = 'visually-hidden';
   screenReaderYear.textContent = years[0];
-  overlay.append(caption, yearWindow, screenReaderYear);
+  // One aligned editorial group: the year is centered under its caption.
+  const infoGroup = document.createElement('div');
+  infoGroup.className = 'history-3d-info';
+  infoGroup.append(caption, yearWindow);
+  overlay.append(infoGroup, screenReaderYear);
   stage.append(overlay);
 
   const makeGlyph = character => {
