@@ -69,28 +69,47 @@
     // shoulder leads the fill; the other side follows with a soft curved wake.
     // Build the liquid face gradually. Otherwise the flat color can blanket
     // the outgoing scene before the next section's actual content arrives.
-    const lift = Math.sin(p * Math.PI) * smooth((p - .10) / .42);
-    const base = 991 - 72 * smooth(p);
+    // Retain the broad screen wipe, but let its shoulder roll forward,
+    // curl back into a generous trough, and swell again across the viewport.
+    // Everything is driven by scroll progress, including the traveling curls.
+    const lift = Math.sin(p * Math.PI) * smooth((p - .08) / .38);
+    const base = 991 - 78 * smooth(p);
+    const travel = smooth((p - .12) / .74);
     const leadLeft = index % 2 === 0;
     const points = [];
     const inset = [];
-    const count = 26;
+    const count = 36;
+    const bell = (distance, width) => Math.exp(-Math.pow(distance / width, 2));
 
     for (let i = 0; i <= count; i++) {
       const u = i / count;
       const front = leadLeft ? 1 - u : u;
       const diagonal = smooth(front);
-      const lip = Math.exp(-Math.pow((front - (.74 + .06 * p)) / .20, 2));
-      const trailingDip = Math.exp(-Math.pow((front - .36) / .19, 2));
-      // Rise spans the full viewport width, not just a narrow central crest.
-      const rise = (0.20 + 0.67 * diagonal + 0.27 * lip - 0.10 * trailingDip);
-      const swell = 480 * lift * rise;
-      const flow = 18 * lift * Math.sin(front * Math.PI * 2.1 + p * 2.4);
-      const y = Math.max(48, Math.min(997, base - swell + flow));
+
+      // Three large connected masses: a trailing swell, tucked valley and
+      // curling leading lip. Their centers travel as the user scrolls.
+      const shoulder = bell(front - (.26 + .12 * travel), .20);
+      const valley = bell(front - (.48 + .055 * travel), .13);
+      const curl = bell(front - (.78 - .13 * travel), .18);
+      const tip = bell(front - (.94 - .08 * travel), .09);
+      const globalRoll = Math.sin(front * Math.PI * 2.20 +
+        travel * Math.PI * 1.15 - 1.0);
+
+      // Preserve the diagonal wipe while introducing a visible S-bend,
+      // rather than adding small periodic ripples at the boundary.
+      const rise = .16 + .72 * diagonal +
+        .20 * shoulder - .18 * valley + .27 * curl -
+        .075 * tip + .085 * globalRoll;
+      const swell = 575 * lift * rise;
+      const lag = 15 * lift * Math.sin(front * Math.PI * 1.55 -
+        travel * Math.PI * 1.35);
+      const y = Math.max(55, Math.min(997, base - swell + lag));
       points.push([u * 1000, y]);
-      // A low-contrast narrow layer just inside the leading color front gives
-      // it a thick, liquid surface without foam or ocean-wave styling.
-      inset.push([u * 1000, Math.min(1000, y + 30 + 24 * lift)]);
+
+      // Thickness breathes with the curl: a broad soft highlight follows the
+      // leading face so the shape reads as flowing liquid, not a flat mask.
+      const thickness = 25 + lift * (23 + 34 * curl + 14 * shoulder);
+      inset.push([u * 1000, Math.min(1000, y + thickness)]);
     }
 
     const leadingEdge = curve(points);
