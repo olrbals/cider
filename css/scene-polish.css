@@ -1,32 +1,83 @@
-/* SEVEN STARS polish + shared viewport edge labels.
- * Intentionally isolated from Hero, 3D history and the wave renderer. */
+/* SEVEN STARS / shared edge labels / FIZZ sticky length.
+ * Intentionally scoped away from Hero, liquid wave and 3D history. */
 
-/* Each headline line flexes like a reed, with an offset phase.
-   The global liquid-type clone inherits the same line wrappers. */
+.identity.experience-02 {
+  height: 225svh;
+  min-height: 1350px;
+  --identity-star-slot: .055em;
+  --identity-star-scale: .18;
+  --identity-star-opacity: .12;
+  --identity-star-fill: 0%;
+}
+
+/* Both cursor-mask clones and the glossy liquid lettering inherit these
+   identical transforms so the liquid hotspot keeps tracking the type. */
 .identity .identity-sway-line {
   display: block;
-  transform-origin: 50% 88%;
+  transform-origin: 50% 82%;
   backface-visibility: hidden;
-  will-change: transform;
-}
-.identity .identity-sway-line--seven {
-  animation: identity-reed-seven 7.2s ease-in-out infinite alternate;
 }
 .identity .identity-sway-line--stars {
-  animation: identity-reed-stars 8.1s ease-in-out -2.6s infinite alternate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+.identity .identity-star-letters {
+  display: inline-block;
+  flex: 0 0 auto;
+}
+.identity .identity-star-slot {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 var(--identity-star-slot);
+  width: var(--identity-star-slot);
+  height: 1.3em;
+  overflow: visible;
+}
+.identity .identity-main-star {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: .92em;
+  height: .92em;
+  overflow: visible;
+  color: #149f5c;
+  opacity: var(--identity-star-opacity);
+  transform: translate(-50%,-49%) scale(var(--identity-star-scale));
+  transform-origin: center;
+}
+.identity .identity-main-star-outline {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.15;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.identity .identity-main-star-liquid {
+  fill: currentColor;
+  stroke: none;
+  clip-path: inset(calc(100% - var(--identity-star-fill)) 0 0 0);
+}
+.identity.is-seven-complete .identity-sway-line--seven {
+  animation: identity-reed-seven 7.4s ease-in-out infinite alternate;
+}
+.identity.is-seven-complete .identity-sway-line--stars {
+  animation: identity-reed-stars 8.2s ease-in-out -2.4s infinite alternate;
 }
 @keyframes identity-reed-seven {
-  0%   { transform: translate3d(-11px,0,0) rotate(-.85deg) skewX(-.75deg); }
-  45%  { transform: translate3d(8px,0,0) rotate(.55deg) skewX(.9deg); }
-  100% { transform: translate3d(-7px,0,0) rotate(-.5deg) skewX(-.5deg); }
+  0%   { transform: translate3d(-8px,0,0) rotate(-.5deg) skewX(-.45deg); }
+  50%  { transform: translate3d(8px,0,0) rotate(.5deg) skewX(.48deg); }
+  100% { transform: translate3d(-6px,0,0) rotate(-.36deg) skewX(-.4deg); }
 }
 @keyframes identity-reed-stars {
-  0%   { transform: translate3d(9px,0,0) rotate(.75deg) skewX(.7deg); }
-  48%  { transform: translate3d(-11px,0,0) rotate(-.8deg) skewX(-1deg); }
-  100% { transform: translate3d(8px,0,0) rotate(.6deg) skewX(.6deg); }
+  0%   { transform: translate3d(8px,0,0) rotate(.55deg) skewX(.45deg); }
+  50%  { transform: translate3d(-9px,0,0) rotate(-.55deg) skewX(-.48deg); }
+  100% { transform: translate3d(7px,0,0) rotate(.42deg) skewX(.34deg); }
 }
 
-/* Seven literal SVG outlines: main brand green stroke, no fill. */
+/* Seven small five-point outlines, deliberately quieter than the filled
+   letterform star. Each opacity/scale is scrubbed in scene-polish.js. */
 .identity-outline-stars {
   position: absolute;
   inset: 0;
@@ -44,26 +95,21 @@
   opacity: 0;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 2.1;
   stroke-linejoin: round;
   transform-origin: center;
 }
-.identity-outline-star path { fill: none; stroke: currentColor; }
-.identity.is-seven-active .identity-outline-star {
-  animation: identity-star-pulse 4.8s ease-in-out var(--star-delay, 0s) infinite;
+.identity-outline-star path {
+  fill: none;
+  stroke: currentColor;
 }
-@keyframes identity-star-pulse {
-  0%, 100% { opacity: .16; transform: scale(.78) rotate(-8deg); }
-  20% { opacity: .82; transform: scale(1.07) rotate(0); }
-  50% { opacity: .34; transform: scale(.95) rotate(7deg); }
-}
-.identity-outline-star:nth-child(1) { left: 12%; top: 17%; --star-size: 38px; --star-delay: 0s; }
-.identity-outline-star:nth-child(2) { left: 84%; top: 19%; --star-size: 32px; --star-delay: .27s; }
-.identity-outline-star:nth-child(3) { left: 16%; top: 46%; --star-size: 24px; --star-delay: .54s; }
-.identity-outline-star:nth-child(4) { left: 78%; top: 47%; --star-size: 38px; --star-delay: .81s; }
-.identity-outline-star:nth-child(5) { left: 13%; top: 78%; --star-size: 30px; --star-delay: 1.08s; }
-.identity-outline-star:nth-child(6) { left: 72%; top: 83%; --star-size: 26px; --star-delay: 1.35s; }
-.identity-outline-star:nth-child(7) { left: 91%; top: 78%; --star-size: 42px; --star-delay: 1.62s; }
+.identity-outline-star:nth-child(1) { left: 12%; top: 17%; --star-size: 38px; }
+.identity-outline-star:nth-child(2) { left: 84%; top: 19%; --star-size: 32px; }
+.identity-outline-star:nth-child(3) { left: 16%; top: 46%; --star-size: 24px; }
+.identity-outline-star:nth-child(4) { left: 78%; top: 47%; --star-size: 38px; }
+.identity-outline-star:nth-child(5) { left: 13%; top: 78%; --star-size: 30px; }
+.identity-outline-star:nth-child(6) { left: 72%; top: 83%; --star-size: 26px; }
+.identity-outline-star:nth-child(7) { left: 91%; top: 78%; --star-size: 42px; }
 
 /* When JS is active, one fixed overlay replaces duplicated sticky labels.
    Its viewport coordinates remain constant as the yellow wave travels. */
@@ -111,8 +157,8 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label {
 .scene-edge-label--bottom-left { bottom: 10.1111%; }
 .scene-edge-label--bottom-right { bottom: 10.6667%; }
 
-/* Keep the section pinned through the full entrance, a clear viewing pause,
-   two alternating vertical FIZZ beats, and the final rest before the wave.
+/* Keep the section pinned through the reveal, viewing pause,
+   autonomous letter dance, and final rest before the wave.
    The wave and fruit/cursor systems are deliberately left intact. */
 .korea-scene { height: 340svh; min-height: 1700px; }
 @media (max-width: 900px) {
@@ -128,7 +174,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label {
 }
 @media (prefers-reduced-motion: reduce) {
   .identity .identity-sway-line { animation: none !important; transform: none !important; will-change: auto; }
-  .identity .identity-outline-star { animation: none !important; transform: none !important; opacity: .55; }
+  .identity .identity-outline-star { transform: none !important; opacity: .58; }
   .scene-edge-overlay .scene-edge-label { transition: none; }
   .scene-edge-overlay { transition: none; }
 }
