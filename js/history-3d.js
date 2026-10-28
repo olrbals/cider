@@ -112,7 +112,7 @@ function makeCan(stage, track, images) {
   // rolling.rotation.y now spins the standing can side-to-side on scroll.
   carrier.rotation.z = 0;
   scene.add(carrier);
-  carrier.position.set(0, 0, 0); // Responsive right-column placement is set in resize().
+  carrier.position.set(0, 0, 0); // Responsive centered placement is set in resize().
   const rolling = new THREE.Group();
   carrier.add(rolling);
 
@@ -173,10 +173,8 @@ function makeCan(stage, track, images) {
       carrier.position.set(0, -frustumHeight * 0.14, 0);
     } else {
       const gutter = Math.min(200, viewportWidth * (200 / 1440));
-      const contentWidth = viewportWidth - gutter * 2;
-      // The standing can is slimmer: use its *radius* for horizontal fitting
-      // (the old calculation used its horizontal half-length).
-      const canCenterPx = gutter + contentWidth * 0.69;
+      // Keep the upright can horizontally centered; only its position changes.
+      const canCenterPx = viewportWidth / 2;
       const worldPerPixel = (camera.right - camera.left) / viewportWidth;
       const halfCanPx = 0.74 * baseCanScale * desktopFit / worldPerPixel;
       const gutterFit = Math.min(1, (viewportWidth - gutter - canCenterPx) / halfCanPx);
