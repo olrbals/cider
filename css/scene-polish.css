@@ -111,6 +111,20 @@
 .identity-outline-star:nth-child(6) { left: 72%; top: 83%; --star-size: 26px; }
 .identity-outline-star:nth-child(7) { left: 91%; top: 78%; --star-size: 42px; }
 
+/* FEEL and THE keep their original word-level entrance poses, but their
+   inner letters rebound independently once the whole title is visible. */
+.korea-scene .korea-dance-letter {
+  display: inline-block;
+  transform-origin: 50% 85%;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .korea-scene .korea-dance-letter {
+    transform: none !important;
+    will-change: auto;
+  }
+}
+
 /* When JS is active, one fixed overlay replaces duplicated sticky labels.
    Its viewport coordinates remain constant as the yellow wave travels. */
 html.has-scene-edge-overlay .identity-stage > .section-edge-label,
