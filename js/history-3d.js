@@ -146,16 +146,20 @@ function makeCan(stage, track, images) {
     // desktop 160px side gutters at a 1440px viewport.
     const desktopFit = Math.min(1, viewportWidth / 1440);
     const mobileFit = Math.min(1, viewportWidth / 760);
-    carrier.scale.setScalar(baseCanScale * (viewportWidth <= 760 ? mobileFit : desktopFit));
     if (viewportWidth <= 760) {
       // Stack content on compact screens; leave the year above the can.
+      carrier.scale.setScalar(baseCanScale * mobileFit);
       carrier.position.set(0, -frustumHeight * 0.13, 0);
     } else {
       const gutter = Math.min(200, viewportWidth * (200 / 1440));
       const contentWidth = viewportWidth - gutter * 2;
-      // Center the can in the right half of the padded content grid.
-      const canCenterPx = gutter + contentWidth * 0.75;
+      // The left editorial group occupies 350px; allow the can to fill the
+      // rest without extending into the right side gutter.
+      const canCenterPx = gutter + contentWidth * 0.69;
       const worldPerPixel = (camera.right - camera.left) / viewportWidth;
+      const halfCanPx = (rimCenter + 0.04) * baseCanScale * desktopFit / worldPerPixel;
+      const gutterFit = Math.min(1, (viewportWidth - gutter - canCenterPx) / halfCanPx);
+      carrier.scale.setScalar(baseCanScale * desktopFit * gutterFit);
       carrier.position.set((canCenterPx - viewportWidth / 2) * worldPerPixel, 0, 0);
     }
     renderer.setSize(viewportWidth, viewportHeight, false);
