@@ -113,7 +113,7 @@
     const particle = document.createElement('span');
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
-    const darkBackground = !activeScene.matches('.identity-stage, .product-explorer, .pop-stage');
+    const darkBackground = !activeScene.matches('.identity-stage, .product-explorer, .pop-stage, .history-3d-stage');
     const tint = darkBackground
       ? 'rgba(255, 255, 255, .96)' : 'rgba(19, 131, 91, .8)';
     const angle = Math.random() * Math.PI * 2;
@@ -150,12 +150,25 @@
 
   function sceneAt(clientX, clientY) {
     const hit = document.elementFromPoint(clientX, clientY);
-    return hit instanceof Element ? hit.closest(SCENES) : null;
+    if (!(hit instanceof Element)) return null;
+
+    // The history 3D stage has pointer-events:none so the browser hit-test
+    // lands on its underlying scroll panel. Route that hit to the visible
+    // sticky stage, just as the existing global gel refraction already does.
+    const history = hit.closest('.history-3d');
+    if (history) {
+      const stage = history.querySelector('.history-3d-stage');
+      const rect = stage?.getBoundingClientRect();
+      if (rect && clientX >= rect.left && clientX < rect.right &&
+          clientY >= rect.top && clientY < rect.bottom) return stage;
+    }
+    return hit.closest(SCENES);
   }
 
   function colorFor(scene) {
     if (scene.matches('.identity-stage')) return '132, 218, 174';
     if (scene.matches('.korea-stage')) return '210, 245, 255';
+    if (scene.matches('.history-3d-stage')) return '43, 174, 108';
     if (scene.matches('.pop-stage')) return '255, 248, 210';
     if (scene.matches('.product-explorer')) return '166, 255, 198';
     if (scene.matches('.rich-scene')) return '255, 250, 228';
