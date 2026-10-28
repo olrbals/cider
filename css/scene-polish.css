@@ -1,0 +1,135 @@
+/* SEVEN STARS polish + shared viewport edge labels.
+ * Intentionally isolated from Hero, 3D history and the wave renderer. */
+
+/* Each headline line flexes like a reed, with an offset phase.
+   The global liquid-type clone inherits the same line wrappers. */
+.identity .identity-sway-line {
+  display: block;
+  transform-origin: 50% 88%;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+.identity .identity-sway-line--seven {
+  animation: identity-reed-seven 7.2s ease-in-out infinite alternate;
+}
+.identity .identity-sway-line--stars {
+  animation: identity-reed-stars 8.1s ease-in-out -2.6s infinite alternate;
+}
+@keyframes identity-reed-seven {
+  0%   { transform: translate3d(-11px,0,0) rotate(-.85deg) skewX(-.75deg); }
+  45%  { transform: translate3d(8px,0,0) rotate(.55deg) skewX(.9deg); }
+  100% { transform: translate3d(-7px,0,0) rotate(-.5deg) skewX(-.5deg); }
+}
+@keyframes identity-reed-stars {
+  0%   { transform: translate3d(9px,0,0) rotate(.75deg) skewX(.7deg); }
+  48%  { transform: translate3d(-11px,0,0) rotate(-.8deg) skewX(-1deg); }
+  100% { transform: translate3d(8px,0,0) rotate(.6deg) skewX(.6deg); }
+}
+
+/* Seven literal SVG outlines: main brand green stroke, no fill. */
+.identity-outline-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  color: #149f5c;
+}
+.identity-outline-star {
+  position: absolute;
+  display: block;
+  overflow: visible;
+  width: var(--star-size, 34px);
+  height: var(--star-size, 34px);
+  opacity: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  transform-origin: center;
+}
+.identity-outline-star path { fill: none; stroke: currentColor; }
+.identity.is-seven-active .identity-outline-star {
+  animation: identity-star-pulse 4.8s ease-in-out var(--star-delay, 0s) infinite;
+}
+@keyframes identity-star-pulse {
+  0%, 100% { opacity: .16; transform: scale(.78) rotate(-8deg); }
+  20% { opacity: .82; transform: scale(1.07) rotate(0); }
+  50% { opacity: .34; transform: scale(.95) rotate(7deg); }
+}
+.identity-outline-star:nth-child(1) { left: 12%; top: 17%; --star-size: 38px; --star-delay: 0s; }
+.identity-outline-star:nth-child(2) { left: 84%; top: 19%; --star-size: 32px; --star-delay: .27s; }
+.identity-outline-star:nth-child(3) { left: 16%; top: 46%; --star-size: 24px; --star-delay: .54s; }
+.identity-outline-star:nth-child(4) { left: 78%; top: 47%; --star-size: 38px; --star-delay: .81s; }
+.identity-outline-star:nth-child(5) { left: 13%; top: 78%; --star-size: 30px; --star-delay: 1.08s; }
+.identity-outline-star:nth-child(6) { left: 72%; top: 83%; --star-size: 26px; --star-delay: 1.35s; }
+.identity-outline-star:nth-child(7) { left: 91%; top: 78%; --star-size: 42px; --star-delay: 1.62s; }
+
+/* When JS is active, one fixed overlay replaces duplicated sticky labels.
+   Its viewport coordinates remain constant as the yellow wave travels. */
+html.has-scene-edge-overlay .identity-stage > .section-edge-label,
+html.has-scene-edge-overlay .korea-stage > .section-edge-label {
+  display: none;
+}
+.scene-edge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 29;
+  pointer-events: none;
+  user-select: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .16s ease, visibility .16s ease;
+  color: #149f5c;
+}
+.scene-edge-overlay.is-visible {
+  visibility: visible;
+  opacity: 1;
+}
+.scene-edge-overlay .scene-edge-label {
+  position: absolute;
+  display: block;
+  color: #149f5c;
+  font-family: "Archivo", Arial, sans-serif;
+  font-size: clamp(12px, 1.3889vw, 20px);
+  font-weight: 400;
+  line-height: 1.1;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transition: color .24s ease, text-shadow .24s ease;
+}
+.scene-edge-overlay .scene-edge-label.is-on-yellow {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(58, 101, 21, .18);
+}
+.scene-edge-label--top-left,
+.scene-edge-label--bottom-left { left: 3.0556%; }
+.scene-edge-label--top-right,
+.scene-edge-label--bottom-right { right: 3.125%; transform: rotate(180deg); }
+.scene-edge-label--top-left,
+.scene-edge-label--top-right { top: 7.1111%; }
+.scene-edge-label--bottom-left { bottom: 10.1111%; }
+.scene-edge-label--bottom-right { bottom: 10.6667%; }
+
+/* Give the FEEL / THE / FIZZ scrub room to read after the wave finishes.
+   The wave and fruit/cursor systems are deliberately left intact. */
+.korea-scene { height: 240svh; min-height: 1700px; }
+@media (max-width: 900px) {
+  .korea-scene { min-height: 1400px; }
+}
+@media (max-width: 600px) {
+  .identity-outline-star:nth-child(3),
+  .identity-outline-star:nth-child(7) { display: none; }
+  .identity-outline-star { --star-size: 24px; }
+  .scene-edge-overlay .scene-edge-label { font-size: 12px; }
+  .scene-edge-label--top-left,
+  .scene-edge-label--bottom-left { left: 18px; }
+  .scene-edge-label--top-right,
+  .scene-edge-label--bottom-right { right: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .identity .identity-sway-line { animation: none !important; transform: none !important; will-change: auto; }
+  .identity .identity-outline-star { animation: none !important; transform: none !important; opacity: .55; }
+  .scene-edge-overlay .scene-edge-label { transition: none; }
+  .scene-edge-overlay { transition: none; }
+}
