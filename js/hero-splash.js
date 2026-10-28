@@ -79,7 +79,7 @@
 
         // Perspective is measured in screen-height units, so beads remain round
         // on wide and narrow viewports. Each arrival becomes its own wet patch.
-        float airborne=0.0, wetDistance=2.0;
+        float airborne=0.0, beadShade=0.0, wetDistance=2.0;
         for (int i=0;i<4;i++) {
           float fi=float(i);
           float launch=.16+fi*.026;
@@ -91,12 +91,17 @@
           center.y-=.075*sin(3.14159*flight);
           float radius=mix(.007,.041+.009*mod(fi,2.0),pow(flight,1.7));
           vec2 beadDelta=vec2((uv.x-center.x)*aspect,(uv.y-center.y)*(.86+.14*flight));
-          float bead=length(beadDelta)-radius;
+          float bead=length(beadDelta)-radius
+            +(noise(vec2(atan(beadDelta.y,beadDelta.x)*2.0+fi*3.0,p*1.7))-.5)*radius*.1;
           float inFlight=phase(p,launch,launch+.025)*(1.0-phase(p,arrival-.018,arrival+.012));
           float beadBody=1.0-smoothstep(-.004,.004,bead);
           float beadRim=exp(-abs(bead)*145.0);
           float beadLight=exp(-length(beadDelta-vec2(-radius*.35,-radius*.38))*95.0);
-          airborne+=inFlight*(beadBody*.22+beadRim*.63+beadLight*.4);
+          float facing=dot(beadDelta/max(length(beadDelta),.0001),vec2(.65,.76));
+          float brightRim=beadRim*(.62-.42*facing);
+          float darkRim=beadRim*(.38+.36*facing);
+          airborne+=inFlight*(beadBody*.10+brightRim*.52+darkRim*.3+beadLight*.38);
+          beadShade+=inFlight*darkRim*.7;
 
           float impact=phase(p,arrival-.012,arrival+.07);
           float grow=phase(p,arrival,arrival+.24);
@@ -150,6 +155,7 @@
         alpha+=glint+burstMask*.21+airborne+wetBody+wetEdge+wetGlint;
         vec3 color=mix(vec3(.75,.94,.85),vec3(1.0),.55+bright*.42);
         color=mix(color,vec3(.42,.78,.62),edge*.25);
+        color=mix(color,vec3(.27,.43,.36),sat(beadShade*.55));
         color+=vec3(glint*.4);
         alpha=sat(alpha);
         gl_FragColor=vec4(color,alpha);
