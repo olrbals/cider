@@ -9,15 +9,15 @@
 #top .hero-splash-effects { position: absolute; z-index: 5; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 #top .hs-liquid-webgl { position: absolute; z-index: 5; inset: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
 #top .hs-webgl-ready .hero-splash-effects { display: none; }
-#top .hs-jet { stroke: rgba(255,255,255,.72); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 2px 3px rgba(61,72,67,.2)); }
-#top .hs-jet-glow { fill: none; stroke: rgba(255,255,255,.48); stroke-width: 6; filter: url(#hs-soft-glint); vector-effect: non-scaling-stroke; }
+#top .hs-jet, #top .hs-jet-glow, #top .hs-jet-refraction { display: none; }
 #top .hs-sheet { stroke: rgba(250,255,253,.66); stroke-width: 2.4; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 #top .hs-sheet-glint { fill: none; stroke: rgba(255,255,255,.78); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 #top .hs-droplet { stroke: rgba(255,255,255,.55); stroke-width: 1.3; vector-effect: non-scaling-stroke; }
 #top .hs-droplet-glint { fill: rgba(255,255,255,.85); }
+#top .hs-lens-wet { stroke: rgba(255,255,255,.28); stroke-width: 1.3; vector-effect: non-scaling-stroke; }
 
 #top .hs-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(1.2px) brightness(1.045) saturate(.94); -webkit-backdrop-filter: blur(1.2px) brightness(1.045) saturate(.94); }
-#top .hs-jet-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(2.5px) brightness(.93) contrast(1.05) saturate(.92); -webkit-backdrop-filter: blur(2.5px) brightness(.93) contrast(1.05) saturate(.92); }
+#top .hs-lens-refraction { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; backdrop-filter: blur(2.4px) brightness(1.05) contrast(1.08); -webkit-backdrop-filter: blur(2.4px) brightness(1.05) contrast(1.08); }
 @media (max-width: 700px) {
   #top.hero, #top .hero-splash-stage { width: 100vw; }
   #top .hero-product-layer { width: min(68vw, 280px); height: min(62svh, 540px); top: 19%; }
@@ -26,7 +26,7 @@
   #top .hero-ring-outer { width: 85vw; height: 85vw; left: 13%; top: 23%; }
   #top .hero-ring-inner { width: 65vw; height: 65vw; left: 23%; top: 29%; }
   #top .hero-figma-star { transform: scale(.6); transform-origin: center; }
-  #top .hs-jet-glow, #top .hs-sheet-glint, #top .hs-refraction, #top .hs-jet-refraction { display: none; }
+  #top .hs-sheet-glint, #top .hs-refraction, #top .hs-lens-refraction { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   #top.hero { height: 100svh; }

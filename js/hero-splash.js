@@ -1,4 +1,4 @@
-/* Hero-only SVG liquid. ScrollTrigger supplies reversible progress; every frame derives from that progress. */
+/* Hero-only liquid. ScrollTrigger supplies reversible progress; every frame derives from that progress. */
 (() => {
   'use strict';
   const hero = document.querySelector('#top.hero');
@@ -6,12 +6,9 @@
   const svg = hero?.querySelector('.hero-splash-effects');
   if (!hero || !stage || !svg) return;
 
-  const jet = svg.querySelector('.hs-jet');
-  const jetGlow = svg.querySelector('.hs-jet-glow');
   const sheet = svg.querySelector('.hs-sheet');
   const sheetGlint = svg.querySelector('.hs-sheet-glint');
   const refract = stage.querySelector('.hs-refraction');
-  const jetRefract = stage.querySelector('.hs-jet-refraction');
   const canSlot = stage.querySelector('.hero-can-top-slot');
   const dropsGroup = svg.querySelector('.hs-droplets');
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -22,8 +19,7 @@
   const phase = (value, start, end) => smooth((value - start) / (end - start));
   const number = value => Number(value.toFixed(2));
   // The SVG remains a fallback. The primary surface is a transparent WebGL
-  // distance field: one connected jet, then an irregular curtain with real
-  // thickness-dependent transmission and narrow specular edges.
+  // distance field: a brief burst, lens impacts, then the existing curtain.
   function createLiquidSurface() {
     const canvas = document.createElement('canvas');
     canvas.className = 'hs-liquid-webgl';
@@ -56,27 +52,76 @@
       float unite(float a,float b,float k) {
         float h=sat(.5+.5*(b-a)/k); return mix(b,a,h)-k*h*(1.0-h);
       }
+      vec2 impactPoint(float i) {
+        if (i<.5) return vec2(.29,.27);
+        if (i<1.5) return vec2(.70,.34);
+        if (i<2.5) return vec2(.48,.53);
+        return vec2(.82,.19);
+      }
       void main() {
         vec2 uv=gl_FragCoord.xy/u_resolution;
         uv.y=1.0-uv.y;
         float p=u_progress;
-        float rise=phase(p,.10,.47), fork=phase(p,.27,.45);
+        float aspect=u_resolution.x/u_resolution.y;
         float spread=phase(p,.44,.68), flow=phase(p,.56,.96);
         float mouthY=u_mouth.y;
-        float topY=mix(mouthY,.012,rise);
-        float stemT=sat((mouthY-uv.y)/max(mouthY-topY,.01));
-        float sway=(noise(vec2(stemT*3.8,p*3.2))-.5)*.024*rise;
-        vec2 warped=uv;
-        warped.x-=sway+(noise(uv*vec2(18.0,13.0)+vec2(p*4.0,0.0))-.5)*.008*rise;
-        vec2 root=vec2(u_mouth.x,mouthY+.012);
-        vec2 crown=vec2(u_mouth.x+.008*fork,topY+.026);
-        float jet=capsule(warped,root,crown,.018,.027);
-        float branchLeft=capsule(warped,crown,vec2(crown.x-.055*fork,topY+.009),.024,.010);
-        float branchRight=capsule(warped,crown,vec2(crown.x+.052*fork,topY-.006),.025,.012);
-        jet=unite(jet,branchLeft,.022);
-        jet=unite(jet,branchRight,.022);
-        jet+=(noise(uv*vec2(33.0,17.0)+vec2(p*7.0,2.0))-.5)*.006*rise;
-        float jetVisible=phase(p,.11,.18)*(1.0-phase(p,.65,.81));
+        // A short, thick release stays attached to the opening. It ends before
+        // the camera-facing beads arrive, so it never becomes a vertical ribbon.
+        float burstRise=phase(p,.13,.25);
+        float burstFade=phase(p,.29,.37);
+        vec2 burstUv=uv;
+        burstUv.x+=(noise(uv*vec2(24.0,17.0)+p*5.0)-.5)*.009;
+        float burst=capsule(burstUv,vec2(u_mouth.x,mouthY+.01),
+          vec2(u_mouth.x+.012,mouthY-.115*burstRise),.024,.030);
+        burst+=(noise(uv*vec2(42.0,29.0)+p*8.0)-.5)*.006;
+        float burstMask=(1.0-smoothstep(-.004,.005,burst))
+          *phase(p,.12,.18)*(1.0-burstFade);
+
+        // Perspective is measured in screen-height units, so beads remain round
+        // on wide and narrow viewports. Each arrival becomes its own wet patch.
+        float airborne=0.0, wetDistance=2.0;
+        for (int i=0;i<4;i++) {
+          float fi=float(i);
+          float launch=.16+fi*.026;
+          float arrival=.34+fi*.035;
+          float flight=phase(p,launch,arrival);
+          vec2 target=impactPoint(fi);
+          vec2 center=mix(vec2(u_mouth.x,mouthY-.035),target,flight);
+          center.x+=(fi-1.5)*.025*sin(3.14159*flight);
+          center.y-=.075*sin(3.14159*flight);
+          float radius=mix(.007,.041+.009*mod(fi,2.0),pow(flight,1.7));
+          vec2 beadDelta=vec2((uv.x-center.x)*aspect,(uv.y-center.y)*(.86+.14*flight));
+          float bead=length(beadDelta)-radius;
+          float inFlight=phase(p,launch,launch+.025)*(1.0-phase(p,arrival-.018,arrival+.012));
+          float beadBody=1.0-smoothstep(-.004,.004,bead);
+          float beadRim=exp(-abs(bead)*145.0);
+          float beadLight=exp(-length(beadDelta-vec2(-radius*.35,-radius*.38))*95.0);
+          airborne+=inFlight*(beadBody*.22+beadRim*.63+beadLight*.4);
+
+          float impact=phase(p,arrival-.012,arrival+.07);
+          float grow=phase(p,arrival,arrival+.24);
+          float rx=(.018+grow*(.18+.02*mod(fi,2.0)));
+          float ry=(.015+grow*(.13+.025*mod(fi+1.0,2.0)));
+          vec2 q=(uv-target)/vec2(rx,ry);
+          float angle=atan(q.y,q.x);
+          float organic=(noise(vec2(angle*1.8+fi*4.0,p*1.4))-.5)*.42
+            +(noise(vec2(angle*4.3+fi*7.0,p*.8))-.5)*.13;
+          float wet=(length(q)-1.0+organic)*min(rx*aspect,ry);
+          if (i<2) {
+            vec2 tailA=vec2(target.x*aspect,target.y+.025);
+            vec2 tailB=vec2((target.x+.025)*aspect,target.y+.025+.17*grow);
+            float tail=capsule(vec2(uv.x*aspect,uv.y),tailA,tailB,.018,.007);
+            wet=unite(wet,tail,.012);
+          }
+          wetDistance=unite(wetDistance,wet+(1.0-impact)*.5,.018);
+        }
+        float wetOpacity=1.0-phase(p,.68,.82);
+        float wetBody=(1.0-smoothstep(-.003,.003,wetDistance))*wetOpacity
+          *(.075+.045*noise(uv*vec2(11.0,9.0)+p*1.2));
+        float wetRim=exp(-abs(wetDistance)*135.0)*wetOpacity;
+        float wetEdge=wetRim*(.035+.035*noise(uv*vec2(7.0,8.0)+p));
+        float wetGlint=exp(-abs(wetDistance+.009)*170.0)*wetOpacity
+          *(.025+.055*noise(uv*vec2(5.0,6.0)+vec2(4.0,p)));
 
         float halfWidth=mix(.025,.64,spread);
         float lateral=abs(uv.x-u_mouth.x);
@@ -95,30 +140,18 @@
           sheet=unite(sheet,tongue,.014);
         }
         float sheetVisible=spread*phase(p,.59,.68);
-        float dj=jet+(1.0-jetVisible)*.12, ds=sheet+(1.0-sheetVisible)*.12;
-        float d=min(dj,ds);
+        float d=sheet+(1.0-sheetVisible)*.12;
         float body=1.0-smoothstep(-.005,.003,d);
-        float edge=exp(-abs(d)*145.0)*sat(max(jetVisible,sheetVisible));
+        float edge=exp(-abs(d)*145.0)*sheetVisible;
         float inner=body*(.18+.10*noise(uv*vec2(5.0,8.0)+p*2.0));
         float bright=phase(p,.77,.99);
         float alpha=inner+edge*.37+body*bright*.47;
         float glint=exp(-abs(d+.013)*210.0)*body*.15;
-        alpha+=glint;
+        alpha+=glint+burstMask*.21+airborne+wetBody+wetEdge+wetGlint;
         vec3 color=mix(vec3(.75,.94,.85),vec3(1.0),.55+bright*.42);
         color=mix(color,vec3(.42,.78,.62),edge*.25);
         color+=vec3(glint*.4);
-        // Only a few detached beads; their motion is fully scroll reversible.
-        float beads=0.0;
-        for (int i=0;i<4;i++) {
-          float fi=float(i);
-          float flight=phase(p,.20+fi*.047,.44+fi*.02);
-          float fade=phase(p,.21+fi*.047,.27+fi*.047)*(1.0-phase(p,.48,.62));
-          vec2 bead=vec2(u_mouth.x+(fi-1.5)*.024*flight,
-            mouthY-flight*(.13+fi*.035));
-          float bd=length(uv-bead)-(.0038+fi*.0005);
-          beads+=fade*(1.0-smoothstep(-.002,.002,bd))*.52;
-        }
-        alpha=sat(alpha+beads);
+        alpha=sat(alpha);
         gl_FragColor=vec4(color,alpha);
       }`;
     function compile(type, source) {
@@ -172,16 +205,24 @@
     return {draw,canvas};
   }
   const liquidSurface=createLiquidSurface();
-  const drops = Array.from({ length: 5 }, (_, index) => {
+  const lensRefract = document.createElement('div');
+  lensRefract.className = 'hs-lens-refraction';
+  lensRefract.setAttribute('aria-hidden', 'true');
+  stage.append(lensRefract);
+  const drops = Array.from({ length: 4 }, (_, index) => {
     const group = document.createElementNS(ns, 'g');
     const body = document.createElementNS(ns, 'circle');
     const glint = document.createElementNS(ns, 'circle');
+    const wet = document.createElementNS(ns, 'ellipse');
     body.classList.add('hs-droplet');
     body.setAttribute('fill', 'url(#hs-drop-water)');
     glint.classList.add('hs-droplet-glint');
+    wet.classList.add('hs-lens-wet');
+    wet.setAttribute('fill', 'url(#hs-drop-water)');
     group.append(body, glint);
     dropsGroup.append(group);
-    return { group, body, glint, index };
+    dropsGroup.append(wet);
+    return { group, body, glint, wet, index };
   });
 
   /* Catmull-Rom conversion keeps each varying drip tangent to its neighbour. */
@@ -212,47 +253,47 @@
     const mouthY = (opening.top + opening.height * .53 - stageBox.top) / stageBox.height * 1000;
     liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
 
-    const spread = phase(p, .46, .70);
-    const rise = phase(p, .10, .47);
-    const fork = phase(p, .28, .45);
-    const jetFade = 1 - phase(p, .56, .74);
-    const height = Math.max(0, mouthY - 18) * rise;
-    const jetTop = mouthY - height;
-    const base = Math.max(11, opening.width / stageBox.width * 140);
-    const width = base + 29 * rise + 130 * spread;
-    const sway = Math.sin(p * 21) * 8 * rise;
-    const cx = mouthX + sway;
-    // A single thick stem flows into three connected, rounded tips.
-    const jetPath = [
-      `M ${number(mouthX - base)} ${number(mouthY + 5)}`,
-      `C ${number(mouthX - base * 1.25)} ${number(mouthY - height * .35)} ${number(cx - base * 1.3)} ${number(jetTop + 82)} ${number(cx - base * 1.35)} ${number(jetTop + 62)}`,
-      `C ${number(cx - base * 1.4)} ${number(jetTop + 40)} ${number(cx - width * .8)} ${number(jetTop + 18)} ${number(cx - width * .74)} ${number(jetTop + 33)}`,
-      `C ${number(cx - width * 1.25)} ${number(jetTop + 4)} ${number(cx - width * 1.55 - 12 * fork)} ${number(jetTop + 28)} ${number(cx - width * 1.12 - 12 * fork)} ${number(jetTop + 35)}`,
-      `C ${number(cx - width * .8)} ${number(jetTop + 42)} ${number(cx - width * .72)} ${number(jetTop + 5)} ${number(cx - width * .27)} ${number(jetTop + 10)}`,
-      `C ${number(cx - width * .1)} ${number(jetTop - 10 - 17 * fork)} ${number(cx + width * .22)} ${number(jetTop - 13 - 19 * fork)} ${number(cx + width * .4)} ${number(jetTop + 10)}`,
-      `C ${number(cx + width * .7)} ${number(jetTop + 37)} ${number(cx + width * 1.27 + 14 * fork)} ${number(jetTop + 5)} ${number(cx + width * 1.18 + 14 * fork)} ${number(jetTop + 34)}`,
-      `C ${number(cx + width * .9)} ${number(jetTop + 48)} ${number(cx + base * 1.4)} ${number(jetTop + 40)} ${number(cx + base * 1.35)} ${number(jetTop + 62)}`,
-      `C ${number(cx + base * 1.3)} ${number(jetTop + 82)} ${number(mouthX + base * 1.25)} ${number(mouthY - height * .35)} ${number(mouthX + base * 1.4)} ${number(mouthY - height * .25)}`,
-      `Q ${number(mouthX + base * 1.05)} ${number(mouthY + 7)} ${number(mouthX - base)} ${number(mouthY + 5)} Z`
-    ].join(' ');
-    jet.setAttribute('d', jetPath);
-    jetGlow.setAttribute('d', jetPath);
-    jet.style.opacity = (phase(p, .11, .18) * jetFade).toFixed(3);
-    jetGlow.style.opacity = (phase(p, .11, .18) * jetFade * .38).toFixed(3);
-    if (!mobile.matches && rise > .01) {
-      const outline = [
-        [mouthX - base, mouthY + 5], [cx - base * 1.3, jetTop + 68],
-        [cx - width * .76, jetTop + 35], [cx - width * 1.2, jetTop + 28],
-        [cx - width * .28, jetTop + 10], [cx + width * .22, jetTop - 12],
-        [cx + width * 1.2, jetTop + 32], [cx + width * .8, jetTop + 54],
-        [cx + base * 1.3, jetTop + 68], [mouthX + base, mouthY + 5]
-      ];
-      jetRefract.style.clipPath = `polygon(${outline.map(([x, y]) => `${number(x / 10)}% ${number(y / 10)}%`).join(',')})`;
-      jetRefract.style.opacity = (phase(p, .11, .18) * jetFade * .78).toFixed(3);
-    } else {
-      jetRefract.style.opacity = '0';
-    }
+    // Each camera-facing bead expands into a soft optical patch on contact.
+    // The same contact times and positions drive the WebGL surface and the
+    // backdrop refraction, keeping the water and the live page aligned.
+    const targets = [[.29, .27], [.70, .34], [.48, .53], [.82, .19]];
+    const masks = targets.map(([x, y], index) => {
+      const arrival = .34 + index * .035;
+      const grow = phase(p, arrival, arrival + .24);
+      const rx = Math.round(stage.clientWidth * (.018 + grow * (.18 + .02 * (index % 2))));
+      const ry = Math.round(stage.clientHeight * (.015 + grow * (.13 + .025 * ((index + 1) % 2))));
+      return `radial-gradient(ellipse ${Math.max(rx, 1)}px ${Math.max(ry, 1)}px at ${x * 100}% ${y * 100}%, #000 35%, transparent 78%)`;
+    }).join(', ');
+    lensRefract.style.maskImage = masks;
+    lensRefract.style.webkitMaskImage = masks;
+    lensRefract.style.opacity = (phase(p, .33, .56) * (1 - phase(p, .68, .82)) * .72).toFixed(3);
 
+    // WebGL fallback: small perspective beads become transparent lens marks.
+    drops.forEach(({ group, body, glint, wet, index }) => {
+      const launch = .16 + index * .026;
+      const arrival = .34 + index * .035;
+      const flight = phase(p, launch, arrival);
+      const [tx, ty] = targets[index];
+      const x = mouthX + (tx * 1000 - mouthX) * flight + (index - 1.5) * 25 * Math.sin(Math.PI * flight);
+      const y = mouthY - 35 + (ty * 1000 - mouthY + 35) * flight - 75 * Math.sin(Math.PI * flight);
+      const radius = (7 + (41 + 9 * (index % 2) - 7) * Math.pow(flight, 1.7));
+      const visible = phase(p, launch, launch + .025) * (1 - phase(p, arrival - .018, arrival + .012));
+      group.style.opacity = visible.toFixed(3);
+      body.setAttribute('cx', number(x));
+      body.setAttribute('cy', number(y));
+      body.setAttribute('r', number(radius));
+      glint.setAttribute('cx', number(x - radius * .3));
+      glint.setAttribute('cy', number(y - radius * .34));
+      glint.setAttribute('r', number(radius * .14));
+      const grow = phase(p, arrival, arrival + .24);
+      wet.setAttribute('cx', tx * 1000);
+      wet.setAttribute('cy', ty * 1000);
+      wet.setAttribute('rx', number(18 + grow * (180 + 20 * (index % 2))));
+      wet.setAttribute('ry', number(15 + grow * (130 + 25 * ((index + 1) % 2))));
+      wet.style.opacity = (phase(p, arrival - .012, arrival + .07) * (1 - phase(p, .68, .82)) * .42).toFixed(3);
+    });
+
+    const spread = phase(p, .46, .70);
     const flow = phase(p, .60, .98);
     const half = 28 + 550 * spread;
     const points = [];
@@ -287,25 +328,7 @@
       refract.style.opacity = (film * .82).toFixed(3);
     } else {
       refract.style.opacity = '0';
-      jetRefract.style.opacity = '0';
     }
-
-    drops.forEach(({ group, body, glint, index }) => {
-      const initial = .19 + index * .047;
-      const flight = phase(p, initial, .43 + index * .018);
-      const separate = phase(p, .57 + (index % 4) * .022, .91 + (index % 3) * .025);
-      const x = mouthX + Math.sin(index * 3.7) * (10 + 56 * flight) + Math.sin(p * 16 + index) * 5;
-      const y = mouthY - flight * (115 + index * 28) + separate * (240 + index * 39);
-      const radius = 3 + (index % 3) * 1.6;
-      const visible = phase(p, initial, initial + .05) * (1 - phase(p, .85, 1));
-      group.style.opacity = visible.toFixed(3);
-      body.setAttribute('cx', number(x));
-      body.setAttribute('cy', number(y));
-      body.setAttribute('r', number(radius * (1 + .12 * Math.sin(p * 30 + index))));
-      glint.setAttribute('cx', number(x - radius * .28));
-      glint.setAttribute('cy', number(y - radius * .34));
-      glint.setAttribute('r', number(radius * .18));
-    });
 
     // The clear film brightens the hero into the updated white Seven Stars scene.
     const brighten = phase(p, .88, 1);
@@ -350,6 +373,7 @@
       hero.style.removeProperty('--hs-reveal');
       stage.style.removeProperty('background-color');
       refract.style.opacity = '0';
+      lensRefract.style.opacity = '0';
     } else if (!window.ScrollTrigger?.getById('hero-splash-only')) {
       initialize();
     }
