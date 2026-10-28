@@ -168,6 +168,109 @@ function makeCan(stage, track, images) {
   return { render, resize };
 }
 
+// A single pinned four-column counter. Every column keeps its position;
+// only a digit that changes between adjacent years gets a vertical reel.
+function createArchiveCounter(stage, years) {
+  const labels = [
+    '칠성사이다의 시작',
+    '새로운 패키지',
+    '시대를 따라 변화하는 디자인',
+    '이어지는 패키징의 변화',
+    '또 다른 모습의 칠성사이다',
+    '새로운 밀레니엄',
+    '계속되는 청량함',
+    '오늘의 칠성사이다'
+  ];
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const overlay = document.createElement('div');
+  overlay.className = 'history-3d-overlay';
+  const caption = document.createElement('div');
+  caption.className = 'history-3d-caption';
+  const eyebrow = document.createElement('span');
+  eyebrow.className = 'history-3d-caption-eyebrow';
+  eyebrow.textContent = 'CHILSUNG CIDER  /  BRAND HISTORY';
+  const copyWindow = document.createElement('div');
+  copyWindow.className = 'history-3d-caption-window';
+  const copyCurrent = document.createElement('span');
+  const copyNext = document.createElement('span');
+  copyCurrent.className = 'history-3d-caption-copy';
+  copyNext.className = 'history-3d-caption-copy';
+  copyWindow.append(copyCurrent, copyNext);
+  caption.append(eyebrow, copyWindow);
+
+  const yearWindow = document.createElement('div');
+  yearWindow.className = 'history-3d-odometer';
+  yearWindow.setAttribute('aria-hidden', 'true');
+  const digits = years[0].split('').map(() => {
+    const window = document.createElement('span');
+    window.className = 'history-3d-digit';
+    const reel = document.createElement('span');
+    reel.className = 'history-3d-digit-reel';
+    window.append(reel);
+    yearWindow.append(window);
+    return { reel, changing: false };
+  });
+  const screenReaderYear = document.createElement('span');
+  screenReaderYear.className = 'visually-hidden';
+  screenReaderYear.textContent = years[0];
+  overlay.append(caption, yearWindow, screenReaderYear);
+  stage.append(overlay);
+
+  const makeGlyph = character => {
+    const glyph = document.createElement('span');
+    glyph.className = 'history-3d-digit-glyph';
+    glyph.textContent = character;
+    return glyph;
+  };
+  let lastPair = -1;
+  let lastStaticYear = '';
+
+  function setYear(pair, blend) {
+    if (reducedMotion.matches) {
+      const selected = blend < 0.5 ? pair : pair + 1;
+      if (lastStaticYear !== years[selected]) {
+        years[selected].split('').forEach((digit, index) => {
+          digits[index].reel.replaceChildren(makeGlyph(digit));
+          digits[index].changing = false;
+          digits[index].reel.style.transform = '';
+        });
+        lastStaticYear = years[selected];
+        lastPair = -1;
+      }
+      copyCurrent.textContent = labels[selected];
+      copyCurrent.style.opacity = '1';
+      copyNext.style.opacity = '0';
+      screenReaderYear.textContent = years[selected];
+      return;
+    }
+
+    if (lastPair !== pair || lastStaticYear) {
+      years[pair].split('').forEach((digit, index) => {
+        const next = years[pair + 1][index];
+        const changing = digit !== next;
+        const reel = digits[index].reel;
+        reel.replaceChildren(makeGlyph(digit), ...(changing ? [makeGlyph(next)] : []));
+        digits[index].changing = changing;
+        reel.style.transform = '';
+      });
+      copyCurrent.textContent = labels[pair];
+      copyNext.textContent = labels[pair + 1];
+      lastPair = pair;
+      lastStaticYear = '';
+    }
+
+    // 0 -> -50% moves one glyph height across a two-glyph vertical stack.
+    // When a digit is unchanged its reel never moves.
+    digits.forEach(({ reel, changing }) => {
+      if (changing) reel.style.transform = `translate3d(0,-${(blend * 50).toFixed(3)}%,0)`;
+    });
+    copyCurrent.style.opacity = (1 - blend).toFixed(3);
+    copyNext.style.opacity = blend.toFixed(3);
+    screenReaderYear.textContent = years[blend < 0.5 ? pair : pair + 1];
+  }
+  return setYear;
+}
+
 async function initHistory(section) {
   const stage = section.querySelector('.history-3d-stage');
   const track = section.querySelector('.history-3d-track');
@@ -178,11 +281,7 @@ async function initHistory(section) {
     era.className = 'history-3d-era';
     era.dataset.year = year;
     era.dataset.packaging = packaging;
-    const yearLabel = document.createElement('span');
-    yearLabel.className = 'history-3d-year';
-    yearLabel.textContent = year;
-    // Every era now contains only its large outline year.
-    era.append(yearLabel);
+    // Keep the 480px scroll panel but render its year in one pinned overlay.
     track.append(era);
     return era;
   });
@@ -198,6 +297,7 @@ async function initHistory(section) {
   window.addEventListener('resize', syncArchiveFocus, { passive: true });
   syncArchiveFocus();
   const years = eras.map(era => era.dataset.year);
+  const renderArchiveCounter = createArchiveCounter(stage, years);
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
   let can = null;
 
@@ -218,14 +318,9 @@ async function initHistory(section) {
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
     const blend = smoothstep(0.38, 0.62, local);
-    // Scroll-scrubbed year entry: each incoming year rises 46px and fades
-    // into the Figma bottom-right position. Reverse scroll restores it.
-    eras.forEach((era, index) => {
-      const appear = index === 0 ? 1 : smoothstep(index - 0.68, index - 0.05, point);
-      const year = era.querySelector('.history-3d-year');
-      year.style.setProperty('--history-year-rise', ((1 - appear) * 46).toFixed(1) + 'px');
-      year.style.setProperty('--history-year-opacity', appear.toFixed(3));
-    });
+    // The can and all four digit columns use the SAME reversible blend.
+    // Only columns whose character changes are vertically scrolled.
+    renderArchiveCounter(pair, blend);
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = blend < 0.5 ? pair : pair + 1;
     section.dataset.activeYear = years[activeIndex];
