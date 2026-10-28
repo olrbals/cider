@@ -79,6 +79,7 @@ function makeCan(stage, track, images) {
   paintLabel(0);
   const labelTexture = new THREE.CanvasTexture(labelCanvas);
   labelTexture.colorSpace = THREE.SRGBColorSpace;
+  // Match the Hero's crisp printed artwork without changing any era UV layout.
   labelTexture.anisotropy = 4;
 
   const scene = new THREE.Scene();
@@ -92,14 +93,46 @@ function makeCan(stage, track, images) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.5;
+  // Slightly brighter than Hero (1.15) to keep vintage label inks readable.
+  renderer.toneMappingExposure = 1.28;
   stage.querySelector('.history-3d-canvas').append(renderer.domElement);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x928c81, 2.7));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
-  keyLight.position.set(-3, 5, 7);
+  // Reuse the Hero can's four studio softboxes as a real PMREM environment.
+  // Unlike simple directional lighting, these highlight strips glide across
+  // the cylindrical metal and glossy printed label as the archive can rotates.
+  const studio = new THREE.Scene();
+  studio.background = new THREE.Color('#252c30');
+  const softbox = (x, y, z, w, h, intensity) => {
+    const panel = new THREE.Mesh(
+      new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setScalar(intensity),
+        side: THREE.DoubleSide
+      })
+    );
+    panel.position.set(x, y, z);
+    panel.lookAt(0, 0, 0);
+    studio.add(panel);
+  };
+  softbox(-4, 2, 4, 2, 8, 5);
+  softbox(4, 1, 2, 1, 7, 3);
+  softbox(0, 6, 0, 5, 4, 4);
+  softbox(0, 0, -5, 4, 6, 1.5);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const environment = pmrem.fromScene(studio, 0.04);
+  scene.environment = environment.texture;
+  studio.traverse(object => {
+    object.geometry?.dispose();
+    object.material?.dispose();
+  });
+  pmrem.dispose();
+
+  // Keep the illustrated archive cans legible under their pale era backdrops.
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x527269, 1.35));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.1);
+  keyLight.position.set(-3, 6, 5);
   scene.add(keyLight);
-  const edgeLight = new THREE.DirectionalLight(0xffffff, 1.3);
+  const edgeLight = new THREE.DirectionalLight(0xffffff, 0.7);
   edgeLight.position.set(4, -2, -4);
   scene.add(edgeLight);
 
@@ -122,12 +155,27 @@ function makeCan(stage, track, images) {
   const rimCenter = capCenter + 0.045;
   const label = new THREE.Mesh(
     new THREE.CylinderGeometry(0.68, 0.68, canLength, 128, 1, true),
-    new THREE.MeshStandardMaterial({ map: labelTexture, metalness: 0.22, roughness: 0.42 })
+    // Hero-style physically based print: soft metallic response + clear lacquer.
+    new THREE.MeshPhysicalMaterial({
+      map: labelTexture,
+      metalness: 0.36,
+      roughness: 0.36,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.25
+    })
   );
   rolling.add(label);
 
-  const metal = new THREE.MeshStandardMaterial({ color: 0xc5cdd0, metalness: 0.88, roughness: 0.24 });
-  const inset = new THREE.MeshStandardMaterial({ color: 0xc2c9ca, emissive: 0x343a3a, metalness: 0.58, roughness: 0.31 });
+  // Use Hero's brushed aluminum and a slightly darker pressed lid groove.
+  const metal = new THREE.MeshStandardMaterial({
+    color: 0xd4dade, metalness: 1, roughness: 0.23
+  });
+  const inset = new THREE.MeshStandardMaterial({
+    color: 0xc6ced0, metalness: 0.9, roughness: 0.29
+  });
+  const groove = new THREE.MeshStandardMaterial({
+    color: 0x79868c, metalness: 1, roughness: 0.32
+  });
   for (const sign of [-1, 1]) {
     const end = new THREE.Mesh(new THREE.CylinderGeometry(0.70, 0.70, 0.075, 128), metal);
     end.position.y = sign * capCenter;
@@ -139,6 +187,14 @@ function makeCan(stage, track, images) {
     rim.rotation.x = Math.PI / 2;
     rim.position.y = sign * rimCenter;
     rolling.add(rim);
+    // A narrow stamped concentric groove gives the lid an authentic edge
+    // while retaining every year's original packaging geometry and position.
+    const stampedSeam = new THREE.Mesh(
+      new THREE.TorusGeometry(0.555, 0.009, 12, 96), groove
+    );
+    stampedSeam.rotation.x = Math.PI / 2;
+    stampedSeam.position.y = sign * (rimCenter + 0.007);
+    rolling.add(stampedSeam);
   }
 
   // A restrained ring on the visible end adds depth without altering either label.
