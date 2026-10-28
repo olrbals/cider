@@ -40,3 +40,8 @@
   #top.hero { height: 100svh; }
   #top .hero-splash-effects, #top .hs-liquid-webgl, #top .hs-foam-burst, #top .hs-spray-film { display: none; }
 }
+
+/* The existing image is retained only as a loading/WebGL fallback. */
+#top .hs-can-3d { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#top.hs-can-3d-ready .hero-can-body img { visibility:hidden; }
+#top.hs-can-3d-ready .hero-can-top-slot { visibility:hidden; }
