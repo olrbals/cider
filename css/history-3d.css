@@ -6,17 +6,19 @@
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
 .history-3d-track{position:relative;z-index:0}
 .history-3d-era{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate}
-/* Both labels stay at fixed screen coordinates while history scrolls. */
+/* Figma node 1314:143: a fixed horizontal editorial row at 50% viewport
+   height, with 60px side gutters on the 1440 × 480 reference frame. */
 .history-3d-overlay{
   position:absolute;inset:0;z-index:2;pointer-events:none;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:24px;padding-inline:clamp(24px,4.167vw,60px);
   color:#149f5c;user-select:none;
 }
 .history-3d-odometer{
-  position:absolute;right:clamp(24px,4.167vw,60px);
-  bottom:clamp(24px,4.167vw,60px);
+  position:relative;flex:0 0 auto;
   display:flex;align-items:flex-end;overflow:hidden;
-  font:400 clamp(56px,6.944vw,100px)/1.3 "Archivo Black",Arial,sans-serif;
-  font-variant-numeric:tabular-nums;letter-spacing:-2px;
+  font:400 clamp(56px,7.223vw,104px)/1.3 "Archivo Black",Arial,sans-serif;
+  font-variant-numeric:tabular-nums;letter-spacing:-2.08px;
   color:#149f5c;white-space:nowrap;
 }
 .history-3d-digit{
@@ -29,23 +31,18 @@
   text-align:center;
 }
 .history-3d-caption{
-  position:absolute;left:clamp(24px,4.167vw,60px);
-  bottom:clamp(29px,5.4vw,78px);
-  width:min(40%,430px);
-  font-family:"Pretendard",Arial,sans-serif;
-}
-.history-3d-caption-eyebrow{
-  display:block;margin-bottom:9px;
-  font:500 clamp(9px,.82vw,12px)/1.5 "Archivo",Arial,sans-serif;
-  letter-spacing:.13em;color:#438568;
+  position:relative;flex:1 1 auto;min-width:0;
+  max-width:730px;text-align:left;
+  font-family:"Yaldevi Colombo SemiBold","Pretendard","Apple SD Gothic Neo",sans-serif;
 }
 .history-3d-caption-window{
-  position:relative;height:1.55em;overflow:hidden;
-  font:600 clamp(13px,1.25vw,18px)/1.55 "Pretendard",Arial,sans-serif;
-  letter-spacing:-.02em;
+  position:relative;width:100%;height:1.3em;overflow:hidden;
+  font-size:clamp(16px,1.945vw,28px);
+  font-weight:700;line-height:1.3;letter-spacing:-.56px;
 }
 .history-3d-caption-copy{
   position:absolute;inset:0;display:block;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
 }
 /* Suppress the global ambient bubble canvas only while history is centered
    in the viewport; it remains unchanged on every other section. */
@@ -60,15 +57,13 @@ body.is-history-archive-focused .site-ambient-carbonation.is-active{opacity:0;vi
 .history-prototype-page .history-3d-stage{min-height:0}
 @media(max-width:640px){
   .history-3d-era{min-height:260px}
+  .history-3d-overlay{gap:12px;padding-inline:24px}
   .history-3d-odometer{
-    right:24px;bottom:28px;
-    font-size:clamp(48px,14vw,76px);letter-spacing:-1px;
+    font-size:clamp(42px,11vw,64px);letter-spacing:-1px;
   }
-  .history-3d-caption{
-    left:24px;bottom:116px;width:calc(100% - 48px);
+  .history-3d-caption-window{
+    font-size:clamp(12px,3.45vw,17px);letter-spacing:-.3px;
   }
-  .history-3d-caption-eyebrow{font-size:9px}
-  .history-3d-caption-window{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){
   .history-3d-digit-reel{transition:none!important;transform:none!important}
