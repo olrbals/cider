@@ -83,9 +83,9 @@ function makeCan(stage, track, images) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-2, 2, 2, -2, 0.1, 40);
-  // Reduce the side-on camera angle so the horizontal can looks level.
-  // Preserve a slight end-cap reveal for depth without a conspicuous skew.
-  camera.position.set(0.35, 0, 8.5);
+  // View the standing can from slightly above to reveal the real lid.
+  // Keep the camera nearly frontal so the printed labels are easy to read.
+  camera.position.set(0.2, 0.72, 8.5);
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
@@ -108,9 +108,11 @@ function makeCan(stage, track, images) {
   // Compact desktop sizes adapt slightly further to keep the side gutters clear.
   const baseCanScale = 0.7056;
   carrier.scale.setScalar(baseCanScale);
-  carrier.rotation.z = -Math.PI / 2; // Blender's horizontal X-axis can.
+  // The CylinderGeometry is built along local Y. Leave that axis upright:
+  // rolling.rotation.y now spins the standing can side-to-side on scroll.
+  carrier.rotation.z = 0;
   scene.add(carrier);
-  carrier.position.set(0, 0, 0); // Responsive right-column placement is set in resize().
+  carrier.position.set(0, 0, 0); // Responsive centered placement is set in resize().
   const rolling = new THREE.Group();
   carrier.add(rolling);
 
@@ -151,7 +153,11 @@ function makeCan(stage, track, images) {
     const viewportWidth = Math.max(1, bounds.width);
     const viewportHeight = Math.max(1, bounds.height);
     const aspect = viewportWidth / viewportHeight;
-    frustumHeight = Math.max(3.1, 3.85 / aspect);
+    // An upright can is narrower than the old horizontal model. On phones,
+    // reserve enough vertical room for the headline and upright can.
+    frustumHeight = viewportWidth <= 760
+      ? Math.max(4.4, 2.3 / aspect)
+      : Math.max(3.1, 3.85 / aspect);
     camera.left = -frustumHeight * aspect / 2;
     camera.right = frustumHeight * aspect / 2;
     camera.top = frustumHeight / 2;
@@ -160,19 +166,17 @@ function makeCan(stage, track, images) {
     // Figma-inspired two-column history: both elements stay within the
     // desktop 200px side gutters at a 1440px viewport.
     const desktopFit = Math.min(1, viewportWidth / 1440);
-    const mobileFit = Math.min(1, viewportWidth / 760);
     if (viewportWidth <= 760) {
-      // Stack content on compact screens; leave the year above the can.
-      carrier.scale.setScalar(baseCanScale * mobileFit);
-      carrier.position.set(0, -frustumHeight * 0.13, 0);
+      // Mobile: keep the standing can centered below the stacked copy,
+      // without shrinking it twice as the viewport aspect gets narrower.
+      carrier.scale.setScalar(baseCanScale);
+      carrier.position.set(0, -frustumHeight * 0.14, 0);
     } else {
       const gutter = Math.min(200, viewportWidth * (200 / 1440));
-      const contentWidth = viewportWidth - gutter * 2;
-      // The left editorial group occupies 350px; allow the can to fill the
-      // rest without extending into the right side gutter.
-      const canCenterPx = gutter + contentWidth * 0.69;
+      // Keep the upright can horizontally centered; only its position changes.
+      const canCenterPx = viewportWidth / 2;
       const worldPerPixel = (camera.right - camera.left) / viewportWidth;
-      const halfCanPx = (rimCenter + 0.04) * baseCanScale * desktopFit / worldPerPixel;
+      const halfCanPx = 0.74 * baseCanScale * desktopFit / worldPerPixel;
       const gutterFit = Math.min(1, (viewportWidth - gutter - canCenterPx) / halfCanPx);
       carrier.scale.setScalar(baseCanScale * desktopFit * gutterFit);
       carrier.position.set((canCenterPx - viewportWidth / 2) * worldPerPixel, 0, 0);
@@ -181,10 +185,9 @@ function makeCan(stage, track, images) {
   }
 
   function render(pair, local) {
-    // A whole revolution per historical transition (instead of the old two).
-    // The first/last 20% of each era are intentional resting frames.
-    // At exactly 180 degrees the rear of the cylinder faces out, so changing
-    // the canvas label there is less noticeable than swapping mid-front.
+    // Keep one 360-degree rotation per historical transition.
+    // With the can upright, this is a horizontal spin around its vertical axis.
+    // Rest at both ends and replace the art only while the rear faces us.
     const rotationFraction = smoothstep(ROLL_START, ROLL_END, local);
     const labelIndex = Math.min(images.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0));
     setLabel(labelIndex);
@@ -300,45 +303,6 @@ function createArchiveCounter(stage, years) {
   return setYear;
 }
 
-// Eight passive progress markers keep the period legible without competing
-// with the animated typography or interfering with the page's scroll.
-function createArchiveTimeline(stage, years) {
-  const timeline = document.createElement('div');
-  timeline.className = 'history-3d-timeline';
-  timeline.setAttribute('aria-hidden', 'true');
-  const rail = document.createElement('div');
-  rail.className = 'history-3d-timeline-rail';
-  const fill = document.createElement('div');
-  fill.className = 'history-3d-timeline-fill';
-  rail.append(fill);
-  const row = document.createElement('div');
-  row.className = 'history-3d-timeline-years';
-  const markers = years.map(year => {
-    const marker = document.createElement('span');
-    marker.className = 'history-3d-timeline-item';
-    const dot = document.createElement('span');
-    dot.className = 'history-3d-timeline-dot';
-    const label = document.createElement('span');
-    label.className = 'history-3d-timeline-label';
-    label.textContent = year;
-    marker.append(dot, label);
-    row.append(marker);
-    return marker;
-  });
-  timeline.append(rail, row);
-  stage.append(timeline);
-  let previous = -1;
-  return (progress, activeIndex) => {
-    fill.style.transform = `scaleX(${progress.toFixed(4)})`;
-    if (activeIndex === previous) return;
-    markers.forEach((marker, index) => {
-      marker.classList.toggle('is-active', index === activeIndex);
-      marker.classList.toggle('is-past', index < activeIndex);
-    });
-    previous = activeIndex;
-  };
-}
-
 async function initHistory(section) {
   const stage = section.querySelector('.history-3d-stage');
   const track = section.querySelector('.history-3d-track');
@@ -355,7 +319,6 @@ async function initHistory(section) {
   });
   const years = eras.map(era => era.dataset.year);
   const renderArchiveCounter = createArchiveCounter(stage, years);
-  const renderTimeline = createArchiveTimeline(stage, years);
   const historyRoot = section.closest('.history') || section;
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
   let can = null;
@@ -383,7 +346,6 @@ async function initHistory(section) {
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = Math.min(eras.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0));
     section.dataset.activeYear = years[activeIndex];
-    renderTimeline(progress, activeIndex);
 
     // Interpolate the quiet background through the same transition, instead
     // of jumping between independent sections or adding distracting graphics.
