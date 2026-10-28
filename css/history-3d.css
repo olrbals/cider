@@ -1,39 +1,25 @@
-/* Editorial history palette: dusty rose develops into fresh mint.
-   Keep the existing 1440 x 480 panel proportion and 0.7x rolling can. */
-/* The shared background is owned by the history root, not by each
-   individual panel; this prevents hard seams during scroll interpolation. */
-#history.history{background:#EBCBC4}
-#history .history-3d{background:var(--history-era-bg,#EBCBC4)}
-#history .history-3d-track,
-#history .history-3d-era{background:transparent}
+/* Figma 1313:137 — quiet archive, 1440 x 480 frame, one bottom-right year.
+   Transparent surface keeps the live 3D can as the primary visual. */
+#history.history,#history .history-3d,
+#history .history-3d-track,#history .history-3d-era{background:#f7faf8}
 .history-3d{position:relative;isolation:isolate}
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
 .history-3d-track{position:relative;z-index:0}
 .history-3d-era{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate}
 .history-3d-year{
-  position:absolute;z-index:1;top:50%;left:50%;transform:translate(-50%,-50%);
-  font:700 24vw/1 "Archivo Black",Arial,sans-serif;letter-spacing:-.07em;
-  color:transparent;-webkit-text-fill-color:transparent;
-  -webkit-text-stroke:1.8px var(--history-era-outline,rgba(119,110,91,.42));
-  white-space:nowrap;user-select:none;pointer-events:none;
+  position:absolute;z-index:1;
+  right:clamp(24px,4.167vw,60px);bottom:clamp(24px,4.167vw,60px);
+  top:auto;left:auto;
+  font:400 clamp(56px,6.944vw,100px)/1.3 "Archivo Black",Arial,sans-serif;
+  letter-spacing:-2px;text-align:right;white-space:nowrap;
+  color:#149f5c;-webkit-text-fill-color:#149f5c;-webkit-text-stroke:0;
+  opacity:var(--history-year-opacity,1);
+  transform:translate3d(0,var(--history-year-rise,0px),0);
+  will-change:transform,opacity;pointer-events:none;user-select:none;
 }
-/* One static outline eight-point star anchored to each year title. */
-.history-3d-year::after{
-  content:"";
-  position:absolute;
-  top:7%;
-  right:-5.4vw;
-  width:clamp(56px,5.4vw,80px);
-  aspect-ratio:1;
-  background:var(--history-era-outline,rgba(119,110,91,.42));
-  opacity:.62;
-  -webkit-mask:url("../img/figma/outline-star-130.svg") center/contain no-repeat;
-  mask:url("../img/figma/outline-star-130.svg") center/contain no-repeat;
-  pointer-events:none;
-}
-@media(max-width:640px){
-  .history-3d-year::after{top:4%;right:-3vw;width:clamp(42px,11vw,58px)}
-}
+/* Suppress the global ambient bubble canvas only while history is centered
+   in the viewport; it remains unchanged on every other section. */
+body.is-history-archive-focused .site-ambient-carbonation.is-active{opacity:0;visibility:hidden}
 .history-3d-canvas{position:absolute;z-index:1;inset:0;pointer-events:none}
 .history-3d-canvas canvas{display:block;width:100%;height:100%}
 .history-3d-fallback{display:none;position:absolute;z-index:1;inset:0;align-items:center;justify-content:center;pointer-events:none}
@@ -44,5 +30,13 @@
 .history-prototype-page .history-3d-stage{min-height:0}
 @media(max-width:640px){
   .history-3d-era{min-height:260px}
-  .history-3d-year{font-size:27vw;-webkit-text-stroke:1.4px var(--history-era-outline,rgba(119,110,91,.42))}
+  .history-3d-year{
+    right:24px;bottom:28px;
+    font-size:clamp(48px,14vw,76px);letter-spacing:-1px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .history-3d-year{
+    transform:none!important;opacity:1!important;
+  }
 }
