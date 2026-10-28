@@ -160,16 +160,26 @@
   let lastProgress=0;
   let lastMovement=-Infinity;
   let settleFrame=0;
+  let vibrationPhase=0;
+  let lastVibrationTick=performance.now();
   let heroTimeline;
   let fallbackCleanup;
   const activity=()=>1-phase(performance.now()-lastMovement,25,125);
+  function drawCan(p,strength){
+    const now=performance.now();
+    const frequency=10+8*phase(p,.025,.34);
+    vibrationPhase+=Math.min((now-lastVibrationTick)/1000,.05)*frequency*Math.PI*2;
+    lastVibrationTick=now;
+    return can3D?.update(p,strength,vibrationPhase);
+  }
   function settleVibration(){
     settleFrame=0;
     if(motion.matches||!can3D) return;
     const strength=activity();
-    can3D.update(lastProgress,strength);
-    // A bounded tail, not a permanent rendering loop. The can rests within 125ms.
-    if(strength>0&&lastProgress>.025&&lastProgress<.26){
+    drawCan(lastProgress,strength);
+    // Render the 10–18Hz vibration only during active scroll, plus a bounded
+    // settling tail. It stops before the separate pause and tab-opening phase.
+    if(strength>0&&lastProgress>.025&&lastProgress<.39){
       settleFrame=requestAnimationFrame(settleVibration);
     }
   }
@@ -182,20 +192,14 @@
     lastProgress=progress;
     const p = clamp(progress);
     if (motion.matches) { can3D?.update(0); return; }
-    // A brief camera push makes the opening legible, then restores the
-    // smaller upright can before the existing curtain enters.
-    const focus = phase(p, .04, .16) * (1 - phase(p, .26, .35));
-    const topView = phase(p, .04, .20) * (1 - phase(p, .42, .57));
-    const settle = phase(p, .35, .50);
-    hero.style.setProperty('--hs-focus', focus.toFixed(4));
-    hero.style.setProperty('--hs-tab', phase(p, .285, .355).toFixed(4));
-    hero.style.setProperty('--hs-can-scale', (can3D ? 1 - .06 * focus - .04 * settle : 1 + .14 * focus - .1 * settle).toFixed(4));
-    hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * (can3D ? .035 * topView : .17 * phase(p, .015, .14) + .115 * topView - .05 * settle))}px`);
+    // Size, center and camera remain fixed; only the 3D can's horizontal
+    // vibration and its hinged ring respond before the existing wet transition.
+    hero.style.setProperty('--hs-tab', phase(p, .425, .505).toFixed(4));
 
     // Read the transformed opening so the liquid stays attached to the can.
     const stageBox = stage.getBoundingClientRect();
-    const projected = can3D?.update(p,activity());
-    if(can3D&&!settleFrame&&p>.025&&p<.26){
+    const projected = drawCan(p,activity());
+    if(can3D&&!settleFrame&&p>.025&&p<.39){
       settleFrame=requestAnimationFrame(settleVibration);
     }
     const opening = canSlot.getBoundingClientRect();
@@ -205,8 +209,8 @@
 
     // A feathered wet film starts at the opening after the foam pops. It has
     // no visible ring; the retained top curtain takes over as it spreads.
-    const spray=phase(p,.38,.60);
-    const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.38,.69));
+    const spray=phase(p,.52,.65);
+    const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.51,.69));
     const mask=`radial-gradient(circle ${radius}px at ${number(mouthX/10)}% ${number(mouthY/10)}%, #000 15%, rgba(0,0,0,.82) 55%, transparent 100%)`;
     sprayFilm.style.maskImage=mask;
     sprayFilm.style.webkitMaskImage=mask;

@@ -11,7 +11,11 @@ export async function createHeroCan(hero) {
   renderer.domElement.className='hs-can-3d';
   renderer.domElement.setAttribute('aria-hidden','true');
   const scene=new THREE.Scene();
-  const camera=new THREE.PerspectiveCamera(30,1,.1,40);
+  // Overscan gives the raised ring headroom without changing the body's
+  // projection size or its center: the FOV compensates for the taller canvas.
+  const overscan=1.24;
+  const fieldOfView=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(Math.PI/12)*overscan));
+  const camera=new THREE.PerspectiveCamera(fieldOfView,1,.1,40);
   // Studio softboxes become real view-dependent reflections through PMREM.
   const studio=new THREE.Scene();
   studio.background=new THREE.Color('#252c30');
@@ -76,7 +80,7 @@ export async function createHeroCan(hero) {
       let active=false;
       for(let i=0;i<batch.instanceMatrix.count;i++){
         const seed=i+(isFoam?91:7);
-        const start=.338+random(seed)*.027;
+        const start=.485+random(seed)*.027;
         const duration=isFoam ? .09+random(seed+3)*.04 : .11+random(seed+3)*.06;
         const t=(p-start)/duration;
         const visible=i<limit&&t>0&&t<1;
@@ -101,28 +105,26 @@ export async function createHeroCan(hero) {
   host.append(renderer.domElement);hero.classList.add('hs-can-3d-ready');
   let progress=0,width=0,height=0;
   const phase=(p,a,b)=>{let t=Math.min(1,Math.max(0,(p-a)/(b-a)));return t*t*(3-2*t);};
-  function update(p,activity=0){
-    progress=p;const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;
+  function update(p,activity=0,vibrationPhase=0){
+    progress=p;const w=host.clientWidth,h=Math.round(host.clientHeight*overscan);if(!w||!h)return;
     if(w!==width||h!==height){width=w;height=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
-    const view=phase(p,.025,.20)*(1-phase(p,.42,.58));
-    const angle=.035+view*.48;const distance=6.6;
+    // A fixed elevated view keeps the lid legible without making the upright
+    // can appear to tip towards the viewer as the scroll advances.
+    const angle=.38,distance=6.6;
     camera.position.set(0,Math.sin(angle)*distance,Math.cos(angle)*distance);camera.lookAt(0,0,0);
-    // Progress controls the oscillation phase, so a stationary scroll never
-    // runs a free-standing vibration. Activity only eases its final pose to rest.
-    const pressure=phase(p,.025,.235)*(1-phase(p,.24,.26));
-    const q=Math.max(0,Math.min(1,(p-.025)/.235));
-    const oscillation=Math.PI*2*(3*q+7*q*q);
-    const shake=pressure*activity;
-    const release=Math.max(0,Math.min(1,(p-.327)/.083));
-    const recoil=Math.sin(release*Math.PI*3)*Math.pow(1-release,2)*phase(p,.327,.333);
-    can.position.set(Math.sin(oscillation)*.014*shake,Math.sin(oscillation*1.47)*.003*shake-.023*recoil,0);
-    can.rotation.z=Math.sin(oscillation*.91)*.0028*shake;
+    const rect=renderer.domElement.getBoundingClientRect();
+    const pressure=phase(p,.025,.34)*(1-phase(p,.37,.39));
+    // Keep the visible travel consistent after the 0.8 CSS scale: at most
+    // 8.5px either side of center, exclusively horizontal, with zero rotation.
+    const worldPerPixel=2*distance*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.aspect/Math.max(1,rect.width);
+    can.position.set(Math.sin(vibrationPhase)*8.5*worldPerPixel*pressure*activity,0,0);
+    can.rotation.set(0,0,0);
     // The rear finger loop rises; the front nose presses the scored flap inward.
-    tabPivot.rotation.x=phase(p,.285,.355)*1.22;
-    flapPivot.rotation.x=phase(p,.318,.365)*1.03;
+    tabPivot.rotation.x=phase(p,.425,.505)*1.35;
+    flapPivot.rotation.x=phase(p,.465,.515)*1.03;
     drawBurst(p);
     renderer.render(scene,camera);
-    const projected=can.localToWorld(mouth.clone()).project(camera),rect=renderer.domElement.getBoundingClientRect();
+    const projected=can.localToWorld(mouth.clone()).project(camera);
     return {x:rect.left+(projected.x+1)*rect.width/2,y:rect.top+(1-projected.y)*rect.height/2};
   }
   const observer=new ResizeObserver(()=>update(progress));observer.observe(host);

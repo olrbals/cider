@@ -1,9 +1,9 @@
 /* Hero-only can opening. The 3D can owns its spray; the late curtain stays scoped here. */
-#top.hero { height: 200svh; max-height: none; min-height: 0; overflow: clip; --hs-tab: 0; --hs-focus: 0; }
+#top.hero { height: 300svh; max-height: none; min-height: 0; overflow: clip; --hs-tab: 0; --hs-focus: 0; }
 #top .hero-splash-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; isolation: isolate; background: #149f5c; }
 #top .hero-type, #top .hero-ring, #top .hero-product-layer, #top .hero-figma-star { opacity: calc(1 - var(--hs-reveal,0)); }
 #top .hero-type, #top .hero-ring { filter: blur(calc(var(--hs-focus) * 1.6px)); }
-#top .hero-product-layer { transform: translateX(-50%) translateY(var(--hs-can-shift,0px)) scale(var(--hs-can-scale,1)); transform-origin: 50% 50%; }
+#top .hero-product-layer { transform: translateX(-50%) scale(.8); transform-origin: 50% 50%; }
 #top .hero-can-top-slot { left: 50%; top: 0; width: 28%; height: 7%; transform: translateX(-50%); z-index: 2; overflow: visible; }
 #top .hs-can-aperture { position: absolute; z-index: 1; left: 27%; top: 39%; width: 48%; height: 25%; border-radius: 50%; background: radial-gradient(ellipse at 50% 70%, #1f493d 8%, #345f52 58%, #a6bdb4 85%); box-shadow: inset 0 2px 3px #102c28a8, 0 0 3px #eefff5; opacity: var(--hs-tab); }
 #top .hero-splash-tab { position: absolute; z-index: 2; left: 19%; top: 30%; width: 64%; height: 31%; border: 2px solid #dbe7de; border-radius: 52% 52% 44% 44%; background: linear-gradient(170deg,#fafffa,#aabcb3 58%,#718c82); box-shadow: 0 2px 4px #16493888, inset 0 1px 2px #fff; transform-origin: 50% 80%; transform: perspective(130px) translateY(calc(var(--hs-tab) * -13px)) rotate(calc(var(--hs-tab) * -25deg)) rotateX(calc(var(--hs-tab) * -43deg)); }
@@ -37,6 +37,6 @@
 }
 
 /* The existing image is retained only as a loading/WebGL fallback. */
-#top .hs-can-3d { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#top .hs-can-3d { position:absolute; inset:-12% 0 auto; width:100%; height:124%; pointer-events:none; }
 #top.hs-can-3d-ready .hero-can-body img { visibility:hidden; }
 #top.hs-can-3d-ready .hero-can-top-slot { visibility:hidden; }
