@@ -10,16 +10,13 @@
   const sheetGlint = svg.querySelector('.hs-sheet-glint');
   const refract = stage.querySelector('.hs-refraction');
   const canSlot = stage.querySelector('.hero-can-top-slot');
-  const dropsGroup = svg.querySelector('.hs-droplets');
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const mobile = window.matchMedia('(max-width: 700px)');
-  const ns = 'http://www.w3.org/2000/svg';
   const clamp = value => Math.max(0, Math.min(1, value));
   const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
   const phase = (value, start, end) => smooth((value - start) / (end - start));
   const number = value => Number(value.toFixed(2));
-  // The SVG remains a fallback. The primary surface is a transparent WebGL
-  // distance field: a brief burst, lens impacts, then the existing curtain.
+  // WebGL keeps the existing late curtain; the opening and foam are DOM-bound to the can.
   function createLiquidSurface() {
     const canvas = document.createElement('canvas');
     canvas.className = 'hs-liquid-webgl';
@@ -52,82 +49,11 @@
       float unite(float a,float b,float k) {
         float h=sat(.5+.5*(b-a)/k); return mix(b,a,h)-k*h*(1.0-h);
       }
-      vec2 impactPoint(float i) {
-        if (i<.5) return vec2(.29,.27);
-        if (i<1.5) return vec2(.70,.34);
-        if (i<2.5) return vec2(.48,.53);
-        return vec2(.82,.19);
-      }
       void main() {
         vec2 uv=gl_FragCoord.xy/u_resolution;
         uv.y=1.0-uv.y;
         float p=u_progress;
-        float aspect=u_resolution.x/u_resolution.y;
         float spread=phase(p,.44,.68), flow=phase(p,.56,.96);
-        float mouthY=u_mouth.y;
-        // A short, thick release stays attached to the opening. It ends before
-        // the camera-facing beads arrive, so it never becomes a vertical ribbon.
-        float burstRise=phase(p,.13,.25);
-        float burstFade=phase(p,.29,.37);
-        vec2 burstUv=uv;
-        burstUv.x+=(noise(uv*vec2(24.0,17.0)+p*5.0)-.5)*.009;
-        float burst=capsule(burstUv,vec2(u_mouth.x,mouthY+.01),
-          vec2(u_mouth.x+.012,mouthY-.115*burstRise),.024,.030);
-        burst+=(noise(uv*vec2(42.0,29.0)+p*8.0)-.5)*.006;
-        float burstMask=(1.0-smoothstep(-.004,.005,burst))
-          *phase(p,.12,.18)*(1.0-burstFade);
-
-        // Perspective is measured in screen-height units, so beads remain round
-        // on wide and narrow viewports. Each arrival becomes its own wet patch.
-        float airborne=0.0, beadShade=0.0, wetDistance=2.0;
-        for (int i=0;i<4;i++) {
-          float fi=float(i);
-          float launch=.16+fi*.026;
-          float arrival=.34+fi*.035;
-          float flight=phase(p,launch,arrival);
-          vec2 target=impactPoint(fi);
-          vec2 center=mix(vec2(u_mouth.x,mouthY-.035),target,flight);
-          center.x+=(fi-1.5)*.025*sin(3.14159*flight);
-          center.y-=.075*sin(3.14159*flight);
-          float radius=mix(.007,.041+.009*mod(fi,2.0),pow(flight,1.7));
-          vec2 beadDelta=vec2((uv.x-center.x)*aspect,(uv.y-center.y)*(.86+.14*flight));
-          float bead=length(beadDelta)-radius
-            +(noise(vec2(atan(beadDelta.y,beadDelta.x)*2.0+fi*3.0,p*1.7))-.5)*radius*.1;
-          float inFlight=phase(p,launch,launch+.025)*(1.0-phase(p,arrival-.018,arrival+.012));
-          float beadBody=1.0-smoothstep(-.004,.004,bead);
-          float beadRim=exp(-abs(bead)*145.0);
-          float beadLight=exp(-length(beadDelta-vec2(-radius*.35,-radius*.38))*95.0);
-          float facing=dot(beadDelta/max(length(beadDelta),.0001),vec2(.65,.76));
-          float brightRim=beadRim*(.62-.42*facing);
-          float darkRim=beadRim*(.38+.36*facing);
-          airborne+=inFlight*(beadBody*.10+brightRim*.52+darkRim*.3+beadLight*.38);
-          beadShade+=inFlight*darkRim*.7;
-
-          float impact=phase(p,arrival-.012,arrival+.07);
-          float grow=phase(p,arrival,arrival+.24);
-          float rx=(.018+grow*(.18+.02*mod(fi,2.0)));
-          float ry=(.015+grow*(.13+.025*mod(fi+1.0,2.0)));
-          vec2 q=(uv-target)/vec2(rx,ry);
-          float angle=atan(q.y,q.x);
-          float organic=(noise(vec2(angle*1.8+fi*4.0,p*1.4))-.5)*.42
-            +(noise(vec2(angle*4.3+fi*7.0,p*.8))-.5)*.13;
-          float wet=(length(q)-1.0+organic)*min(rx*aspect,ry);
-          if (i<2) {
-            vec2 tailA=vec2(target.x*aspect,target.y+.025);
-            vec2 tailB=vec2((target.x+.025)*aspect,target.y+.025+.17*grow);
-            float tail=capsule(vec2(uv.x*aspect,uv.y),tailA,tailB,.018,.007);
-            wet=unite(wet,tail,.012);
-          }
-          wetDistance=unite(wetDistance,wet+(1.0-impact)*.5,.018);
-        }
-        float wetOpacity=1.0-phase(p,.68,.82);
-        float wetBody=(1.0-smoothstep(-.003,.003,wetDistance))*wetOpacity
-          *(.075+.045*noise(uv*vec2(11.0,9.0)+p*1.2));
-        float wetRim=exp(-abs(wetDistance)*135.0)*wetOpacity;
-        float wetEdge=wetRim*(.035+.035*noise(uv*vec2(7.0,8.0)+p));
-        float wetGlint=exp(-abs(wetDistance+.009)*170.0)*wetOpacity
-          *(.025+.055*noise(uv*vec2(5.0,6.0)+vec2(4.0,p)));
-
         float halfWidth=mix(.025,.64,spread);
         float lateral=abs(uv.x-u_mouth.x);
         float irregular=(noise(vec2(uv.x*7.0,p*2.1))-.5)*.18
@@ -152,10 +78,9 @@
         float bright=phase(p,.77,.99);
         float alpha=inner+edge*.37+body*bright*.47;
         float glint=exp(-abs(d+.013)*210.0)*body*.15;
-        alpha+=glint+burstMask*.21+airborne+wetBody+wetEdge+wetGlint;
+        alpha+=glint;
         vec3 color=mix(vec3(.75,.94,.85),vec3(1.0),.55+bright*.42);
         color=mix(color,vec3(.42,.78,.62),edge*.25);
-        color=mix(color,vec3(.27,.43,.36),sat(beadShade*.55));
         color+=vec3(glint*.4);
         alpha=sat(alpha);
         gl_FragColor=vec4(color,alpha);
@@ -211,26 +136,31 @@
     return {draw,canvas};
   }
   const liquidSurface=createLiquidSurface();
-  const lensRefract = document.createElement('div');
-  lensRefract.className = 'hs-lens-refraction';
-  lensRefract.setAttribute('aria-hidden', 'true');
-  stage.append(lensRefract);
-  const drops = Array.from({ length: 4 }, (_, index) => {
-    const group = document.createElementNS(ns, 'g');
-    const body = document.createElementNS(ns, 'circle');
-    const glint = document.createElementNS(ns, 'circle');
-    const wet = document.createElementNS(ns, 'ellipse');
-    body.classList.add('hs-droplet');
-    body.setAttribute('fill', 'url(#hs-drop-water)');
-    glint.classList.add('hs-droplet-glint');
-    wet.classList.add('hs-lens-wet');
-    wet.setAttribute('fill', 'url(#hs-drop-water)');
-    group.append(body, glint);
-    dropsGroup.append(group);
-    dropsGroup.append(wet);
-    return { group, body, glint, wet, index };
-  });
-
+  const aperture=document.createElement('span');
+  aperture.className='hs-can-aperture';
+  canSlot.prepend(aperture);
+  const foam=document.createElement('span');
+  foam.className='hs-foam-burst';
+  foam.setAttribute('aria-hidden','true');
+  const foamBeads=[
+    [35,8,22],[48,17,25],[57,7,20],[26,24,13],[69,22,15],
+    [42,39,17],[58,43,13],[31,52,11],[73,47,9],[51,61,12],
+    [17,38,7],[82,34,8],[37,70,7],[64,73,6],[52,87,5],
+    [22,65,5],[77,63,6],[45,29,9]
+  ];
+  for (const [left,bottom,size] of foamBeads) {
+    const puff=document.createElement('i');
+    puff.style.left=`${left}%`;
+    puff.style.bottom=`${bottom}px`;
+    puff.style.width=`${size}px`;
+    puff.style.height=`${size*.85}px`;
+    foam.append(puff);
+  }
+  canSlot.append(foam);
+  const sprayFilm=document.createElement('div');
+  sprayFilm.className='hs-spray-film';
+  sprayFilm.setAttribute('aria-hidden','true');
+  stage.append(sprayFilm);
   /* Catmull-Rom conversion keeps each varying drip tangent to its neighbour. */
   function curve(points) {
     let path = `M ${number(points[0][0])} ${number(points[0][1])}`;
@@ -247,10 +177,17 @@
   function render(progress) {
     const p = clamp(progress);
     if (motion.matches) return;
-    hero.style.setProperty('--hs-tab', phase(p, .015, .15).toFixed(4));
-    const settle = phase(p, .025, .23);
-    hero.style.setProperty('--hs-can-scale', (1 - .1 * settle).toFixed(4));
-    hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * .12 * settle)}px`);
+    // A brief camera push makes the opening legible, then restores the
+    // smaller upright can before the existing curtain enters.
+    const focus = phase(p, .015, .10) * (1 - phase(p, .16, .30));
+    const topView = phase(p, .08, .18) * (1 - phase(p, .30, .44));
+    const settle = phase(p, .15, .32);
+    hero.style.setProperty('--hs-focus', focus.toFixed(4));
+    hero.style.setProperty('--hs-tab', phase(p, .075, .18).toFixed(4));
+    hero.style.setProperty('--hs-can-scale', (1 + .14 * focus - .1 * settle).toFixed(4));
+    hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * (.17 * phase(p, .015, .14) + .115 * topView - .05 * settle))}px`);
+    hero.style.setProperty('--hs-foam', (phase(p, .17, .22) * (1 - phase(p, .31, .41))).toFixed(4));
+    hero.style.setProperty('--hs-foam-bloom', phase(p, .18, .30).toFixed(4));
 
     // Read the transformed opening so the liquid stays attached to the can.
     const stageBox = stage.getBoundingClientRect();
@@ -259,46 +196,14 @@
     const mouthY = (opening.top + opening.height * .53 - stageBox.top) / stageBox.height * 1000;
     liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
 
-    // Each camera-facing bead expands into a soft optical patch on contact.
-    // The same contact times and positions drive the WebGL surface and the
-    // backdrop refraction, keeping the water and the live page aligned.
-    const targets = [[.29, .27], [.70, .34], [.48, .53], [.82, .19]];
-    const masks = targets.map(([x, y], index) => {
-      const arrival = .34 + index * .035;
-      const grow = phase(p, arrival, arrival + .24);
-      const rx = Math.round(stage.clientWidth * (.018 + grow * (.18 + .02 * (index % 2))));
-      const ry = Math.round(stage.clientHeight * (.015 + grow * (.13 + .025 * ((index + 1) % 2))));
-      return `radial-gradient(ellipse ${Math.max(rx, 1)}px ${Math.max(ry, 1)}px at ${x * 100}% ${y * 100}%, #000 35%, transparent 78%)`;
-    }).join(', ');
-    lensRefract.style.maskImage = masks;
-    lensRefract.style.webkitMaskImage = masks;
-    lensRefract.style.opacity = (phase(p, .33, .56) * (1 - phase(p, .68, .82)) * .72).toFixed(3);
-
-    // WebGL fallback: small perspective beads become transparent lens marks.
-    drops.forEach(({ group, body, glint, wet, index }) => {
-      const launch = .16 + index * .026;
-      const arrival = .34 + index * .035;
-      const flight = phase(p, launch, arrival);
-      const [tx, ty] = targets[index];
-      const x = mouthX + (tx * 1000 - mouthX) * flight + (index - 1.5) * 25 * Math.sin(Math.PI * flight);
-      const y = mouthY - 35 + (ty * 1000 - mouthY + 35) * flight - 75 * Math.sin(Math.PI * flight);
-      const radius = (7 + (41 + 9 * (index % 2) - 7) * Math.pow(flight, 1.7));
-      const visible = phase(p, launch, launch + .025) * (1 - phase(p, arrival - .018, arrival + .012));
-      group.style.opacity = visible.toFixed(3);
-      body.setAttribute('cx', number(x));
-      body.setAttribute('cy', number(y));
-      body.setAttribute('r', number(radius));
-      glint.setAttribute('cx', number(x - radius * .3));
-      glint.setAttribute('cy', number(y - radius * .34));
-      glint.setAttribute('r', number(radius * .14));
-      const grow = phase(p, arrival, arrival + .24);
-      wet.setAttribute('cx', tx * 1000);
-      wet.setAttribute('cy', ty * 1000);
-      wet.setAttribute('rx', number(18 + grow * (180 + 20 * (index % 2))));
-      wet.setAttribute('ry', number(15 + grow * (130 + 25 * ((index + 1) % 2))));
-      wet.style.opacity = (phase(p, arrival - .012, arrival + .07) * (1 - phase(p, .68, .82)) * .42).toFixed(3);
-    });
-
+    // A feathered wet film starts at the opening after the foam pops. It has
+    // no visible ring; the retained top curtain takes over as it spreads.
+    const spray=phase(p,.30,.60);
+    const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.31,.69));
+    const mask=`radial-gradient(circle ${radius}px at ${number(mouthX/10)}% ${number(mouthY/10)}%, #000 15%, rgba(0,0,0,.82) 55%, transparent 100%)`;
+    sprayFilm.style.maskImage=mask;
+    sprayFilm.style.webkitMaskImage=mask;
+    sprayFilm.style.opacity=(spray*(1-phase(p,.70,.83))*.68).toFixed(3);
     const spread = phase(p, .46, .70);
     const flow = phase(p, .60, .98);
     const half = 28 + 550 * spread;
@@ -374,12 +279,15 @@
     if (motion.matches) {
       window.ScrollTrigger?.getById('hero-splash-only')?.kill();
       hero.style.removeProperty('--hs-tab');
+      hero.style.removeProperty('--hs-focus');
       hero.style.removeProperty('--hs-can-scale');
       hero.style.removeProperty('--hs-can-shift');
+      hero.style.removeProperty('--hs-foam');
+      hero.style.removeProperty('--hs-foam-bloom');
       hero.style.removeProperty('--hs-reveal');
       stage.style.removeProperty('background-color');
       refract.style.opacity = '0';
-      lensRefract.style.opacity = '0';
+      sprayFilm.style.opacity = '0';
     } else if (!window.ScrollTrigger?.getById('hero-splash-only')) {
       initialize();
     }
