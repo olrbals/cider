@@ -236,12 +236,11 @@ function createArchiveCounter(stage, years) {
     reel.className = 'history-3d-digit-reel';
     window.append(reel);
     yearWindow.append(window);
-    return { reel, changing: false };
+    return { reel, animation: null };
   });
   const screenReaderYear = document.createElement('span');
   screenReaderYear.className = 'visually-hidden';
   screenReaderYear.textContent = years[0];
-  // One aligned editorial group: the year is centered under its caption.
   const infoGroup = document.createElement('div');
   infoGroup.className = 'history-3d-info';
   infoGroup.append(caption, yearWindow);
@@ -254,52 +253,93 @@ function createArchiveCounter(stage, years) {
     glyph.textContent = character;
     return glyph;
   };
-  let lastPair = -1;
-  let lastStaticYear = '';
+  let currentIndex = -1;
+  let captionPair = -1;
+
+  function settle(index) {
+    const year = years[index];
+    year.split('').forEach((value, digitIndex) => {
+      const item = digits[digitIndex];
+      item.animation?.cancel();
+      item.animation = null;
+      item.reel.replaceChildren(makeGlyph(value));
+      item.reel.style.filter = '';
+    });
+  }
+
+  // Each transition spins all four physical reels forward or backward.
+  // Twenty full digit steps + up to nine aligning steps = 2–3 revolutions,
+  // then an exact landing on the destination year, once per year change.
+  function spin(fromIndex, toIndex) {
+    const from = years[fromIndex];
+    const to = years[toIndex];
+    const direction = toIndex >= fromIndex ? 1 : -1;
+    digits.forEach((item, index) => {
+      item.animation?.cancel();
+      item.animation = null;
+      // Unchanged places stay perfectly still (e.g. 1950 → 1960 spins only 5 → 6).
+      // Also clear any reel left mid-animation by a rapid reverse scroll.
+      if (from[index] === to[index]) {
+        item.reel.replaceChildren(makeGlyph(to[index]));
+        item.reel.style.filter = '';
+        return;
+      }
+      const startDigit = Number(from[index]);
+      const endDigit = Number(to[index]);
+      const remainder = direction > 0
+        ? (endDigit - startDigit + 10) % 10
+        : (startDigit - endDigit + 10) % 10;
+      const steps = 20 + remainder;
+      const frames = [makeGlyph(String(startDigit))];
+      for (let step = 1; step <= steps; step++) {
+        frames.push(makeGlyph(String((startDigit + direction * step + 1000) % 10)));
+      }
+      item.reel.replaceChildren(...frames);
+      item.reel.style.filter = 'blur(.7px)';
+      const animation = item.reel.animate([
+        { transform: 'translate3d(0,0,0)' },
+        { transform: 'translate3d(0,-' + (100 * steps / (steps + 1)).toFixed(5) + '%,0)' }
+      ], {
+        duration: 450 + index * 27,
+        delay: index * 16,
+        easing: 'cubic-bezier(.17,.82,.24,1)',
+        fill: 'forwards'
+      });
+      item.animation = animation;
+      animation.onfinish = () => {
+        if (item.animation !== animation) return;
+        item.reel.replaceChildren(makeGlyph(to[index]));
+        animation.cancel();
+        item.animation = null;
+        item.reel.style.filter = '';
+      };
+    });
+  }
 
   function setYear(pair, blend) {
-    if (reducedMotion.matches) {
-      const selected = blend < 0.5 ? pair : pair + 1;
-      if (lastStaticYear !== years[selected]) {
-        years[selected].split('').forEach((digit, index) => {
-          digits[index].reel.replaceChildren(makeGlyph(digit));
-          digits[index].changing = false;
-          digits[index].reel.style.transform = '';
-        });
-        lastStaticYear = years[selected];
-        lastPair = -1;
-      }
-      copyCurrent.textContent = labels[selected];
-      copyCurrent.style.opacity = '1';
-      copyNext.style.opacity = '0';
-      screenReaderYear.textContent = years[selected];
-      return;
-    }
+    const selected = Math.min(years.length - 1, pair + (blend < .5 ? 0 : 1));
 
-    if (lastPair !== pair || lastStaticYear) {
-      years[pair].split('').forEach((digit, index) => {
-        const next = years[pair + 1][index];
-        const changing = digit !== next;
-        const reel = digits[index].reel;
-        reel.replaceChildren(makeGlyph(digit), ...(changing ? [makeGlyph(next)] : []));
-        digits[index].changing = changing;
-        reel.style.transform = '';
-      });
+    if (currentIndex === -1) {
+      settle(selected);
+    } else if (selected !== currentIndex) {
+      if (reducedMotion.matches || !digits[0].reel.animate) settle(selected);
+      else spin(currentIndex, selected);
+    }
+    currentIndex = selected;
+
+    if (captionPair !== pair) {
       copyCurrent.textContent = labels[pair];
       copyNext.textContent = labels[pair + 1];
-      lastPair = pair;
-      lastStaticYear = '';
+      captionPair = pair;
     }
-
-    // 0 -> -50% moves one glyph height across a two-glyph vertical stack.
-    // When a digit is unchanged its reel never moves.
-    digits.forEach(({ reel, changing }) => {
-      if (changing) reel.style.transform = `translate3d(0,-${(blend * 50).toFixed(3)}%,0)`;
-    });
     copyCurrent.style.opacity = (1 - blend).toFixed(3);
     copyNext.style.opacity = blend.toFixed(3);
-    screenReaderYear.textContent = years[blend < 0.5 ? pair : pair + 1];
+    screenReaderYear.textContent = years[selected];
   }
+
+  reducedMotion.addEventListener('change', () => {
+    if (currentIndex >= 0) settle(currentIndex);
+  });
   return setYear;
 }
 
