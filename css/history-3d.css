@@ -1,23 +1,34 @@
-/* Figma 1313:137 — quiet archive, 1440 x 480 frame, one bottom-right year.
-   Transparent surface keeps the live 3D can as the primary visual. */
+/* Pinned history stage: paired left copy/year and right rolling 3D can.
+   Layout follows the Figma archive's 1440px frame with 200px side gutters. */
 #history.history,#history .history-3d,
-#history .history-3d-track,#history .history-3d-era{background:#f7faf8}
+#history .history-3d-track,#history .history-3d-era{
+  background-color:var(--history-surface,#f7faf8)
+}
 .history-3d{position:relative;isolation:isolate}
 .history-3d-stage{position:sticky;top:0;z-index:4;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none}
+.history-3d-stage::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 34% 37% at 71% 50%,var(--history-halo,rgba(185,222,190,.15)),transparent 82%);
+}
 .history-3d-track{position:relative;z-index:0}
-.history-3d-era{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate}
-/* Figma node 1314:143: a fixed horizontal editorial row at 50% viewport
-   height, with 60px side gutters on the 1440 × 480 reference frame. */
+/* Keep the horizontal archive layout, with ~30% more scroll room per era. */
+.history-3d-era{position:relative;width:100%;aspect-ratio:30/13;overflow:hidden;isolation:isolate}
+/* Group the caption directly above the rolling year; the can lives on the right. */
 .history-3d-overlay{
   position:absolute;inset:0;z-index:2;pointer-events:none;
-  display:flex;align-items:center;justify-content:space-between;
-  gap:24px;padding-inline:clamp(36px,calc(4.167vw + 12px),72px);
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  padding-inline:clamp(24px,13.889vw,200px);
   color:#149f5c;user-select:none;
+}
+.history-3d-info{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;width:min(29vw,350px);max-width:100%;
+  text-align:center;
 }
 .history-3d-odometer{
   position:relative;flex:0 0 auto;
-  display:flex;align-items:flex-end;overflow:hidden;
-  font:400 clamp(56px,7.223vw,104px)/1.3 "Archivo Black",Arial,sans-serif;
+  display:flex;align-items:flex-end;justify-content:center;overflow:hidden;
+  font:400 clamp(60px,calc(7.223vw + 4px),108px)/1.3 "Archivo Black",Arial,sans-serif;
   font-variant-numeric:tabular-nums;letter-spacing:-2.08px;
   color:#149f5c;white-space:nowrap;
 }
@@ -31,37 +42,82 @@
   text-align:center;
 }
 .history-3d-caption{
-  position:relative;flex:1 1 auto;min-width:0;
-  max-width:730px;text-align:left;
+  position:relative;flex:0 0 auto;min-width:0;
+  width:100%;max-width:100%;text-align:center;
   font-family:"Yaldevi Colombo SemiBold","Pretendard","Apple SD Gothic Neo",sans-serif;
 }
 .history-3d-caption-window{
   position:relative;width:100%;height:1.3em;overflow:hidden;
-  font-size:clamp(16px,1.945vw,28px);
+  font-size:clamp(20px,calc(1.945vw + 4px),32px);
   font-weight:700;line-height:1.3;letter-spacing:-.56px;
 }
 .history-3d-caption-copy{
   position:absolute;inset:0;display:block;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;
 }
+/* Minimal era indicator, anchored to the same 200px content gutters.
+   Its markers respond to scroll without intercepting mouse or touch events. */
+.history-3d-timeline{
+  position:absolute;z-index:3;left:clamp(24px,13.889vw,200px);
+  right:clamp(24px,13.889vw,200px);bottom:clamp(28px,5svh,52px);
+  pointer-events:none;font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;
+}
+.history-3d-timeline-rail{
+  position:absolute;left:0;right:0;top:4px;height:1px;
+  background:rgba(20,159,92,.2);
+}
+.history-3d-timeline-fill{
+  height:100%;width:100%;transform:scaleX(0);transform-origin:0 50%;
+  background:#149f5c;
+}
+.history-3d-timeline-years{position:relative;display:flex;justify-content:space-between;gap:8px}
+.history-3d-timeline-item{
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  min-width:36px;color:rgba(20,131,80,.46);
+  font-size:11px;font-weight:600;line-height:1.2;letter-spacing:.2px;
+}
+.history-3d-timeline-dot{
+  display:block;width:9px;height:9px;box-sizing:border-box;border-radius:50%;
+  border:1px solid #95cbb0;background:var(--history-surface,#f7faf8);
+}
+.history-3d-timeline-item.is-past .history-3d-timeline-dot{background:#8fc9a9;border-color:#8fc9a9}
+.history-3d-timeline-item.is-active{color:#149f5c;font-weight:800}
+.history-3d-timeline-item.is-active .history-3d-timeline-dot{
+  background:#149f5c;border-color:#149f5c;box-shadow:0 0 0 3px rgba(20,159,92,.1)
+}
 /* Site-wide ambient carbonation and liquid pointer effects remain enabled
    in history, just as in the other sections. */
 .history-3d-canvas{position:absolute;z-index:1;inset:0;pointer-events:none}
 .history-3d-canvas canvas{display:block;width:100%;height:100%}
 .history-3d-fallback{display:none;position:absolute;z-index:1;inset:0;align-items:center;justify-content:center;pointer-events:none}
-.history-3d-fallback img{width:auto;height:min(70vw,650px);max-height:78vh;transform:rotate(-90deg) scale(.7);filter:drop-shadow(22px 25px 15px rgba(47,26,20,.25))}
-.history-3d-fallback img.is-horizontal{width:min(70vw,820px);height:auto;transform:scale(.7)}
+.history-3d-fallback img{width:auto;height:min(70vw,650px);max-height:78vh;transform:rotate(-90deg) scale(.588);filter:drop-shadow(22px 25px 15px rgba(47,26,20,.25))}
+.history-3d-fallback img.is-horizontal{width:min(70vw,820px);height:auto;transform:scale(.588)}
+@media(min-width:761px){
+  /* Match the fallback image to the right-hand 3D can column. */
+  .history-3d-fallback{padding-left:min(33.33vw,480px)}
+}
 .history-3d[data-fallback="true"] .history-3d-fallback{display:flex}
 .history-prototype-page{margin:0;min-width:0;overflow-x:hidden;font-family:Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 .history-prototype-page .history-3d-stage{min-height:0}
-@media(max-width:640px){
+@media(max-width:760px){
   .history-3d-era{min-height:260px}
-  .history-3d-overlay{gap:12px;padding-inline:36px}
+  .history-3d-overlay{
+    justify-content:flex-start;
+    padding:clamp(72px,16svh,150px) clamp(24px,6vw,42px) 0;
+  }
+  .history-3d-info{width:100%}
+  .history-3d-caption{width:100%}
+  .history-3d-timeline{left:24px;right:24px;bottom:24px}
+  .history-3d-timeline-years{gap:3px}
+  .history-3d-timeline-item{min-width:0;flex:1;font-size:0}
+  .history-3d-timeline-item.is-active .history-3d-timeline-label{font-size:11px}
+  .history-3d-timeline-dot{width:8px;height:8px}
+  .history-3d-timeline-rail{top:3.5px}
   .history-3d-odometer{
-    font-size:clamp(42px,11vw,64px);letter-spacing:-1px;
+    font-size:clamp(46px,calc(11vw + 4px),68px);letter-spacing:-1px;
   }
   .history-3d-caption-window{
-    font-size:clamp(12px,3.45vw,17px);letter-spacing:-.3px;
+    font-size:clamp(16px,calc(3.45vw + 4px),21px);letter-spacing:-.3px;
   }
 }
 @media(prefers-reduced-motion:reduce){
