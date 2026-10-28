@@ -16,7 +16,7 @@
   const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
   const phase = (value, start, end) => smooth((value - start) / (end - start));
   const number = value => Number(value.toFixed(2));
-  // WebGL keeps the existing late curtain; the opening and foam are DOM-bound to the can.
+  // The late curtain is retained; the 3D can owns its opening and local spray.
   function createLiquidSurface() {
     const canvas = document.createElement('canvas');
     canvas.className = 'hs-liquid-webgl';
@@ -139,24 +139,6 @@
   const aperture=document.createElement('span');
   aperture.className='hs-can-aperture';
   canSlot.prepend(aperture);
-  const foam=document.createElement('span');
-  foam.className='hs-foam-burst';
-  foam.setAttribute('aria-hidden','true');
-  const foamBeads=[
-    [35,8,22],[48,17,25],[57,7,20],[26,24,13],[69,22,15],
-    [42,39,17],[58,43,13],[31,52,11],[73,47,9],[51,61,12],
-    [17,38,7],[82,34,8],[37,70,7],[64,73,6],[52,87,5],
-    [22,65,5],[77,63,6],[45,29,9]
-  ];
-  for (const [left,bottom,size] of foamBeads) {
-    const puff=document.createElement('i');
-    puff.style.left=`${left}%`;
-    puff.style.bottom=`${bottom}px`;
-    puff.style.width=`${size}px`;
-    puff.style.height=`${size*.85}px`;
-    foam.append(puff);
-  }
-  canSlot.append(foam);
   const sprayFilm=document.createElement('div');
   sprayFilm.className='hs-spray-film';
   sprayFilm.setAttribute('aria-hidden','true');
@@ -176,29 +158,46 @@
 
   let can3D;
   let lastProgress=0;
+  let lastMovement=-Infinity;
+  let settleFrame=0;
+  let heroTimeline;
+  let fallbackCleanup;
+  const activity=()=>1-phase(performance.now()-lastMovement,25,125);
+  function settleVibration(){
+    settleFrame=0;
+    if(motion.matches||!can3D) return;
+    const strength=activity();
+    can3D.update(lastProgress,strength);
+    // A bounded tail, not a permanent rendering loop. The can rests within 125ms.
+    if(strength>0&&lastProgress>.025&&lastProgress<.26){
+      settleFrame=requestAnimationFrame(settleVibration);
+    }
+  }
   import('./hero-can-3d.js').then(async module => {
     can3D=await module.createHeroCan(hero);
     render(lastProgress);
   }).catch(error => console.warn('Hero 3D unavailable; using existing can fallback.', error));
   function render(progress) {
+    if(Math.abs(progress-lastProgress)>1e-7) lastMovement=performance.now();
     lastProgress=progress;
     const p = clamp(progress);
     if (motion.matches) { can3D?.update(0); return; }
     // A brief camera push makes the opening legible, then restores the
     // smaller upright can before the existing curtain enters.
-    const focus = phase(p, .015, .10) * (1 - phase(p, .16, .30));
-    const topView = phase(p, .08, .18) * (1 - phase(p, .30, .44));
-    const settle = phase(p, .15, .32);
+    const focus = phase(p, .04, .16) * (1 - phase(p, .26, .35));
+    const topView = phase(p, .04, .20) * (1 - phase(p, .42, .57));
+    const settle = phase(p, .35, .50);
     hero.style.setProperty('--hs-focus', focus.toFixed(4));
-    hero.style.setProperty('--hs-tab', phase(p, .075, .18).toFixed(4));
+    hero.style.setProperty('--hs-tab', phase(p, .285, .355).toFixed(4));
     hero.style.setProperty('--hs-can-scale', (can3D ? 1 - .06 * focus - .04 * settle : 1 + .14 * focus - .1 * settle).toFixed(4));
     hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * (can3D ? .035 * topView : .17 * phase(p, .015, .14) + .115 * topView - .05 * settle))}px`);
-    hero.style.setProperty('--hs-foam', (phase(p, .17, .22) * (1 - phase(p, .31, .41))).toFixed(4));
-    hero.style.setProperty('--hs-foam-bloom', phase(p, .18, .30).toFixed(4));
 
     // Read the transformed opening so the liquid stays attached to the can.
     const stageBox = stage.getBoundingClientRect();
-    const projected = can3D?.update(p);
+    const projected = can3D?.update(p,activity());
+    if(can3D&&!settleFrame&&p>.025&&p<.26){
+      settleFrame=requestAnimationFrame(settleVibration);
+    }
     const opening = canSlot.getBoundingClientRect();
     const mouthX = ((projected?.x ?? opening.left + opening.width * .5) - stageBox.left) / stageBox.width * 1000;
     const mouthY = ((projected?.y ?? opening.top + opening.height * .53) - stageBox.top) / stageBox.height * 1000;
@@ -206,8 +205,8 @@
 
     // A feathered wet film starts at the opening after the foam pops. It has
     // no visible ring; the retained top curtain takes over as it spreads.
-    const spray=phase(p,.30,.60);
-    const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.31,.69));
+    const spray=phase(p,.38,.60);
+    const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.38,.69));
     const mask=`radial-gradient(circle ${radius}px at ${number(mouthX/10)}% ${number(mouthY/10)}%, #000 15%, rgba(0,0,0,.82) 55%, transparent 100%)`;
     sprayFilm.style.maskImage=mask;
     sprayFilm.style.webkitMaskImage=mask;
@@ -264,35 +263,47 @@
     }
     if (window.gsap && window.ScrollTrigger) {
       window.gsap.registerPlugin(window.ScrollTrigger);
-      const trigger = window.ScrollTrigger.create({
-        id: 'hero-splash-only',
-        trigger: hero,
-        start: 'top top',
-        end: 'bottom bottom',
-        invalidateOnRefresh: true,
-        onUpdate: self => render(self.progress),
-        onRefresh: self => render(self.progress)
+      const playhead={progress:0};
+      heroTimeline=window.gsap.timeline({
+        scrollTrigger:{
+          id:'hero-splash-only',
+          trigger:hero,
+          start:'top top',
+          end:'bottom bottom',
+          scrub:true,
+          invalidateOnRefresh:true,
+          onRefresh:self=>render(self.progress)
+        }
+      }).fromTo(playhead,{progress:0},{
+        progress:1,duration:1,ease:'none',immediateRender:false,
+        onUpdate:()=>render(playhead.progress)
       });
-      render(trigger.progress);
+      render(heroTimeline.scrollTrigger.progress);
     } else {
       // A native fallback preserves the scene when GSAP is unavailable.
       const update = () => render(-hero.getBoundingClientRect().top / Math.max(1, hero.offsetHeight - innerHeight));
       window.addEventListener('scroll', update, { passive: true });
       window.addEventListener('resize', update, { passive: true });
+      fallbackCleanup=()=>{
+        window.removeEventListener('scroll',update);
+        window.removeEventListener('resize',update);
+      };
       update();
     }
   }
 
   motion.addEventListener('change', () => {
     if (motion.matches) {
+      cancelAnimationFrame(settleFrame);
+      settleFrame=0;
       can3D?.update(0);
       window.ScrollTrigger?.getById('hero-splash-only')?.kill();
+      heroTimeline?.kill();
+      fallbackCleanup?.();
       hero.style.removeProperty('--hs-tab');
       hero.style.removeProperty('--hs-focus');
       hero.style.removeProperty('--hs-can-scale');
       hero.style.removeProperty('--hs-can-shift');
-      hero.style.removeProperty('--hs-foam');
-      hero.style.removeProperty('--hs-foam-bloom');
       hero.style.removeProperty('--hs-reveal');
       stage.style.removeProperty('background-color');
       refract.style.opacity = '0';

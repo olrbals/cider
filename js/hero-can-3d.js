@@ -55,22 +55,74 @@ export async function createHeroCan(hero) {
   const tab=add(new THREE.ExtrudeGeometry(tabShape,{depth:.015,bevelEnabled:true,bevelSize:.01,bevelThickness:.006,bevelSegments:3,curveSegments:48}),metal,0,0,0,tabPivot);tab.rotation.x=-Math.PI/2;
   add(new THREE.CylinderGeometry(.042,.049,.025,40),metal,0,1.616,-.035);
   const mouth=new THREE.Vector3(0,1.59,.25);
-  const particles=[]; const dropMat=new THREE.MeshPhysicalMaterial({color:0xf7ffff,metalness:0,roughness:.12,transparent:true,opacity:.72,clearcoat:1});
-  for(let i=0;i<32;i++){const drop=add(new THREE.SphereGeometry(.006+(i%5)*.0018,6,4),dropMat);drop.scale.y=1.7;particles.push(drop);}
+  // Two instanced batches: tiny wet foam at the opening, then heavier clear
+  // droplets with ballistic trajectories towards the lens. No glowing sprites.
+  const mobile=matchMedia('(max-width: 700px)');
+  const dropletGeometry=new THREE.SphereGeometry(1,8,6);
+  const dropMat=new THREE.MeshPhysicalMaterial({color:0xdce9e3,metalness:.08,roughness:.09,transparent:true,opacity:.74,clearcoat:1,depthWrite:false});
+  const foamMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.26,transparent:true,opacity:.6,depthWrite:false});
+  const droplets=new THREE.InstancedMesh(dropletGeometry,dropMat,28);
+  const foam=new THREE.InstancedMesh(dropletGeometry,foamMat,64);
+  for(const batch of [droplets,foam]){
+    batch.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    batch.frustumCulled=false;
+    can.add(batch);
+  }
+  const pose=new THREE.Object3D();
+  const random=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);};
+  function drawBurst(p){
+    for(const [batch,isFoam] of [[foam,true],[droplets,false]]){
+      const limit=mobile.matches?Math.ceil(batch.instanceMatrix.count*.65):batch.instanceMatrix.count;
+      let active=false;
+      for(let i=0;i<batch.instanceMatrix.count;i++){
+        const seed=i+(isFoam?91:7);
+        const start=.338+random(seed)*.027;
+        const duration=isFoam ? .09+random(seed+3)*.04 : .11+random(seed+3)*.06;
+        const t=(p-start)/duration;
+        const visible=i<limit&&t>0&&t<1;
+        active ||= visible;
+        if(visible){
+          const angle=random(seed+8)*Math.PI*2;
+          const speed=isFoam ? .10+random(seed+1)*.19 : .16+random(seed+1)*.36;
+          const radius=((isFoam ? .002 : .006)+random(seed+2)*(isFoam ? .004 : .009))*(isFoam ? 1 : 1+t*.6);
+          const fade=Math.min(1,t*14)*(1-phase(t,.65,1));
+          const reach=(isFoam ? .06 : .14)+t*(isFoam ? .13 : .28);
+          pose.position.set(Math.cos(angle)*reach*t,1.59+speed*t*3.2-(isFoam ? .34 : .64)*t*t,.25+Math.sin(angle)*reach*t+t*(isFoam ? .09 : .85));
+          pose.rotation.set(angle*.3,angle,angle*.7);
+          pose.scale.set(radius*fade,radius*(isFoam?1.1:1.7+random(seed+6))*fade,radius*fade);
+        }else{
+          pose.scale.setScalar(0);
+        }
+        pose.updateMatrix();batch.setMatrixAt(i,pose.matrix);
+      }
+      batch.visible=active;batch.instanceMatrix.needsUpdate=true;
+    }
+  }
   host.append(renderer.domElement);hero.classList.add('hs-can-3d-ready');
   let progress=0,width=0,height=0;
   const phase=(p,a,b)=>{let t=Math.min(1,Math.max(0,(p-a)/(b-a)));return t*t*(3-2*t);};
-  function update(p){
+  function update(p,activity=0){
     progress=p;const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;
     if(w!==width||h!==height){width=w;height=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
-    const view=phase(p,.015,.14)*(1-phase(p,.40,.57));
+    const view=phase(p,.025,.20)*(1-phase(p,.42,.58));
     const angle=.035+view*.48;const distance=6.6;
     camera.position.set(0,Math.sin(angle)*distance,Math.cos(angle)*distance);camera.lookAt(0,0,0);
-    tabPivot.rotation.x=-phase(p,.075,.18)*1.22;
-    flapPivot.rotation.x=phase(p,.12,.20)*1.03;
-    particles.forEach((drop,i)=>{const t=(p-.18-(i%7)*.002)/.17;drop.visible=t>0&&t<1;const a=i*2.39996;drop.position.set(Math.cos(a)*t*(.09+(i%6)*.04),1.59+Math.sin(t*Math.PI)*(.12+(i%8)*.035),.25+Math.sin(a)*t*.18);});
+    // Progress controls the oscillation phase, so a stationary scroll never
+    // runs a free-standing vibration. Activity only eases its final pose to rest.
+    const pressure=phase(p,.025,.235)*(1-phase(p,.24,.26));
+    const q=Math.max(0,Math.min(1,(p-.025)/.235));
+    const oscillation=Math.PI*2*(3*q+7*q*q);
+    const shake=pressure*activity;
+    const release=Math.max(0,Math.min(1,(p-.327)/.083));
+    const recoil=Math.sin(release*Math.PI*3)*Math.pow(1-release,2)*phase(p,.327,.333);
+    can.position.set(Math.sin(oscillation)*.014*shake,Math.sin(oscillation*1.47)*.003*shake-.023*recoil,0);
+    can.rotation.z=Math.sin(oscillation*.91)*.0028*shake;
+    // The rear finger loop rises; the front nose presses the scored flap inward.
+    tabPivot.rotation.x=phase(p,.285,.355)*1.22;
+    flapPivot.rotation.x=phase(p,.318,.365)*1.03;
+    drawBurst(p);
     renderer.render(scene,camera);
-    const projected=mouth.clone().project(camera),rect=renderer.domElement.getBoundingClientRect();
+    const projected=can.localToWorld(mouth.clone()).project(camera),rect=renderer.domElement.getBoundingClientRect();
     return {x:rect.left+(projected.x+1)*rect.width/2,y:rect.top+(1-projected.y)*rect.height/2};
   }
   const observer=new ResizeObserver(()=>update(progress));observer.observe(host);
