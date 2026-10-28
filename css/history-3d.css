@@ -44,9 +44,8 @@
   position:absolute;inset:0;display:block;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;
 }
-/* Suppress the global ambient bubble canvas only while history is centered
-   in the viewport; it remains unchanged on every other section. */
-body.is-history-archive-focused .site-ambient-carbonation.is-active{opacity:0;visibility:hidden}
+/* Site-wide ambient carbonation and liquid pointer effects remain enabled
+   in history, just as in the other sections. */
 .history-3d-canvas{position:absolute;z-index:1;inset:0;pointer-events:none}
 .history-3d-canvas canvas{display:block;width:100%;height:100%}
 .history-3d-fallback{display:none;position:absolute;z-index:1;inset:0;align-items:center;justify-content:center;pointer-events:none}
