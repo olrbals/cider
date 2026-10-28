@@ -12,8 +12,23 @@ const HISTORY_ERAS = [
   { year: '2024', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
 ]
 
-// Change artwork when the can is edge-on, slightly after the era midpoint.
-const LABEL_SWITCH_POINT = 0.58;
+// Halfway through one 360-degree turn the rear of the can faces the viewer.
+// Switch the opaque label exactly then; never crossfade two artworks.
+const LABEL_SWITCH_POINT = 0.5;
+const ROLL_START = 0.2;
+const ROLL_END = 0.8;
+
+// Very light era-specific color temperatures, not eight competing backgrounds.
+const ERA_AMBIENCE = [
+  { surface: [249, 248, 243], halo: [231, 213, 172] }, // 1950 · vintage cream
+  { surface: [246, 249, 246], halo: [196, 224, 203] }, // 1960
+  { surface: [244, 249, 244], halo: [178, 221, 186] }, // 1970
+  { surface: [247, 250, 243], halo: [211, 230, 169] }, // 1987
+  { surface: [245, 250, 246], halo: [185, 218, 191] }, // 1994
+  { surface: [245, 250, 248], halo: [175, 221, 205] }, // 2000
+  { surface: [241, 250, 247], halo: [163, 223, 203] }, // 2014
+  { surface: [238, 250, 246], halo: [145, 225, 195] }  // 2024
+];
 
 const assetURL = path => new URL(`../${path}`, import.meta.url).href;
 
@@ -143,7 +158,7 @@ function makeCan(stage, track, images) {
     camera.bottom = -frustumHeight / 2;
     camera.updateProjectionMatrix();
     // Figma-inspired two-column history: both elements stay within the
-    // desktop 160px side gutters at a 1440px viewport.
+    // desktop 200px side gutters at a 1440px viewport.
     const desktopFit = Math.min(1, viewportWidth / 1440);
     const mobileFit = Math.min(1, viewportWidth / 760);
     if (viewportWidth <= 760) {
@@ -165,20 +180,15 @@ function makeCan(stage, track, images) {
     renderer.setSize(viewportWidth, viewportHeight, false);
   }
 
-  function render(progress, pair, local) {
-    // The label changes once, at an edge-on roll angle, instead of crossfading
-    // two package designs across the front of the can.
-    setLabel(Math.min(images.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0)));
-    // Keep the entire can exactly at the stage's center while its label and
-    // rotation continue responding to the existing scroll progress.
-    // Scrolling down always rolls in the same direction: two turns per era.
-    // A very subtle phase lead makes rolling feel ~8% snappier at the start
-    // of each era, while preserving exactly two turns and the label's
-    // front-facing orientation at every year marker.
-    const rollPoint = progress * (images.length - 1);
-    const rollFraction = rollPoint - Math.floor(rollPoint);
-    const phaseLead = 0.025 * Math.sin(Math.PI * rollFraction);
-    rolling.rotation.y = Math.PI + 0.28 + (rollPoint + phaseLead) * Math.PI * 4;
+  function render(pair, local) {
+    // A whole revolution per historical transition (instead of the old two).
+    // The first/last 20% of each era are intentional resting frames.
+    // At exactly 180 degrees the rear of the cylinder faces out, so changing
+    // the canvas label there is less noticeable than swapping mid-front.
+    const rotationFraction = smoothstep(ROLL_START, ROLL_END, local);
+    const labelIndex = Math.min(images.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0));
+    setLabel(labelIndex);
+    rolling.rotation.y = Math.PI + 0.28 + (pair + rotationFraction) * Math.PI * 2;
     renderer.render(scene, camera);
   }
 
@@ -290,6 +300,45 @@ function createArchiveCounter(stage, years) {
   return setYear;
 }
 
+// Eight passive progress markers keep the period legible without competing
+// with the animated typography or interfering with the page's scroll.
+function createArchiveTimeline(stage, years) {
+  const timeline = document.createElement('div');
+  timeline.className = 'history-3d-timeline';
+  timeline.setAttribute('aria-hidden', 'true');
+  const rail = document.createElement('div');
+  rail.className = 'history-3d-timeline-rail';
+  const fill = document.createElement('div');
+  fill.className = 'history-3d-timeline-fill';
+  rail.append(fill);
+  const row = document.createElement('div');
+  row.className = 'history-3d-timeline-years';
+  const markers = years.map(year => {
+    const marker = document.createElement('span');
+    marker.className = 'history-3d-timeline-item';
+    const dot = document.createElement('span');
+    dot.className = 'history-3d-timeline-dot';
+    const label = document.createElement('span');
+    label.className = 'history-3d-timeline-label';
+    label.textContent = year;
+    marker.append(dot, label);
+    row.append(marker);
+    return marker;
+  });
+  timeline.append(rail, row);
+  stage.append(timeline);
+  let previous = -1;
+  return (progress, activeIndex) => {
+    fill.style.transform = `scaleX(${progress.toFixed(4)})`;
+    if (activeIndex === previous) return;
+    markers.forEach((marker, index) => {
+      marker.classList.toggle('is-active', index === activeIndex);
+      marker.classList.toggle('is-past', index < activeIndex);
+    });
+    previous = activeIndex;
+  };
+}
+
 async function initHistory(section) {
   const stage = section.querySelector('.history-3d-stage');
   const track = section.querySelector('.history-3d-track');
@@ -306,6 +355,8 @@ async function initHistory(section) {
   });
   const years = eras.map(era => era.dataset.year);
   const renderArchiveCounter = createArchiveCounter(stage, years);
+  const renderTimeline = createArchiveTimeline(stage, years);
+  const historyRoot = section.closest('.history') || section;
   section.setAttribute('aria-label', `${years[0]}년부터 ${years.at(-1)}년까지 패키징이 바뀌는 3D 캔`);
   let can = null;
 
@@ -325,19 +376,31 @@ async function initHistory(section) {
     const point = progress * (eras.length - 1);
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
-    // Roll the counter around the artwork switch, keeping both aligned.
-    // Progress is entirely scroll-driven, so reversing the scroll reverses it.
-    const digitBlend = smoothstep(0.53, 0.63, local);
+    // Hold → roll → hold, with exactly one texture/year switch at 180°.
+    // All values are functions of scroll progress: reverse scroll stays in sync.
+    const digitBlend = smoothstep(0.43, 0.57, local);
     renderArchiveCounter(pair, digitBlend);
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = Math.min(eras.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0));
     section.dataset.activeYear = years[activeIndex];
+    renderTimeline(progress, activeIndex);
+
+    // Interpolate the quiet background through the same transition, instead
+    // of jumping between independent sections or adding distracting graphics.
+    const from = ERA_AMBIENCE[pair];
+    const to = ERA_AMBIENCE[pair + 1];
+    const mix = smoothstep(ROLL_START, ROLL_END, local);
+    const mixChannel = (a, b) => Math.round(a + (b - a) * mix);
+    const surface = from.surface.map((value, index) => mixChannel(value, to.surface[index]));
+    const halo = from.halo.map((value, index) => mixChannel(value, to.halo[index]));
+    historyRoot.style.setProperty('--history-surface', `rgb(${surface.join(',')})`);
+    historyRoot.style.setProperty('--history-halo', `rgba(${halo.join(',')},0.2)`);
     if (fallbackImage && fallbackYear !== years[activeIndex]) {
       fallbackImage.src = assetURL(HISTORY_ERAS[activeIndex].fallback);
       fallbackImage.classList.toggle('is-horizontal', !!HISTORY_ERAS[activeIndex].horizontalFallback);
       fallbackYear = years[activeIndex];
     }
-    can?.render(progress, pair, local);
+    can?.render(pair, local);
   }
 
   if (window.gsap && window.ScrollTrigger) {
