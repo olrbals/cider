@@ -1,6 +1,6 @@
-/* Repeating liquid-screen transitions after Hero.
-   Each real section rises naturally with scrolling and carries its own soft wave crest.
-   The interior interactions stay untouched; no transform/clip applied to sticky stages. */
+/* A full-volume wave brings every post-Hero section in from below.
+   The incoming section is the solid fluid body; its large SVG crest extends
+   over the previous screen. No transforms/clips on existing sticky content. */
 #identity.identity.experience-02,
 #korea.korea-scene,
 #history.history,
@@ -18,43 +18,57 @@
 #pop.pop-scene { z-index: 6; }
 #footer.outro { z-index: 7; }
 
-/* Allow the new crest to reach ahead of its section without blocking any controls. */
+/* Large asymmetrical crest: SVG bottom aligns exactly with the section top.
+   Together they read as ONE continuous liquid screen, not a wavy border. */
 .section-wave {
   position: absolute;
-  top: -172px;
+  top: -78svh;
   left: 0;
   width: 100%;
-  height: 244px;
-  z-index: 10;
-  overflow: visible;
+  height: 78svh;
   display: block;
+  overflow: visible;
+  z-index: 10;
   pointer-events: none;
   user-select: none;
 }
-.section-wave-fill { fill: var(--wave-color); }
-.section-wave-rim {
+.section-wave-body {
+  fill: var(--wave-color);
+}
+.section-wave-foam {
+  fill: none;
+  stroke: var(--wave-foam, rgba(255,255,255,.45));
+  stroke-width: 27;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: .34;
+}
+.section-wave-sheen {
   fill: none;
   stroke: var(--wave-rim, rgba(255,255,255,.8));
-  stroke-width: 2.3;
+  stroke-width: 4;
+  stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+  opacity: .75;
 }
-.section-wave-glint {
+.section-wave-wake {
   fill: none;
   stroke: var(--wave-glint, rgba(255,255,255,.45));
-  stroke-width: 5;
+  stroke-width: 12;
   vector-effect: non-scaling-stroke;
-  opacity: .55;
-  transform: translateY(5px);
+  opacity: .14;
 }
 #identity .identity-stage { position: sticky; z-index: 1; background: #fff; }
 #korea .korea-stage { z-index: 1; }
-/* Footer originally clips an oversized background star. Clip the star itself
-   at its old section boundary while letting the wave extend upward. */
+/* Footer originally clips its oversize decorative star; prevent leaking when
+   letting its wave extend outside the section. */
 #footer.outro > .outro-star { clip-path: inset(35% 0 0 0); }
 @media (max-width: 700px) {
-  .section-wave { top: -130px; height: 190px; }
-  .section-wave-rim { stroke-width: 1.7; }
-  .section-wave-glint { display: none; }
+  .section-wave { top: -66svh; height: 66svh; }
+  .section-wave-foam { stroke-width: 18; }
+  .section-wave-sheen { stroke-width: 3; }
+  .section-wave-wake { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .section-wave { display: none !important; }
