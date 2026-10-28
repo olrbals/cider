@@ -1,0 +1,194 @@
+/* SEVEN STARS / shared edge labels / FIZZ sticky length.
+ * Intentionally scoped away from Hero, liquid wave and 3D history. */
+
+.identity.experience-02 {
+  height: 225svh;
+  min-height: 1350px;
+  --identity-star-slot: .055em;
+  --identity-star-scale: .18;
+  --identity-star-opacity: .12;
+  --identity-star-fill: 0%;
+}
+
+/* Both cursor-mask clones and the glossy liquid lettering inherit these
+   identical transforms so the liquid hotspot keeps tracking the type. */
+.identity .identity-sway-line {
+  display: block;
+  transform-origin: 50% 82%;
+  backface-visibility: hidden;
+}
+.identity .identity-sway-line--stars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+.identity .identity-star-letters {
+  display: inline-block;
+  flex: 0 0 auto;
+}
+.identity .identity-star-slot {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 var(--identity-star-slot);
+  width: var(--identity-star-slot);
+  height: 1.3em;
+  overflow: visible;
+}
+.identity .identity-main-star {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: .92em;
+  height: .92em;
+  overflow: visible;
+  color: #149f5c;
+  opacity: var(--identity-star-opacity);
+  transform: translate(-50%,-49%) scale(var(--identity-star-scale));
+  transform-origin: center;
+}
+.identity .identity-main-star-outline {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.15;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.identity .identity-main-star-liquid {
+  fill: currentColor;
+  stroke: none;
+  clip-path: inset(calc(100% - var(--identity-star-fill)) 0 0 0);
+}
+.identity.is-seven-complete .identity-sway-line--seven {
+  animation: identity-reed-seven 7.4s ease-in-out infinite alternate;
+}
+.identity.is-seven-complete .identity-sway-line--stars {
+  animation: identity-reed-stars 8.2s ease-in-out -2.4s infinite alternate;
+}
+@keyframes identity-reed-seven {
+  0%   { transform: translate3d(-8px,0,0) rotate(-.5deg) skewX(-.45deg); }
+  50%  { transform: translate3d(8px,0,0) rotate(.5deg) skewX(.48deg); }
+  100% { transform: translate3d(-6px,0,0) rotate(-.36deg) skewX(-.4deg); }
+}
+@keyframes identity-reed-stars {
+  0%   { transform: translate3d(8px,0,0) rotate(.55deg) skewX(.45deg); }
+  50%  { transform: translate3d(-9px,0,0) rotate(-.55deg) skewX(-.48deg); }
+  100% { transform: translate3d(7px,0,0) rotate(.42deg) skewX(.34deg); }
+}
+
+/* Seven small five-point outlines, deliberately quieter than the filled
+   letterform star. Each opacity/scale is scrubbed in scene-polish.js. */
+.identity-outline-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  color: #149f5c;
+}
+.identity-outline-star {
+  position: absolute;
+  display: block;
+  overflow: visible;
+  width: var(--star-size, 34px);
+  height: var(--star-size, 34px);
+  opacity: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linejoin: round;
+  transform-origin: center;
+}
+.identity-outline-star path {
+  fill: none;
+  stroke: currentColor;
+}
+.identity-outline-star:nth-child(1) { left: 12%; top: 17%; --star-size: 38px; }
+.identity-outline-star:nth-child(2) { left: 84%; top: 19%; --star-size: 32px; }
+.identity-outline-star:nth-child(3) { left: 16%; top: 46%; --star-size: 24px; }
+.identity-outline-star:nth-child(4) { left: 78%; top: 47%; --star-size: 38px; }
+.identity-outline-star:nth-child(5) { left: 13%; top: 78%; --star-size: 30px; }
+.identity-outline-star:nth-child(6) { left: 72%; top: 83%; --star-size: 26px; }
+.identity-outline-star:nth-child(7) { left: 91%; top: 78%; --star-size: 42px; }
+
+/* FEEL and THE keep their original word-level entrance poses, but their
+   inner letters rebound independently once the whole title is visible. */
+.korea-scene .korea-dance-letter {
+  display: inline-block;
+  transform-origin: 50% 85%;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .korea-scene .korea-dance-letter {
+    transform: none !important;
+    will-change: auto;
+  }
+}
+
+/* When JS is active, one fixed overlay replaces duplicated sticky labels.
+   Its viewport coordinates remain constant as the yellow wave travels. */
+html.has-scene-edge-overlay .identity-stage > .section-edge-label,
+html.has-scene-edge-overlay .korea-stage > .section-edge-label {
+  display: none;
+}
+.scene-edge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 29;
+  pointer-events: none;
+  user-select: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .16s ease, visibility .16s ease;
+  color: #149f5c;
+}
+.scene-edge-overlay.is-visible {
+  visibility: visible;
+  opacity: 1;
+}
+.scene-edge-overlay .scene-edge-label {
+  position: absolute;
+  display: block;
+  color: #149f5c;
+  font-family: "Archivo", Arial, sans-serif;
+  font-size: clamp(12px, 1.3889vw, 20px);
+  font-weight: 400;
+  line-height: 1.1;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transition: color .24s ease, text-shadow .24s ease;
+}
+.scene-edge-overlay .scene-edge-label.is-on-yellow {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(58, 101, 21, .18);
+}
+.scene-edge-label--top-left,
+.scene-edge-label--bottom-left { left: 3.0556%; }
+.scene-edge-label--top-right,
+.scene-edge-label--bottom-right { right: 3.125%; transform: rotate(180deg); }
+.scene-edge-label--top-left,
+.scene-edge-label--top-right { top: 7.1111%; }
+.scene-edge-label--bottom-left { bottom: 10.1111%; }
+.scene-edge-label--bottom-right { bottom: 10.6667%; }
+
+/* Keep the section pinned through the reveal, viewing pause,
+   autonomous letter dance, and final rest before the wave.
+   The wave and fruit/cursor systems are deliberately left intact. */
+.korea-scene { height: 340svh; min-height: 1700px; }
+@media (max-width: 900px) {
+  .korea-scene { min-height: 1400px; }
+}
+@media (max-width: 600px) {
+  .identity-outline-star { max-width: 30px; max-height: 30px; }
+  .scene-edge-overlay .scene-edge-label { font-size: 12px; }
+  .scene-edge-label--top-left,
+  .scene-edge-label--bottom-left { left: 18px; }
+  .scene-edge-label--top-right,
+  .scene-edge-label--bottom-right { right: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .identity .identity-sway-line { animation: none !important; transform: none !important; will-change: auto; }
+  .identity .identity-outline-star { transform: none !important; opacity: .58; }
+  .scene-edge-overlay .scene-edge-label { transition: none; }
+  .scene-edge-overlay { transition: none; }
+}
