@@ -1,0 +1,64 @@
+/* BOTTOM-UP LIQUID WIPE · Hero → every following scene.
+   The incoming section is the solid body of the liquid. Its sweeping color
+   front projects far above the section while the real page moves normally.
+   Nothing transforms or clips an existing sticky scene or its interactions. */
+#identity.identity.experience-02,
+#korea.korea-scene,
+#history.history,
+#products.products,
+#pop.pop-scene,
+#footer.outro {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+#identity.identity.experience-02 { z-index: 2; }
+#korea.korea-scene { z-index: 3; }
+#history.history { z-index: 4; }
+#products.products { z-index: 5; background: #f9f4e7; }
+#pop.pop-scene { z-index: 6; }
+#footer.outro { z-index: 7; }
+
+/* Unlike the old decorative crest, this is one almost full-screen color sheet.
+   Its lower edge attaches flush to the incoming section. The upper edge forms
+   an asymmetric swooping liquid wipe as it advances with native scrolling. */
+.section-wave {
+  position: absolute;
+  top: -100svh;
+  left: 0;
+  width: 100%;
+  height: 100svh;
+  z-index: 10;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+  user-select: none;
+}
+.section-wave-body {
+  fill: var(--wave-color);
+}
+.section-wave-shimmer {
+  fill: var(--wave-accent);
+  opacity: .24;
+}
+.section-wave-edge {
+  fill: none;
+  stroke: var(--wave-edge);
+  opacity: .36;
+  stroke-width: 2.6;
+  vector-effect: non-scaling-stroke;
+}
+/* The real scene, NOT a clone, comes in behind the wave front. */
+#identity .identity-stage { position: sticky; z-index: 1; background: #fff; }
+#korea .korea-stage { z-index: 1; }
+/* Preserve the formerly clipped ornamental footer star. */
+#footer.outro > .outro-star { clip-path: inset(35% 0 0 0); }
+
+@media (max-width: 700px) {
+  .section-wave { top: -92svh; height: 92svh; }
+  .section-wave-shimmer { opacity: .16; }
+  .section-wave-edge { stroke-width: 1.7; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-wave { display: none !important; }
+}
