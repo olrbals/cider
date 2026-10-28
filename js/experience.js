@@ -21,14 +21,16 @@
   let typeParts = [];
   function bindTypeParts() {
     typeParts = [
-    { nodes: [...korea.querySelectorAll('.korea-word-feel')], start: .04, end: .39, angle: -8, rise: 1.02 },
-    { nodes: [...korea.querySelectorAll('.korea-word-the')], start: .27, end: .65, angle: 7, rise: 1.08 },
+    { nodes: [...korea.querySelectorAll('.korea-word-feel')], start: .03, end: .27, angle: -8, rise: 1.02, dance: 'feel' },
+    { nodes: [...korea.querySelectorAll('.korea-word-the')], start: .16, end: .39, angle: 7, rise: 1.08, dance: 'the' },
     ...[ -12, 10, -9, 12 ].map((angle, index) => ({
       nodes: [...korea.querySelectorAll('.korea-type-base .korea-letter:nth-child(' + (index + 1) + '), .korea-type-reveal .korea-letter:nth-child(' + (index + 1) + ')')],
-      start: .55 + index * .065,
-      end: .79 + index * .06,
+      start: .30 + index * .035,
+      end: .455 + index * .035,
       angle,
-      rise: 1.13
+      rise: 1.13,
+      dance: 'fizz',
+      direction: index % 2 === 0 ? 1 : -1
     }))
     ];
   }
@@ -51,11 +53,30 @@
     const lerp = key => a[key] + (b[key] - a[key]) * smooth;
     return { y: lerp('y'), sx: lerp('sx'), sy: lerp('sy'), rotate: lerp('rotate'), opacity: lerp('opacity') };
   }
+  // After the last Z settles at ~.56, hold the complete title briefly.
+  // Two subdued, scroll-scrubbed beats follow from .64 to .91; both directions
+  // of scrolling map to the exact same pose, then every letter rests again.
+  const DANCE_START = .64;
+  const DANCE_END = .91;
+  function danceWave(progress) {
+    if (progress <= DANCE_START || progress >= DANCE_END) return 0;
+    const t = (progress - DANCE_START) / (DANCE_END - DANCE_START);
+    const fadeIn = ease(t / .12);
+    const fadeOut = ease((1 - t) / .12);
+    return Math.sin(t * Math.PI * 4) * fadeIn * fadeOut;
+  }
   function scrubType(progress) {
+    const beat = danceWave(progress);
+    // F↓ / I↑ / Z↓ / Z↑. No lateral motion or rotation for FIZZ.
+    const letterRise = Math.min(20, Math.max(12, window.innerHeight * .022));
     typeParts.forEach(part => {
       const local = clamp((progress - part.start) / (part.end - part.start));
       const pose = typePose(local);
-      const transform = 'translate3d(0,' + (pose.y * part.rise).toFixed(4) + 'em,0) ' +
+      const dx = part.dance === 'the' ? beat * 8 : 0;
+      const dy = part.dance === 'feel' ? beat * 10 :
+        part.dance === 'fizz' ? beat * letterRise * part.direction : 0;
+      const transform = 'translate3d(' + dx.toFixed(2) + 'px,' + dy.toFixed(2) + 'px,0) ' +
+        'translate3d(0,' + (pose.y * part.rise).toFixed(4) + 'em,0) ' +
         'rotate(' + (pose.rotate * part.angle).toFixed(3) + 'deg) ' +
         'scale(' + pose.sx.toFixed(4) + ',' + pose.sy.toFixed(4) + ')';
       part.nodes.forEach(node => {
@@ -74,9 +95,9 @@
     const koreaRect = korea.getBoundingClientRect();
     const available = Math.max(1, koreaRect.height - viewport);
     // The yellow section is visible well before its sticky top reaches the viewport.
-    // Delay the first pose until the yellow wave nearly completes. The longer
-    // pinned FIZZ scene gives FEEL, THE and each FIZZ letter time to register.
-    // The scrub remains fully reversible on upward scroll.
+    // Keep the yellow-wave entry intact. The longer pinned interval now has
+    // distinct reveal, hold, two-beat letter dance, and resting phases.
+    // Every phase remains fully reversible on upward scroll.
     const entryOffset = viewport * .12;
     const textProgress = clamp((entryOffset - koreaRect.top) / (entryOffset + available));
     scrubType(textProgress);
