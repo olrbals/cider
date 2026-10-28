@@ -55,7 +55,7 @@
 #footer.outro > .outro-star { clip-path: inset(35% 0 0 0); }
 
 @media (max-width: 700px) {
-  .section-wave { top: -92svh; height: 92svh; }
+  .section-wave { top: -92svh; width: 100vw; height: 92svh; }
   .section-wave-shimmer { opacity: .16; }
   .section-wave-edge { stroke-width: 1.7; }
 }
