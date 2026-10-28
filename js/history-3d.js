@@ -88,6 +88,8 @@ function makeCan(stage, track, images) {
   scene.add(edgeLight);
 
   const carrier = new THREE.Group();
+  // Scale the entire can (body, rims and tab) to 70% of the previous preview.
+  carrier.scale.setScalar(0.7);
   carrier.rotation.z = -Math.PI / 2; // Blender's horizontal X-axis can.
   scene.add(carrier);
   const rolling = new THREE.Group();
