@@ -111,9 +111,10 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label {
 .scene-edge-label--bottom-left { bottom: 10.1111%; }
 .scene-edge-label--bottom-right { bottom: 10.6667%; }
 
-/* Give the FEEL / THE / FIZZ scrub room to read after the wave finishes.
+/* Keep the section pinned through the full entrance, a clear viewing pause,
+   two alternating vertical FIZZ beats, and the final rest before the wave.
    The wave and fruit/cursor systems are deliberately left intact. */
-.korea-scene { height: 240svh; min-height: 1700px; }
+.korea-scene { height: 340svh; min-height: 1700px; }
 @media (max-width: 900px) {
   .korea-scene { min-height: 1400px; }
 }
