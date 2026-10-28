@@ -162,45 +162,10 @@ function makeCan(stage, track, images) {
   return { render, resize };
 }
 
-function attachHistoryGlassLens(section, stage) {
-  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (!finePointer.matches || reducedMotion.matches) return;
-
-  // A single lightweight highlight layer; do not create another WebGL renderer
-  // or alter the existing global gel refraction, 3D can and rolling timeline.
-  const lens = document.createElement('div');
-  lens.className = 'history-3d-glass-lens';
-  lens.setAttribute('aria-hidden', 'true');
-  stage.append(lens);
-
-  const hide = () => lens.classList.remove('is-visible');
-  function move(event) {
-    if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
-    const sectionBounds = section.getBoundingClientRect();
-    const stageBounds = stage.getBoundingClientRect();
-    const inside = event.clientX >= stageBounds.left &&
-      event.clientX <= stageBounds.right &&
-      event.clientY >= Math.max(sectionBounds.top, stageBounds.top) &&
-      event.clientY <= Math.min(sectionBounds.bottom, stageBounds.bottom);
-    if (!inside) { hide(); return; }
-    const size = lens.getBoundingClientRect().width;
-    const x = event.clientX - stageBounds.left - size / 2;
-    const y = event.clientY - stageBounds.top - size / 2;
-    lens.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
-    lens.classList.add('is-visible');
-  }
-  document.addEventListener('pointermove', move, { passive: true });
-  document.addEventListener('pointerleave', hide, { passive: true });
-  window.addEventListener('blur', hide);
-  window.addEventListener('scroll', hide, { passive: true });
-}
-
 async function initHistory(section) {
   const stage = section.querySelector('.history-3d-stage');
   const track = section.querySelector('.history-3d-track');
   if (!stage || !track) return;
-  attachHistoryGlassLens(section, stage);
   const fallbackImage = stage.querySelector('.history-3d-fallback img');
   const eras = HISTORY_ERAS.map(({ year, packaging }) => {
     const era = document.createElement('article');
