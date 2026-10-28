@@ -19,12 +19,36 @@
   // Bind only after all defer scripts finish, so we animate the live DOM nodes,
   // never detached originals (or hidden clones with copied inline opacity).
   let typeParts = [];
+  let danceLetters = [];
   function bindTypeParts() {
+    // Run after the global cursor module has cloned the headlines.
+    // Preserve each word wrapper for the existing entrance animation,
+    // but give FEEL and THE independent letter spans for the dance.
+    ['feel', 'the'].forEach(word => {
+      korea.querySelectorAll('.korea-word-' + word).forEach(node => {
+        if (node.querySelector('.korea-dance-letter')) return;
+        const letters = node.textContent.trim().split('');
+        node.replaceChildren(...letters.map(letter => {
+          const span = document.createElement('span');
+          span.className = 'korea-dance-letter';
+          span.textContent = letter;
+          return span;
+        }));
+      });
+    });
+    danceLetters = ['feel', 'the'].flatMap(word =>
+      Array.from(word === 'feel' ? 'FEEL' : 'THE', (_, index) => ({
+        word,
+        index,
+        nodes: [...korea.querySelectorAll('.korea-word-' + word + ' > .korea-dance-letter:nth-child(' + (index + 1) + ')')],
+        direction: index % 2 === 0 ? 1 : -1
+      }))
+    );
     typeParts = [
     { nodes: [...korea.querySelectorAll('.korea-word-feel')], start: .03, end: .27, angle: -8, rise: 1.02, dance: 'feel' },
     { nodes: [...korea.querySelectorAll('.korea-word-the')], start: .16, end: .39, angle: 7, rise: 1.08, dance: 'the' },
     ...[ -12, 10, -9, 12 ].map((angle, index) => ({
-      nodes: [...korea.querySelectorAll('.korea-type-base .korea-letter:nth-child(' + (index + 1) + '), .korea-type-reveal .korea-letter:nth-child(' + (index + 1) + ')')],
+      nodes: [...korea.querySelectorAll('.korea-type-base .korea-word-fizz > .korea-letter:nth-child(' + (index + 1) + '), .korea-type-reveal .korea-word-fizz > .korea-letter:nth-child(' + (index + 1) + ')')],
       start: .30 + index * .035,
       end: .455 + index * .035,
       angle,
@@ -62,7 +86,7 @@
   const DANCE_PERIOD_MS = 2400;
   let danceElapsed = 0;
   let danceLastFrame = 0;
-  function scrubType(progress, beat = 0) {
+  function scrubType(progress, beat = 0, danceTime = 0, danceStrength = 0) {
     // F↓ / I↑ / Z↓ / Z↑. No lateral motion or rotation for FIZZ.
     const letterRise = Math.min(20, Math.max(12, window.innerHeight * .022));
     typeParts.forEach(part => {
@@ -78,6 +102,19 @@
       part.nodes.forEach(node => {
         node.style.transform = transform;
         node.style.opacity = pose.opacity.toFixed(3);
+      });
+    });
+    // Independent up/down beats create the fizzy stagger, rather than
+    // translating FEEL/THE as static blocks. Each word uses the same
+    // restrained cadence so no letters drift sideways or overlap wildly.
+    danceLetters.forEach(part => {
+      const amplitude = part.word === 'feel' ? 28 : 24;
+      const phase = part.index * .34 + (part.word === 'the' ? .55 : 0);
+      const wave = Math.sin((danceTime / DANCE_PERIOD_MS) * Math.PI * 2 + phase);
+      const offset = wave * amplitude * part.direction * danceStrength;
+      const stretch = 1 + (.035 * Math.cos((danceTime / DANCE_PERIOD_MS) * Math.PI * 2 + phase)) * danceStrength;
+      part.nodes.forEach(node => {
+        node.style.transform = 'translate3d(0,' + offset.toFixed(2) + 'px,0) scaleY(' + stretch.toFixed(4) + ')';
       });
     });
   }
@@ -112,7 +149,7 @@
       ? ease(danceTime / 420) * ease((DANCE_END - textProgress) / .06)
       : 0;
     const beat = danceStrength * Math.sin((danceTime / DANCE_PERIOD_MS) * Math.PI * 2);
-    scrubType(textProgress, beat);
+    scrubType(textProgress, beat, danceTime, danceStrength);
 
     // Preserve the original independent cream-to-green fill timeline.
     const progress = clamp(-koreaRect.top / available);
@@ -153,6 +190,9 @@
       korea.classList.remove('is-type-ready');
       typeParts.forEach(part => part.nodes.forEach(node => {
         node.style.opacity = '';
+        node.style.transform = '';
+      }));
+      danceLetters.forEach(part => part.nodes.forEach(node => {
         node.style.transform = '';
       }));
       korea.style.removeProperty('--korea-fill');
