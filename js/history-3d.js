@@ -12,6 +12,30 @@ const HISTORY_ERAS = [
   { year: '2024', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
 ]
 
+// Editorial palette follows the exact same crossfade as the package texture.
+// Keep this separate from the can data to avoid changing mesh/UV/rolling behavior.
+const HISTORY_BACKGROUND_COLORS = [
+  { year: '1950', background: '#F0EBE1', outline: '#776E5B' },
+  { year: '1960', background: '#F4E8D4', outline: '#947E64' },
+  { year: '1970', background: '#ECE3BB', outline: '#888051' },
+  { year: '1987', background: '#C8E6D5', outline: '#43856B' },
+  { year: '1994', background: '#E8F2E9', outline: '#5F9477' },
+  { year: '2000', background: '#D8F5E6', outline: '#318D6A' },
+  { year: '2014', background: '#F3F9F3', outline: '#6A9274' },
+  { year: '2024', background: '#F7F3E8', outline: '#7E9076' }
+];
+
+const interpolateHex = (from, to, amount, alpha = 1) => {
+  const channel = offset => Math.round(
+    parseInt(from.slice(offset, offset + 2), 16) * (1 - amount) +
+    parseInt(to.slice(offset, offset + 2), 16) * amount
+  );
+  const [r, g, b] = [1, 3, 5].map(channel);
+  return alpha === 1
+    ? `rgb(${r}, ${g}, ${b})`
+    : `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 const assetURL = path => new URL(`../${path}`, import.meta.url).href;
 
 const clamp = value => Math.min(1, Math.max(0, value));
@@ -201,6 +225,18 @@ async function initHistory(section) {
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
     const blend = smoothstep(0.38, 0.62, local);
+    // Share the texture's existing smoothstep window; no independent animation.
+    // Values are a pure function of scroll progress, including reverse scrolling.
+    const currentBackdrop = HISTORY_BACKGROUND_COLORS[pair];
+    const nextBackdrop = HISTORY_BACKGROUND_COLORS[pair + 1];
+    const background = interpolateHex(currentBackdrop.background, nextBackdrop.background, blend);
+    const outline = interpolateHex(currentBackdrop.outline, nextBackdrop.outline, blend, 0.42);
+    if (section.style.getPropertyValue('--history-era-bg') !== background) {
+      section.style.setProperty('--history-era-bg', background);
+    }
+    if (section.style.getPropertyValue('--history-era-outline') !== outline) {
+      section.style.setProperty('--history-era-outline', outline);
+    }
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = blend < 0.5 ? pair : pair + 1;
     section.dataset.activeYear = years[activeIndex];
