@@ -43,3 +43,33 @@
   .history-3d-era{min-height:260px}
   .history-3d-year{font-size:27vw;-webkit-text-stroke:1.5px rgba(255,255,255,.78)}
 }
+
+/* Glass Cursor-inspired lens for history only. Existing live-DOM gel provides
+   the actual displacement; this adds a subtle glass rim / specular highlight. */
+.history-3d-glass-lens{
+  position:absolute;top:0;left:0;z-index:3;
+  width:clamp(112px,10.5vw,150px);aspect-ratio:1;border-radius:50%;
+  box-sizing:border-box;pointer-events:none;user-select:none;
+  opacity:0;transform:translate3d(-300px,-300px,0);
+  border:1.5px solid rgba(255,255,255,.64);
+  background:
+    radial-gradient(ellipse at 26% 20%,rgba(255,255,255,.32),transparent 44%),
+    radial-gradient(circle at 69% 77%,rgba(194,255,220,.10),transparent 54%),
+    linear-gradient(140deg,rgba(255,255,255,.06),rgba(255,255,255,.015) 55%,rgba(8,83,45,.045));
+  box-shadow:
+    inset 2px 3px 9px rgba(255,255,255,.34),
+    inset -5px -7px 13px rgba(3,85,48,.13),
+    0 0 12px rgba(230,255,240,.18);
+  -webkit-backdrop-filter:blur(.55px) saturate(1.09);
+  backdrop-filter:blur(.55px) saturate(1.09);
+  transition:opacity .16s ease;will-change:transform;
+}
+.history-3d-glass-lens.is-visible{opacity:.86}
+.history-3d-glass-lens::after{
+  content:"";position:absolute;top:13%;left:16%;width:37%;height:16%;
+  border-radius:50%;transform:rotate(-30deg);
+  border-top:2px solid rgba(255,255,255,.56);opacity:.80;
+}
+@media(hover:none),(pointer:coarse),(prefers-reduced-motion:reduce){
+  .history-3d-glass-lens{display:none}
+}
