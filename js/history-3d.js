@@ -12,6 +12,9 @@ const HISTORY_ERAS = [
   { year: '2024', packaging: 'img/history/2024packaging-uv.png', fallback: 'img/display/hero-can.png', uvShift: -0.03 }
 ]
 
+// Change artwork when the can is edge-on, slightly after the era midpoint.
+const LABEL_SWITCH_POINT = 0.58;
+
 const assetURL = path => new URL(`../${path}`, import.meta.url).href;
 
 const clamp = value => Math.min(1, Math.max(0, value));
@@ -37,32 +40,28 @@ function makeCan(stage, track, images) {
   labelCanvas.width = width;
   labelCanvas.height = height;
   const context = labelCanvas.getContext('2d', { alpha: false });
-  let lastPair = -1;
-  let lastBlend = -1;
+  let currentLabel = 0;
 
-  function drawLabel(index, alpha = 1) {
-    // Rotate the flat UV around the same cylinder to center each era's front artwork.
+  function paintLabel(index) {
+    // Paint one complete UV texture: never composite an era over its predecessor.
+    // The opaque base also clears any transparent pixels left by the prior label.
     const offset = (HISTORY_ERAS[index].uvShift || 0) * width;
-    context.globalAlpha = alpha;
+    context.globalAlpha = 1;
+    context.fillStyle = '#f4f3ee';
+    context.fillRect(0, 0, width, height);
     context.drawImage(images[index], offset, 0, width, height);
     if (offset < 0) context.drawImage(images[index], offset + width, 0, width, height);
     if (offset > 0) context.drawImage(images[index], offset - width, 0, width, height);
   }
 
-  function blendLabels(index, blend) {
-    const nextBlend = Math.round(blend * 128) / 128;
-    if (index === lastPair && nextBlend === lastBlend) return;
-    drawLabel(index);
-    if (nextBlend > 0 && images[index + 1]) {
-      drawLabel(index + 1, nextBlend);
-    }
-    context.globalAlpha = 1;
-    lastPair = index;
-    lastBlend = nextBlend;
+  function setLabel(index) {
+    if (index === currentLabel) return;
+    paintLabel(index);
+    currentLabel = index;
     labelTexture.needsUpdate = true;
   }
 
-  drawLabel(0);
+  paintLabel(0);
   const labelTexture = new THREE.CanvasTexture(labelCanvas);
   labelTexture.colorSpace = THREE.SRGBColorSpace;
   labelTexture.anisotropy = 4;
@@ -142,8 +141,10 @@ function makeCan(stage, track, images) {
     renderer.setSize(viewportWidth, viewportHeight, false);
   }
 
-  function render(progress, pair, blend) {
-    blendLabels(pair, blend);
+  function render(progress, pair, local) {
+    // The label changes once, at an edge-on roll angle, instead of crossfading
+    // two package designs across the front of the can.
+    setLabel(Math.min(images.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0)));
     // Keep the entire can exactly at the stage's center while its label and
     // rotation continue responding to the existing scroll progress.
     // Scrolling down always rolls in the same direction: two turns per era.
@@ -271,7 +272,7 @@ async function initHistory(section) {
     era.className = 'history-3d-era';
     era.dataset.year = year;
     era.dataset.packaging = packaging;
-    // Keep the 480px scroll panel but render its year in one pinned overlay.
+    // The extended scroll panels share one pinned year/caption overlay.
     track.append(era);
     return era;
   });
@@ -296,21 +297,19 @@ async function initHistory(section) {
     const point = progress * (eras.length - 1);
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
-    const blend = smoothstep(0.38, 0.62, local);
-    // The package still uses its original 0.38–0.62 crossfade.
-    // Only the odometer/caption switch in a narrower 0.42–0.58 range:
-    // 33% less scroll distance, same midpoint, reversible in both directions.
-    const digitBlend = smoothstep(0.42, 0.58, local);
+    // Roll the counter around the artwork switch, keeping both aligned.
+    // Progress is entirely scroll-driven, so reversing the scroll reverses it.
+    const digitBlend = smoothstep(0.53, 0.63, local);
     renderArchiveCounter(pair, digitBlend);
     section.dataset.progress = progress.toFixed(3);
-    const activeIndex = blend < 0.5 ? pair : pair + 1;
+    const activeIndex = Math.min(eras.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0));
     section.dataset.activeYear = years[activeIndex];
     if (fallbackImage && fallbackYear !== years[activeIndex]) {
       fallbackImage.src = assetURL(HISTORY_ERAS[activeIndex].fallback);
       fallbackImage.classList.toggle('is-horizontal', !!HISTORY_ERAS[activeIndex].horizontalFallback);
       fallbackYear = years[activeIndex];
     }
-    can?.render(progress, pair, blend);
+    can?.render(progress, pair, local);
   }
 
   if (window.gsap && window.ScrollTrigger) {
