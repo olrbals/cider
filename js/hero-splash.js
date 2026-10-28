@@ -174,9 +174,16 @@
     return path;
   }
 
+  let can3D;
+  let lastProgress=0;
+  import('./hero-can-3d.js').then(async module => {
+    can3D=await module.createHeroCan(hero);
+    render(lastProgress);
+  }).catch(error => console.warn('Hero 3D unavailable; using existing can fallback.', error));
   function render(progress) {
+    lastProgress=progress;
     const p = clamp(progress);
-    if (motion.matches) return;
+    if (motion.matches) { can3D?.update(0); return; }
     // A brief camera push makes the opening legible, then restores the
     // smaller upright can before the existing curtain enters.
     const focus = phase(p, .015, .10) * (1 - phase(p, .16, .30));
@@ -184,16 +191,17 @@
     const settle = phase(p, .15, .32);
     hero.style.setProperty('--hs-focus', focus.toFixed(4));
     hero.style.setProperty('--hs-tab', phase(p, .075, .18).toFixed(4));
-    hero.style.setProperty('--hs-can-scale', (1 + .14 * focus - .1 * settle).toFixed(4));
-    hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * (.17 * phase(p, .015, .14) + .115 * topView - .05 * settle))}px`);
+    hero.style.setProperty('--hs-can-scale', (can3D ? 1 - .06 * focus - .04 * settle : 1 + .14 * focus - .1 * settle).toFixed(4));
+    hero.style.setProperty('--hs-can-shift', `${Math.round(stage.clientHeight * (can3D ? .035 * topView : .17 * phase(p, .015, .14) + .115 * topView - .05 * settle))}px`);
     hero.style.setProperty('--hs-foam', (phase(p, .17, .22) * (1 - phase(p, .31, .41))).toFixed(4));
     hero.style.setProperty('--hs-foam-bloom', phase(p, .18, .30).toFixed(4));
 
     // Read the transformed opening so the liquid stays attached to the can.
     const stageBox = stage.getBoundingClientRect();
+    const projected = can3D?.update(p);
     const opening = canSlot.getBoundingClientRect();
-    const mouthX = (opening.left + opening.width * .5 - stageBox.left) / stageBox.width * 1000;
-    const mouthY = (opening.top + opening.height * .53 - stageBox.top) / stageBox.height * 1000;
+    const mouthX = ((projected?.x ?? opening.left + opening.width * .5) - stageBox.left) / stageBox.width * 1000;
+    const mouthY = ((projected?.y ?? opening.top + opening.height * .53) - stageBox.top) / stageBox.height * 1000;
     liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
 
     // A feathered wet film starts at the opening after the foam pops. It has
@@ -277,6 +285,7 @@
 
   motion.addEventListener('change', () => {
     if (motion.matches) {
+      can3D?.update(0);
       window.ScrollTrigger?.getById('hero-splash-only')?.kill();
       hero.style.removeProperty('--hs-tab');
       hero.style.removeProperty('--hs-focus');
