@@ -67,8 +67,10 @@
     const { body, shimmer, edge, index } = scene;
     // Let the whole wave travel with the entering section. A broad sweeping
     // shoulder leads the fill; the other side follows with a soft curved wake.
-    const lift = Math.sin(p * Math.PI);
-    const base = 991 - 126 * smooth(p);
+    // Build the liquid face gradually. Otherwise the flat color can blanket
+    // the outgoing scene before the next section's actual content arrives.
+    const lift = Math.sin(p * Math.PI) * smooth((p - .10) / .42);
+    const base = 991 - 72 * smooth(p);
     const leadLeft = index % 2 === 0;
     const points = [];
     const inset = [];
@@ -82,7 +84,7 @@
       const trailingDip = Math.exp(-Math.pow((front - .36) / .19, 2));
       // Rise spans the full viewport width, not just a narrow central crest.
       const rise = (0.20 + 0.67 * diagonal + 0.27 * lip - 0.10 * trailingDip);
-      const swell = 782 * lift * rise;
+      const swell = 480 * lift * rise;
       const flow = 18 * lift * Math.sin(front * Math.PI * 2.1 + p * 2.4);
       const y = Math.max(48, Math.min(997, base - swell + flow));
       points.push([u * 1000, y]);
