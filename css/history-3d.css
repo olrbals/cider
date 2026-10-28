@@ -16,7 +16,7 @@
 }
 .history-3d-info{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;width:min(32vw,400px);max-width:100%;
+  gap:10px;width:min(29vw,350px);max-width:100%;
   text-align:center;
 }
 .history-3d-odometer{
