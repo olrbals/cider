@@ -1,6 +1,7 @@
-/* A full-volume wave brings every post-Hero section in from below.
-   The incoming section is the solid fluid body; its large SVG crest extends
-   over the previous screen. No transforms/clips on existing sticky content. */
+/* BOTTOM-UP LIQUID WIPE · Hero → every following scene.
+   The incoming section is the solid body of the liquid. Its sweeping color
+   front projects far above the section while the real page moves normally.
+   Nothing transforms or clips an existing sticky scene or its interactions. */
 #identity.identity.experience-02,
 #korea.korea-scene,
 #history.history,
@@ -18,57 +19,45 @@
 #pop.pop-scene { z-index: 6; }
 #footer.outro { z-index: 7; }
 
-/* Large asymmetrical crest: SVG bottom aligns exactly with the section top.
-   Together they read as ONE continuous liquid screen, not a wavy border. */
+/* Unlike the old decorative crest, this is one almost full-screen color sheet.
+   Its lower edge attaches flush to the incoming section. The upper edge forms
+   an asymmetric swooping liquid wipe as it advances with native scrolling. */
 .section-wave {
   position: absolute;
-  top: -78svh;
+  top: -100svh;
   left: 0;
   width: 100%;
-  height: 78svh;
+  height: 100svh;
+  z-index: 10;
   display: block;
   overflow: visible;
-  z-index: 10;
   pointer-events: none;
   user-select: none;
 }
 .section-wave-body {
   fill: var(--wave-color);
 }
-.section-wave-foam {
-  fill: none;
-  stroke: var(--wave-foam, rgba(255,255,255,.45));
-  stroke-width: 27;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  opacity: .34;
+.section-wave-shimmer {
+  fill: var(--wave-accent);
+  opacity: .24;
 }
-.section-wave-sheen {
+.section-wave-edge {
   fill: none;
-  stroke: var(--wave-rim, rgba(255,255,255,.8));
-  stroke-width: 4;
-  stroke-linejoin: round;
+  stroke: var(--wave-edge);
+  opacity: .36;
+  stroke-width: 2.6;
   vector-effect: non-scaling-stroke;
-  opacity: .75;
 }
-.section-wave-wake {
-  fill: none;
-  stroke: var(--wave-glint, rgba(255,255,255,.45));
-  stroke-width: 12;
-  vector-effect: non-scaling-stroke;
-  opacity: .14;
-}
+/* The real scene, NOT a clone, comes in behind the wave front. */
 #identity .identity-stage { position: sticky; z-index: 1; background: #fff; }
 #korea .korea-stage { z-index: 1; }
-/* Footer originally clips its oversize decorative star; prevent leaking when
-   letting its wave extend outside the section. */
+/* Preserve the formerly clipped ornamental footer star. */
 #footer.outro > .outro-star { clip-path: inset(35% 0 0 0); }
+
 @media (max-width: 700px) {
-  .section-wave { top: -66svh; height: 66svh; }
-  .section-wave-foam { stroke-width: 18; }
-  .section-wave-sheen { stroke-width: 3; }
-  .section-wave-wake { display: none; }
+  .section-wave { top: -92svh; height: 92svh; }
+  .section-wave-shimmer { opacity: .16; }
+  .section-wave-edge { stroke-width: 1.7; }
 }
 @media (prefers-reduced-motion: reduce) {
   .section-wave { display: none !important; }
