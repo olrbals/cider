@@ -21,12 +21,12 @@
   let typeParts = [];
   function bindTypeParts() {
     typeParts = [
-    { nodes: [...korea.querySelectorAll('.korea-word-feel')], start: .00, end: .32, angle: -8, rise: 1.02 },
-    { nodes: [...korea.querySelectorAll('.korea-word-the')], start: .22, end: .57, angle: 7, rise: 1.08 },
+    { nodes: [...korea.querySelectorAll('.korea-word-feel')], start: .04, end: .39, angle: -8, rise: 1.02 },
+    { nodes: [...korea.querySelectorAll('.korea-word-the')], start: .27, end: .65, angle: 7, rise: 1.08 },
     ...[ -12, 10, -9, 12 ].map((angle, index) => ({
       nodes: [...korea.querySelectorAll('.korea-type-base .korea-letter:nth-child(' + (index + 1) + '), .korea-type-reveal .korea-letter:nth-child(' + (index + 1) + ')')],
-      start: .45 + index * .07,
-      end: .72 + index * .07,
+      start: .55 + index * .065,
+      end: .79 + index * .06,
       angle,
       rise: 1.13
     }))
@@ -74,9 +74,10 @@
     const koreaRect = korea.getBoundingClientRect();
     const available = Math.max(1, koreaRect.height - viewport);
     // The yellow section is visible well before its sticky top reaches the viewport.
-    // Start the kinetic headline during that entry instead of leaving a blank screen.
-    // Finish at sticky exit, so scrolling up reverses every pose.
-    const entryOffset = viewport * .85;
+    // Delay the first pose until the yellow wave nearly completes. The longer
+    // pinned FIZZ scene gives FEEL, THE and each FIZZ letter time to register.
+    // The scrub remains fully reversible on upward scroll.
+    const entryOffset = viewport * .12;
     const textProgress = clamp((entryOffset - koreaRect.top) / (entryOffset + available));
     scrubType(textProgress);
 
