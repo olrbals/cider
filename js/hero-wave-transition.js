@@ -1,96 +1,121 @@
-/* Every section after Hero enters with a scroll-scrubbed liquid boundary.
- * Real DOM sections push in from below; no cloned screens, positioning hacks,
- * automatic playback, timers, or modifications to sticky section content.
+/* One fluid surge at EVERY section boundary after Hero.
+ * The next real section moves upward in normal document flow while an oversized
+ * solid-colored asymmetric crest extends into the outgoing screen.
+ * All geometry is sampled from scroll progress, so reverse scrolling reverses it.
  */
 (() => {
   'use strict';
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const ns = 'http://www.w3.org/2000/svg';
   const palette = [
-    { id: 'identity', color: '#ffffff', rim: 'rgba(62,173,115,.34)', glint: 'rgba(255,255,255,.96)' },
-    { id: 'korea', color: '#ffdd00', rim: 'rgba(255,246,153,.82)', glint: 'rgba(255,249,201,.68)' },
-    { id: 'history', color: '#0b6038', rim: 'rgba(165,238,193,.60)', glint: 'rgba(218,255,230,.42)' },
-    { id: 'products', color: '#f9f4e7', rim: 'rgba(255,255,255,.85)', glint: 'rgba(255,255,255,.68)' },
-    { id: 'pop', color: '#ece4d5', rim: 'rgba(255,255,255,.81)', glint: 'rgba(255,255,255,.57)' },
-    { id: 'footer', color: '#0e6b3c', rim: 'rgba(157,236,190,.63)', glint: 'rgba(255,255,255,.40)' }
+    { id: 'identity', color: '#ffffff', rim: 'rgba(75,176,124,.40)', foam: 'rgba(205,244,223,.94)', glint: 'rgba(255,255,255,.95)' },
+    { id: 'korea', color: '#ffdd00', rim: 'rgba(255,254,187,.88)', foam: 'rgba(255,245,149,.85)', glint: 'rgba(255,255,237,.8)' },
+    { id: 'history', color: '#0b6038', rim: 'rgba(193,250,207,.80)', foam: 'rgba(172,235,197,.68)', glint: 'rgba(241,255,249,.8)' },
+    { id: 'products', color: '#f9f4e7', rim: 'rgba(255,255,255,.92)', foam: 'rgba(255,255,255,.84)', glint: 'rgba(255,255,255,.88)' },
+    { id: 'pop', color: '#ece4d5', rim: 'rgba(255,255,255,.86)', foam: 'rgba(255,255,255,.65)', glint: 'rgba(255,255,255,.84)' },
+    { id: 'footer', color: '#0e6b3c', rim: 'rgba(175,244,201,.78)', foam: 'rgba(186,237,202,.60)', glint: 'rgba(247,255,251,.75)' }
   ];
-  const clamp = x => Math.max(0, Math.min(1, x));
-  const fix = x => Number(x.toFixed(2));
+  const clamp = v => Math.min(1, Math.max(0, v));
+  const ease = v => { const t = clamp(v); return t * t * (3 - 2 * t); };
+  const number = v => Number(v.toFixed(2));
 
-  function smoothEdge(pts) {
-    let d = 'M ' + fix(pts[0][0]) + ' ' + fix(pts[0][1]);
-    for (let i = 0; i < pts.length - 1; i++) {
-      const prev = pts[Math.max(0, i - 1)];
-      const p = pts[i];
-      const next = pts[i + 1];
-      const after = pts[Math.min(pts.length - 1, i + 2)];
-      d += ' C ' + fix(p[0] + (next[0] - prev[0]) / 6) + ' ' +
-        fix(p[1] + (next[1] - prev[1]) / 6) + ' ' +
-        fix(next[0] - (after[0] - p[0]) / 6) + ' ' +
-        fix(next[1] - (after[1] - p[1]) / 6) + ' ' +
-        fix(next[0]) + ' ' + fix(next[1]);
+  // Continuous cubic Bézier segments keep the large asymmetric crest liquid,
+  // avoiding the small repetitive sine curve seen in the previous preview.
+  function curve(points) {
+    let d = 'M ' + number(points[0][0]) + ' ' + number(points[0][1]);
+    for (let i = 0; i < points.length - 1; i++) {
+      const a = points[Math.max(0, i - 1)];
+      const b = points[i];
+      const c = points[i + 1];
+      const dNext = points[Math.min(points.length - 1, i + 2)];
+      d += ' C ' + number(b[0] + (c[0] - a[0]) / 6) + ' ' +
+        number(b[1] + (c[1] - a[1]) / 6) + ' ' +
+        number(c[0] - (dNext[0] - b[0]) / 6) + ' ' +
+        number(c[1] - (dNext[1] - b[1]) / 6) + ' ' +
+        number(c[0]) + ' ' + number(c[1]);
     }
     return d;
   }
 
+  function svgNode(name, className) {
+    const node = document.createElementNS(ns, name);
+    node.setAttribute('class', className);
+    return node;
+  }
+
   const sections = palette.map((item, index) => {
-    const scene = document.getElementById(item.id);
-    if (!scene) return null;
-    const svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('class', 'section-wave');
-    svg.setAttribute('viewBox', '0 0 1000 244');
+    const section = document.getElementById(item.id);
+    if (!section) return null;
+    const svg = svgNode('svg', 'section-wave');
+    svg.setAttribute('viewBox', '0 0 1000 1000');
     svg.setAttribute('preserveAspectRatio', 'none');
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('focusable', 'false');
     svg.style.setProperty('--wave-color', item.color);
     svg.style.setProperty('--wave-rim', item.rim);
+    svg.style.setProperty('--wave-foam', item.foam);
     svg.style.setProperty('--wave-glint', item.glint);
-    const fill = document.createElementNS(ns, 'path');
-    fill.setAttribute('class', 'section-wave-fill');
-    const rim = document.createElementNS(ns, 'path');
-    rim.setAttribute('class', 'section-wave-rim');
-    const glint = document.createElementNS(ns, 'path');
-    glint.setAttribute('class', 'section-wave-glint');
-    svg.append(fill, glint, rim);
-    scene.insertBefore(svg, scene.firstChild);
-    return { scene, fill, rim, glint, index };
+    const body = svgNode('path', 'section-wave-body');
+    const wake = svgNode('path', 'section-wave-wake');
+    const foam = svgNode('path', 'section-wave-foam');
+    const sheen = svgNode('path', 'section-wave-sheen');
+    svg.append(body, wake, foam, sheen);
+    section.insertBefore(svg, section.firstChild);
+    return { section, body, wake, foam, sheen, index };
   }).filter(Boolean);
 
-  let requested = false;
+  let scheduled = false;
   function render() {
-    requested = false;
+    scheduled = false;
     if (reduced.matches) return;
     const viewport = Math.max(1, window.innerHeight);
-    sections.forEach(({ scene, fill, rim, glint, index }) => {
-      const rect = scene.getBoundingClientRect();
-      // The wave advances during the exact scroll distance that brings the next
-      // screen up from the viewport bottom to its top. Reverse scroll reverses it.
-      const progress = clamp((viewport + 120 - rect.top) / (viewport + 120));
-      const phase = progress * Math.PI * 2.6 + index * .73;
-      const amplitude = 1 - .31 * progress;
-      const pts = Array.from({ length: 21 }, (_, i) => {
-        const u = i / 20;
-        const wide = Math.sin(u * Math.PI * 2.05 + phase) * 23;
-        const shallow = Math.sin(u * Math.PI * 5.4 - phase * .66) * 7.5;
-        const crest = Math.sin(u * Math.PI * 1.12 + phase * .37) * 9;
-        return [u * 1000, 91 + (wide + shallow + crest) * amplitude];
+    sections.forEach(({ section, body, wake, foam, sheen, index }) => {
+      const rect = section.getBoundingClientRect();
+      // Start as the next section approaches the viewport bottom.
+      // Finish after it rises past the top: deterministic and reversible.
+      const progress = clamp((viewport * 1.07 - rect.top) / (viewport * 1.42));
+      const swell = Math.sin(Math.PI * progress);
+      const baseY = 932 - 164 * ease(progress / .55) + 62 * ease((progress - .67) / .33);
+      const crestCenter = index % 2 === 0
+        ? .29 + .13 * ease(progress)
+        : .72 - .14 * ease(progress);
+      const curlHeight = 35 + 485 * Math.max(0, swell);
+      const current = progress * Math.PI * 2.2 + index * .72;
+
+      const points = Array.from({ length: 29 }, (_, i) => {
+        const u = i / 28;
+        // Fast-rising face, broad hanging lip and a lagging secondary swell.
+        const delta = u - crestCenter;
+        const width = delta < 0 ? .26 : .15;
+        const primary = Math.exp(-Math.pow(delta / width, 2));
+        const secondaryCenter = index % 2 === 0 ? .84 : .14;
+        const secondary = Math.exp(-Math.pow((u - secondaryCenter) / .17, 2));
+        const troughCenter = crestCenter + (index % 2 === 0 ? .21 : -.21);
+        const trough = Math.exp(-Math.pow((u - troughCenter) / .11, 2));
+        const slope = (u - .5) * 95 * Math.sin(current * .58);
+        const smaller = (Math.sin(u * 14 + current) + Math.sin(u * 24 - current * .52) * .32) * (5 + 9 * swell);
+        const y = Math.min(975, Math.max(160,
+          baseY - curlHeight * primary - 112 * swell * secondary +
+          84 * swell * trough + slope + smaller
+        ));
+        return [u * 1000, y];
       });
-      const edge = smoothEdge(pts);
-      fill.setAttribute('d', edge + ' L 1000 252 L 0 252 Z');
-      rim.setAttribute('d', edge);
-      glint.setAttribute('d', edge);
+      const edge = curve(points);
+      const wakeEdge = curve(points.map(([x, y]) => [x, Math.min(990, y + 42)]));
+      body.setAttribute('d', edge + ' L 1000 1002 L 0 1002 Z');
+      foam.setAttribute('d', edge);
+      sheen.setAttribute('d', edge);
+      wake.setAttribute('d', wakeEdge);
     });
   }
+
   function requestRender() {
-    if (requested) return;
-    requested = true;
-    requestAnimationFrame(render);
+    if (scheduled) return;
+    scheduled = true;
+    window.requestAnimationFrame(render);
   }
   window.addEventListener('scroll', requestRender, { passive: true });
   window.addEventListener('resize', requestRender, { passive: true });
-  reduced.addEventListener('change', () => {
-    sections.forEach(({ scene }) => scene.querySelector('.section-wave')?.classList.toggle('wave-motion-reduced', reduced.matches));
-    requestRender();
-  });
-  render();
+  reduced.addEventListener('change', requestRender);
+  requestRender();
 })();
