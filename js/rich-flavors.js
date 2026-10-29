@@ -28,8 +28,8 @@
     const scrollRange=Math.max(1,section.offsetHeight-vh);
     const progress=clamp(-b.top/scrollRange);
     const introIn=reduced.matches?Number(progress>=.11):smooth(.0,.22,progress);
-    const peachIn=reduced.matches?Number(progress>=.40):smooth(.28,.51,progress);
-    const grapeIn=reduced.matches?Number(progress>=.70):smooth(.57,.79,progress);
+    const peachIn=reduced.matches?Number(progress>=.45):smooth(.35,.55,progress);
+    const grapeIn=reduced.matches?Number(progress>=.73):smooth(.63,.82,progress);
     intro.style.transform='translate3d(0,'+((1-introIn)*100).toFixed(3)+'%,0)';
     peach.style.transform='translate3d('+((1-peachIn)*100).toFixed(3)+'%,0,0)';
     grape.style.transform='translate3d('+((1-grapeIn)*100).toFixed(3)+'%,0,0)';
