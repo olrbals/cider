@@ -240,3 +240,16 @@
 
 /* Anchor the shared cursor outline to the copy itself. */
 .rich-copy__content h2{position:relative}
+
+/* V6: bounded procedural impact, source patterns softened behind the product. */
+.rich-impact-fluid{position:absolute;inset:0;width:1440px;height:900px;z-index:2;pointer-events:none;overflow:visible;opacity:0}
+.rich-fg__fluid image{opacity:.68}
+.rich-collision__ice{filter:none!important;will-change:auto}
+.rich-collision__drop{box-shadow:inset -1px -1px 2px #75c8bd55;border-color:#ffffffb0}
+.rich-flavors.is-visible .rich-collision__team{will-change:transform}
+
+.rich-impact-fluid--front{z-index:4}
+
+/* Full viewport color field, independent of the scaled product artboard. */
+.rich-new-flavor{background:linear-gradient(105deg,#f8cdd9 0%,#f9dce0 32%,#f0e8b7 65%,#e2ef9d 100%)}
+.rich-new-flavor__ellipse{opacity:calc(var(--collision-ellipse-alpha,1) * .35)}
