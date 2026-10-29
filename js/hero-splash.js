@@ -17,26 +17,26 @@
   const phase = (value, start, end) => smooth((value - start) / (end - start));
   const number = value => Number(value.toFixed(2));
   // One pressure crown shares its contour with the live refraction mask.
-  const streamData=new Float32Array(96);
+  const streamData=new Float32Array(192);
   const streamBounds=new Float32Array(4);
   function sampleStreams(p,mouthX,mouthY,width,height){
     streamData.fill(0);streamBounds.fill(0);
     if(p<.505||p>=.76) return [];
     const rise=1-Math.pow(1-clamp((p-.505)/.045),3);
-    const spread=phase(p,.55,.69),burst=phase(p,.51,.57);
+    const spread=phase(p,.575,.69),burst=phase(p,.51,.57);
     const cx=mouthX/height,cy=mouthY/height-.075*rise;
     const points=[];
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-    for(let i=0;i<48;i++){
-      const angle=i/48*Math.PI*2,upward=Math.max(0,-Math.sin(angle));
+    for(let i=0;i<96;i++){
+      const angle=i/96*Math.PI*2,upward=Math.max(0,-Math.sin(angle));
       const teeth=Math.pow(Math.max(0,Math.sin(angle*7+1.3+burst*2.4)),6)
         +.55*Math.pow(Math.max(0,Math.sin(angle*11-2.1-burst*1.8)),8);
       const irregular=1+.08*Math.sin(angle*3+burst*3)+.045*Math.cos(angle*13-burst*4);
-      const finger=1+teeth*(.32+.28*upward)*(1-spread*.7)*burst;
+      const finger=1+teeth*(.08+.26*upward)*(1-spread*.7)*burst;
       const rx=(.027*rise+spread*width/height*.60)*irregular*finger;
-      const ry=(.075*rise+.20*spread)*irregular*finger;
+      const ry=(.075*rise+.20*spread)*(Math.sin(angle)>0 ? 1 : irregular*finger);
       const x=cx+Math.cos(angle)*rx;
-      const y=i===12 ? mouthY/height+spread*.20 : cy+Math.sin(angle)*ry;
+      const y=i===24 ? mouthY/height+spread*.20 : cy+Math.sin(angle)*ry;
       streamData.set([x,y],i*2);points.push([x*height,y*height]);
       minX=Math.min(minX,x);minY=Math.min(minY,y);
       maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
@@ -60,7 +60,7 @@
       uniform vec2 u_resolution;
       uniform vec2 u_mouth;
       uniform float u_progress;
-      uniform vec2 u_streams[48];
+      uniform vec2 u_streams[96];
       uniform vec4 u_stream_bounds;
       float sat(float v) { return clamp(v, 0.0, 1.0); }
       float phase(float v, float a, float b) {
@@ -81,8 +81,8 @@
       }
       float streamSurface(vec2 q) {
         float distanceToEdge=10.0,signValue=1.0;
-        vec2 a=u_streams[47];
-        for(int i=0;i<48;i++) {
+        vec2 a=u_streams[95];
+        for(int i=0;i<96;i++) {
           vec2 b=u_streams[i],e=b-a,v=q-a;
           vec2 nearest=v-e*clamp(dot(v,e)/max(dot(e,e),.0000001),0.0,1.0);
           distanceToEdge=min(distanceToEdge,length(nearest));
