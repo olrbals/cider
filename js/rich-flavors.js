@@ -1,9 +1,4 @@
-/* RICH V5 / Slosh-inspired flavor carousel with a timed soda burst.
-  History 2024 → 2026 copy rises on a wave → hold → opposed flavor collision
-  + water burst → hold → PEACH swept in as a unit → hold → GRAPE over PEACH → hold.
-  Product screens follow scroll position in both directions. The entry burst
-  plays for 820ms after a 720ms copy hold and reverses below the copy threshold.
-  Hero and History scroll controllers are intentionally untouched. */
+/* V6: one scroll position drives every layer; no elapsed-time animation. */
 (() => {
   'use strict';
   const root = document.querySelector('#rich-flavors');
@@ -14,14 +9,13 @@
   const collision = root.querySelector('.rich-new-flavor');
   const peachTeam = collision?.querySelector('.rich-collision__team--peach');
   const grapeTeam = collision?.querySelector('.rich-collision__team--grape');
-  const splash = collision?.querySelector('.rich-collision__water');
   const particlesLayer = collision?.querySelector('.rich-collision__droplets');
   const ice=[...root.querySelectorAll('.rich-collision__ice')];
   const panels = [
     {name:'peach',element:root.querySelector('.rich-fg--peach'),start:.51,end:.66,seed:0},
     {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.80,end:.94,seed:1}
   ];
-  if (![copy,copyWave,copyGlint,collision,peachTeam,grapeTeam,splash,particlesLayer].every(Boolean)
+  if (![copy,copyWave,copyGlint,collision,peachTeam,grapeTeam,particlesLayer].every(Boolean)
       || panels.some(p=>!p.element)) return;
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -37,23 +31,6 @@
   let width=window.innerWidth;
   let height=window.innerHeight;
   let raf=0;
-  let pop=0, popFrom=0, popTarget=0, popStarted=0;
-  let copyArrived=null;
-  function popProgress(progress, now){
-    if(progress<.14) copyArrived=null;
-    else if(copyArrived===null) copyArrived=now;
-    const target=progress>=.255 || (copyArrived!==null && now-copyArrived>=720) ? 1 : 0;
-    if(target!==popTarget){
-      popFrom=pop;popTarget=target;popStarted=now;
-    }
-    const t=clamp((now-popStarted)/820);
-    pop=popFrom+(popTarget-popFrom)*t;
-    // Direct jumps and restored deep links must not wait behind a hidden scene.
-    if(progress>=.50) pop=1;
-    const waiting=progress>=.14 && !target;
-    if(waiting || Math.abs(pop-popTarget)>.0001) queue();
-    return pop;
-  }
 
   panels.forEach(panel=>{
     panel.fluidMask=panel.element.querySelector('.rich-fg__fluid-mask');
@@ -85,35 +62,32 @@
     });
   });
 
-  let randomSeed=47418;
-  const random=()=>{
-    randomSeed=(1664525*randomSeed+1013904223)>>>0;
-    return randomSeed/4294967296;
-  };
-  const droplets=[];
-  // The main splash uses translucent SVG ribbons; these small refraction drops
-  // and 8 star glints add the sparkling detail without a heavy fluid simulator.
-  for(let i=0;i<44;i++){
-    const spark=i>=35;
-    const angle=random()*Math.PI*2;
-    const reach=(spark?110:85)+random()*(spark?360:450);
-    const baseX=720+Math.cos(angle)*reach;
-    const baseY=435+Math.sin(angle)*reach*.85;
-    const size=spark?9+random()*16:4+random()*27;
-    const e=document.createElement('span');
-    e.className='rich-collision__drop';
-    if(spark)e.dataset.type='spark';
-    e.style.setProperty('--drop-size',size.toFixed(1)+'px');
-    particlesLayer.appendChild(e);
-    droplets.push({
-      node:e,x:baseX,y:baseY,angle,
-      delay:random()*.11,
-      rotation:(random()-.5)*80,
-      scale:.6+random()*.6,
-      spark
-    });
-  }
-
+  const NS='http://www.w3.org/2000/svg';
+  const water=document.createElementNS(NS,'svg');
+  water.setAttribute('viewBox','0 0 1440 900');
+  water.classList.add('rich-impact-fluid');
+  water.setAttribute('aria-hidden','true');
+  water.innerHTML='<defs><linearGradient id="v6-water" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".85"/><stop offset=".25" stop-color="#d3f7f2" stop-opacity=".10"/><stop offset=".55" stop-color="#fff" stop-opacity=".55"/><stop offset=".8" stop-color="#7bbfb5" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".85"/></linearGradient></defs>';
+  collision.querySelector('.rich-new-flavor__art').prepend(water);
+  const jets=Array.from({length:8},(_,i)=>{
+    const node=document.createElementNS(NS,'path');
+    node.setAttribute('fill','url(#v6-water)');node.setAttribute('stroke','rgba(255,255,255,.82)');
+    node.setAttribute('stroke-width',i%3===0?'2.2':'1.3');
+    water.append(node);return node;
+  });
+  const frontWater=document.createElementNS(NS,'svg');
+  frontWater.setAttribute('viewBox','0 0 1440 900');frontWater.setAttribute('aria-hidden','true');
+  frontWater.classList.add('rich-impact-fluid','rich-impact-fluid--front');
+  const frontJets=[1,4,6].map(i=>{const node=jets[i].cloneNode();frontWater.append(node);return {node,index:i};});
+  collision.querySelector('.rich-new-flavor__art').append(frontWater);
+  // Five reused alpha ice sprites; each has an independent ballistic trajectory.
+  while(ice.length<5){const node=ice[0].cloneNode();node.className='rich-collision__ice';collision.querySelector('.rich-new-flavor__art').append(node);ice.push(node);}
+  ice.forEach((node,i)=>{node.style.left='0';node.style.top='0';node.style.width=(i%2?102:76)+'px';node.style.height=node.style.width;node.style.zIndex=i%2?'4':'1';});
+  const droplets=Array.from({length:22},(_,i)=>{
+    const node=document.createElement('span');node.className='rich-collision__drop';
+    node.style.setProperty('--drop-size',(3+(i*7%9))+'px');particlesLayer.append(node);
+    return {node,angle:i*2.39996,reach:170+(i*73%240),delay:(i%5)*.035};
+  });
   function geometry(){
     width=window.innerWidth;
     height=window.innerHeight;
@@ -153,66 +127,80 @@
     copy.style.setProperty('--copy-opacity',textIn.toFixed(3));
   }
 
-  function updateCollision(progress){
-    // Fruit and both PET bottles enter together from opposite sides.
-    const c=reduce.matches?Number(progress>=.33):smooth(.228,.37,progress);
-    const travel=reduce.matches?c:backOut(c);
-    const pX= -1090*(1-travel);
-    const gX=  1090*(1-travel);
-    const sway=reduce.matches?0:Math.sin(Math.PI*c)*(1-c)*4;
-    const size=reduce.matches?1:.82+.18*c;
-    peachTeam.style.transform='translate3d('+pX.toFixed(2)+'px,0,0) rotate('+
-      (sway).toFixed(2)+'deg) scale('+size.toFixed(3)+')';
-    grapeTeam.style.transform='translate3d('+gX.toFixed(2)+'px,0,0) rotate('+
-      (-sway).toFixed(2)+'deg) scale('+size.toFixed(3)+')';
-    collision.style.visibility=progress>.228?'visible':'hidden';
-    collision.style.opacity=(reduce.matches?Number(progress>=.3):
-      smooth(.228,.275,progress)).toFixed(3);
-    collision.style.setProperty('--collision-ellipse-alpha',
-      (reduce.matches?1:smooth(.24,.34,progress)).toFixed(3));
-
-    // Water impact begins at near-contact and disperses outward.
-    const impact=reduce.matches?0:
-      smooth(.335,.37,progress)*(1-smooth(.434,.49,progress));
-    const expand=reduce.matches?1:smooth(.342,.437,progress);
-    collision.style.setProperty('--impact-opacity',(.87*impact).toFixed(3));
-    collision.style.setProperty('--impact-scale',(.68+.40*expand).toFixed(3));
-    droplets.forEach(({node,x,y,angle,delay,rotation,scale,spark})=>{
-      const t=clamp((expand-delay)/(1-delay));
-      const outward=smooth(0,.97,t);
-      const dropX=720+(x-720)*(.12+.88*outward);
-      const dropY=435+(y-435)*(.12+.88*outward);
-      const fade=impact*(spark ? (1-smooth(.70,1,t)*.65) : 1);
-      node.style.opacity=(fade*(spark?.9:.75)).toFixed(3);
-      node.style.transform='translate3d('+(dropX).toFixed(2)+'px,'+
-        dropY.toFixed(2)+'px,0) translate(-50%,-50%) rotate('+
-        (rotation*outward).toFixed(1)+'deg) scale('+
-        (scale*(.65+.35*outward)).toFixed(3)+')';
+  function updateCollision(p){
+    const entry=reduce.matches?Number(p>=.29):smooth(.235,.315,p);
+    const contact=clamp((p-.310)/.125);
+    const hit=reduce.matches?0:Math.sin(contact*17)*Math.exp(-contact*6)*smooth(0,.06,contact)*(1-smooth(.7,1,contact));
+    [peachTeam,grapeTeam].forEach((node,i)=>{
+      const side=i?1:-1;
+      const x=side*(1090*(1-entry)+hit*13);
+      const turn=reduce.matches?0:side*(-9*(1-entry)+hit*3);
+      node.style.transform='translate3d('+x.toFixed(2)+'px,0,0) rotate('+turn.toFixed(2)+'deg)';
     });
+    collision.style.visibility=p>.23?'visible':'hidden';
+    collision.style.opacity=smooth(.23,.25,p).toFixed(3);
+    collision.style.setProperty('--collision-ellipse-alpha',smooth(.23,.32,p).toFixed(3));
+    const t=clamp((p-.312)/.135);
+    const fade=reduce.matches?0:smooth(0,.07,t)*(1-smooth(.62,1,t));
+    water.style.opacity=fade.toFixed(3);
+    frontWater.style.opacity=(fade*.64).toFixed(3);
+    // A compressed core opens into sheets, then thins and falls under gravity.
+    jets.forEach((node,i)=>{
+      const q=clamp((t-i%3*.045)/(1-i%3*.045));
+      const grow=1-Math.pow(1-q,2.7);
+      const angle=[-2.75,-2.12,-1.35,-.65,.12,.65,2.0,2.7][i];
+      const reach=[275,240,185,310,280,230,225,310][i]*grow;
+      const ex=720+Math.cos(angle)*reach,ey=435+Math.sin(angle)*reach+155*q*q;
+      const nx=-Math.sin(angle),ny=Math.cos(angle);
+      const thick=(20+(i%3)*11)*(1-.82*q);
+      const mx=720+(ex-720)*.48+nx*(18+i%2*18)*grow;
+      const my=435+(ey-435)*.36+ny*35*grow;
+      const r=(7+i%3*3)*(1-.45*q);
+      node.setAttribute('d',`M ${720+nx*thick} ${435+ny*thick} C ${720+nx*thick*1.2} ${410+ny*thick} ${mx+nx*thick} ${my+ny*thick} ${ex+nx*r} ${ey+ny*r} Q ${ex+Math.cos(angle)*r*2} ${ey+Math.sin(angle)*r*2} ${ex-nx*r} ${ey-ny*r} C ${mx-nx*thick*.6} ${my-ny*thick*.6} ${710-nx*thick} ${420-ny*thick} ${720-nx*thick} ${435-ny*thick} Q 710 448 ${720+nx*thick} ${435+ny*thick}Z`);
+    });
+    frontJets.forEach(({node,index})=>node.setAttribute('d',jets[index].getAttribute('d')));
+    droplets.forEach(({node,angle,reach,delay})=>{
+      const q=clamp((t-.18-delay)/(.82-delay));
+      node.style.opacity=(fade*smooth(0,.12,q)*(1-smooth(.7,1,q))*.8).toFixed(3);
+      node.style.transform=`translate3d(${720+Math.cos(angle)*reach*q}px,${435+Math.sin(angle)*reach*q+190*q*q}px,0)`;
+    });
+    ice.forEach((node,i)=>{
+      const q=clamp((t-.045-i*.018)/(.955-i*.018));
+      const angle=[-2.6,-.7,2.7,.35,-1.5][i];
+      const reach=[260,290,200,260,195][i];
+      const x=690+Math.cos(angle)*reach*q;
+      const y=395+Math.sin(angle)*reach*q+190*q*q;
+      node.style.opacity=(reduce.matches?0:smooth(0,.12,q)*(1-smooth(.60,1,q))*(i%2?.85:.62)).toFixed(3);
+      node.style.transform=`translate3d(${x}px,${y}px,0) rotate(${(i-2)*13+(i%2?140:-110)*q}deg) scale(${.65+.35*q})`;
+    });
+    collision.inert=p<.455||p>=.51;
+    collision.setAttribute('aria-hidden',String(collision.inert));
   }
 
-  // Strong bowed front: the middle of the wave surges ahead, top and bottom
-  // catch up, then the left boundary clears the canvas to reveal exact Figma.
+  // Nonperiodic staggered lobes: upper/lower fronts overtake each other.
+  // Rounded detached lead sheets merge into the thick body as progress grows.
   function horizontalWave(u,seed){
-    const strength=Math.sin(Math.PI*u);
-    const x=1060-2240*u;
-    const wobble=Math.sin((2.1*u+.27*seed)*Math.PI);
-    const top=x+(95+20*wobble)*strength;
-    const middle=x-(185+27*wobble)*strength;
-    const bottom=x+(83-14*wobble)*strength;
-    const path=[
-      'M',top.toFixed(2),'-40',
-      'C',(x+92*strength).toFixed(2),'130',
-      (x-30*strength).toFixed(2),'236',
-      (middle+16*strength).toFixed(2),'347',
-      'C',(middle-24*strength).toFixed(2),'468',
-      (middle-32*strength).toFixed(2),'601',
-      (x-63*strength).toFixed(2),'702',
-      'C',(x+27*strength).toFixed(2),'834',
-      (x+99*strength).toFixed(2),'934',
-      bottom.toFixed(2),'1040'
-    ].join(' ');
-    return {mask:path+' L 1040 1040 L 1040 -40 Z',rim:path,x};
+    if(u<=0)return {mask:'M1040 -40H1100V1040H1040Z',rim:'M1040 -40V1040',x:1040};
+    if(u>=1)return {mask:'M-40 -40H1040V1040H-40Z',rim:'M-40 -40V1040',x:-40};
+    const ys=[-100,0,110,230,365,490,620,740,865,1000,1100];
+    const delays=[.03,.06,0,.09,.015,.12,.04,.10,0,.08,.04];
+    const xs=ys.map((y,i)=>{
+      const v=smooth(delays[(i+seed*2)%delays.length],.94,u);
+      const pulse=smooth(.08,.35,u)*(1-smooth(.62,.96,u));
+      return 1120-1480*v + [30,-40,-150,95,-220,60,-130,85,-180,-20,40][i]*pulse;
+    });
+    let rim=`M${xs[0]} ${ys[0]}`;
+    for(let i=0;i<ys.length-1;i++){
+      const prev=Math.max(0,i-1),next=Math.min(ys.length-1,i+2);
+      rim+=` C${xs[i]+(xs[i+1]-xs[prev])/6} ${ys[i]+(ys[i+1]-ys[prev])/6} ${xs[i+1]-(xs[next]-xs[i])/6} ${ys[i+1]-(ys[next]-ys[i])/6} ${xs[i+1]} ${ys[i+1]}`;
+    }
+    let mask=rim+' L1600 1100L1600 -100Z';
+    const lead=smooth(.04,.28,u)*(1-smooth(.48,.72,u));
+    [2,4,8].forEach((i,j)=>{
+      const x=xs[i]-80*lead, y=ys[i],rx=(28+j*8)*lead,ry=(14+j*5)*lead;
+      mask+=` M${x-rx} ${y} a${rx} ${ry} 0 1 0 ${rx*2} 0 a${rx} ${ry} 0 1 0 ${-rx*2} 0Z`;
+    });
+    return {mask,rim,x:xs[5]};
   }
 
   function updateFlavor(panel,p){
@@ -231,16 +219,19 @@
     panel.fluidRim.setAttribute('stroke-opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.7).toFixed(3));
     if(panel.foam){
       panel.foam.setAttribute('transform','translate('+shape.x.toFixed(2)+',0)');
-      panel.foam.setAttribute('opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.8).toFixed(3));
+      panel.foam.setAttribute('opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.25).toFixed(3));
     }
     const active=smooth(panel.end,panel.end+.11,p);
     panel.shells.forEach(({shell,index,bottle})=>{
       const angle=index*1.7;
       const enter=reduce.matches?0:(1-u);
       const orbit=reduce.matches?0:active;
-      const dx=(bottle?360:470)*enter-next*720 + (bottle?0:Math.cos(angle)*24*orbit);
-      const dy=bottle?Math.sin(u*Math.PI)*-22:Math.sin(angle)*30*orbit;
-      const turn=reduce.matches?0:(bottle?18*enter-13*next:20*enter+Math.sin(angle)*12*orbit);
+      const roll=reduce.matches?1:smooth(.08,.94,u);
+      const travel=(1-roll)*760-next*960;
+      const dx=bottle?travel:travel*.88+Math.cos(angle)*12*orbit;
+      const settle=Math.sin(clamp((u-.75)/.25)*Math.PI*2)*Math.pow(1-clamp((u-.75)/.25),2);
+      const dy=bottle?-8*settle:Math.sin(angle)*14*orbit;
+      const turn=reduce.matches?0:(bottle?travel/310*180/Math.PI+settle*1.5:12*enter+Math.sin(angle)*6*orbit);
       shell.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0) rotate('+turn.toFixed(2)+'deg)';
     });
   }
@@ -256,30 +247,17 @@
     window.scrollTo({top:top+distance*progress+(progress===1?height:0),behavior:reduce.matches?'instant':'smooth'});
   }
 
-  function render(now=performance.now()){
+  function render(){
     raf=0;
     const rect=root.getBoundingClientRect();
     if(rect.top>height||rect.bottom<0)return;
     const distance=Math.max(1,root.offsetHeight-height);
     const progress=clamp(-rect.top/distance);
     updateCopy(progress);
-    copy.setAttribute('aria-hidden',String(pop>.8 || progress>.51));
-    const burst=reduce.matches?Number(progress>=.255):popProgress(progress,now);
-    updateCollision(.228+burst*.262);
-    collision.inert=burst<.99 || progress>=.51;
-    collision.setAttribute('aria-hidden',String(burst<.99 || progress>=.51));
-    const bloom=smooth(.02,.32,burst);
-    const settle=smooth(.55,1,burst);
-    collision.style.setProperty('--water-alpha',(bloom*(1-.50*settle)).toFixed(3));
-    collision.style.setProperty('--water-scale',(.55+.43*backOut(smooth(0,.85,burst))).toFixed(4));
-    collision.style.setProperty('--water-turn',(-9+9*settle).toFixed(2)+'deg');
-    ice.forEach((node,index)=>{
-      const side=index===0?-1:1;
-      const t=reduce.matches?burst:smooth(.08+index*.04,.92,burst);
-      node.style.opacity=(smooth(0,.22,burst)*.86).toFixed(3);
-      node.style.transform='translate3d('+(side*(1-t)*460).toFixed(2)+'px,'+(-170*(1-t)).toFixed(2)+'px,0) rotate('+(side*(28-85*(1-t))).toFixed(2)+'deg) scale('+(reduce.matches?1:.4+.6*t).toFixed(3)+')';
-    });
-    root.dataset.richScene=progress>=.94?'grape':progress>=.66?'peach':burst>=.99?'duo':burst>0?'burst':'copy';
+    copy.setAttribute('aria-hidden',String(progress>.26));
+    updateCollision(progress);
+    root.dataset.richScene=progress>=.94?'grape':progress>=.66?'peach':progress>=.455?'duo':progress>.235?'burst':'copy';
+    root.dataset.richProgress=progress.toFixed(5);
     panels.forEach(panel=>updateFlavor(panel,progress));
   }
   function queue(){if(!raf)raf=requestAnimationFrame(render);}
@@ -296,7 +274,6 @@
     observer.observe(root);
   }else root.classList.add('is-visible');
   root.classList.add('rich-motion-ready');
-  // Predecode the splash before the delayed reveal.
-  root.querySelectorAll('.rich-collision__photo-water').forEach(img=>img.decode?.().catch(()=>{}));
+
   resize();
 })();
