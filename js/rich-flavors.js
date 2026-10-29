@@ -65,31 +65,13 @@
   });
 
   const NS='http://www.w3.org/2000/svg';
-  const water=document.createElementNS(NS,'svg');
-  water.setAttribute('viewBox','0 0 1440 900');
-  water.classList.add('rich-impact-fluid');
-  water.setAttribute('aria-hidden','true');
-  water.innerHTML='<defs><linearGradient id="v6-water" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".85"/><stop offset=".25" stop-color="#d3f7f2" stop-opacity=".10"/><stop offset=".55" stop-color="#fff" stop-opacity=".55"/><stop offset=".8" stop-color="#7bbfb5" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".85"/></linearGradient></defs>';
-  collision.querySelector('.rich-new-flavor__art').prepend(water);
-  const jets=Array.from({length:8},(_,i)=>{
-    const node=document.createElementNS(NS,'path');
-    node.setAttribute('fill','url(#v6-water)');node.setAttribute('stroke','rgba(255,255,255,.82)');
-    node.setAttribute('stroke-width',i%3===0?'2.2':'1.3');
-    water.append(node);return node;
-  });
-  const frontWater=document.createElementNS(NS,'svg');
-  frontWater.setAttribute('viewBox','0 0 1440 900');frontWater.setAttribute('aria-hidden','true');
-  frontWater.classList.add('rich-impact-fluid','rich-impact-fluid--front');
-  const frontJets=[1,4,6].map(i=>{const node=jets[i].cloneNode();frontWater.append(node);return {node,index:i};});
-  collision.querySelector('.rich-new-flavor__art').append(frontWater);
-  // Five reused alpha ice sprites; each has an independent ballistic trajectory.
+  const defs=document.createElementNS(NS,'svg');
+  defs.setAttribute('width','0');defs.setAttribute('height','0');defs.setAttribute('aria-hidden','true');
+  defs.innerHTML='<defs><clipPath id="rich-intro-surge" clipPathUnits="objectBoundingBox"><path/></clipPath></defs>';
+  root.prepend(defs);
+  const collisionMask=defs.querySelector('path');
   while(ice.length<5){const node=ice[0].cloneNode();node.className='rich-collision__ice';collision.querySelector('.rich-new-flavor__art').append(node);ice.push(node);}
-  ice.forEach((node,i)=>{node.style.left='0';node.style.top='0';node.style.width=(i%2?102:76)+'px';node.style.height=node.style.width;node.style.zIndex=i%2?'4':'1';});
-  const droplets=Array.from({length:22},(_,i)=>{
-    const node=document.createElement('span');node.className='rich-collision__drop';
-    node.style.setProperty('--drop-size',(3+(i*7%9))+'px');particlesLayer.append(node);
-    return {node,angle:i*2.39996,reach:170+(i*73%240),delay:(i%5)*.035};
-  });
+  ice.forEach((node,i)=>{node.style.left='0';node.style.top='0';node.style.width=(i%2?102:76)+'px';node.style.height=node.style.width;node.style.zIndex=i%2?'4':'1';node.style.setProperty('--ice-delay',(-i*1.3)+'s');});
   function geometry(){
     width=window.innerWidth;
     height=window.innerHeight;
@@ -130,53 +112,27 @@
   }
 
   function updateCollision(p){
-    const entry=reduce.matches?Number(p>=.29):smooth(.265,.315,p);
-    const contact=clamp((p-.310)/.125);
-    const hit=reduce.matches?0:Math.sin(contact*17)*Math.exp(-contact*6)*smooth(0,.06,contact)*(1-smooth(.7,1,contact));
+    const wave=reduce.matches?Number(p>=.28):clamp((p-.23)/.12);
+    const shape=horizontalWave(wave,0);
+    collisionMask.setAttribute('d',shape.mask.replace(/-?\d+(?:\.\d+)?/g,n=>(Number(n)/1000).toFixed(5)));
+    const entry=reduce.matches?Number(p>=.30):smooth(.245,.365,p);
+    // One stream carries both products from the right. No collision impulse.
     [peachTeam,grapeTeam].forEach((node,i)=>{
-      const side=i?1:-1;
-      const x=side*(1090*(1-entry)+hit*22);
-      const turn=reduce.matches?0:side*(-9*(1-entry)+hit*4);
-      node.style.transform='translate3d('+x.toFixed(2)+'px,0,0) rotate('+turn.toFixed(2)+'deg)';
+      const travel=1180*(1-entry);
+      const lean=reduce.matches?0:(1-entry)*(i?7:5);
+      node.style.transform=`translate3d(${travel.toFixed(2)}px,${(-14*Math.sin(Math.PI*entry)).toFixed(2)}px,0) rotate(${lean.toFixed(2)}deg)`;
     });
     collision.style.visibility=p>.23?'visible':'hidden';
-    collision.style.opacity=smooth(.23,.25,p).toFixed(3);
-    collision.style.setProperty('--collision-ellipse-alpha',smooth(.23,.32,p).toFixed(3));
-    const t=clamp((p-.312)/.135);
-    const fade=reduce.matches?0:smooth(0,.07,t)*(1-smooth(.62,1,t));
-    water.style.opacity=fade.toFixed(3);
-    frontWater.style.opacity='0';
-    // A compressed core opens into sheets, then thins and falls under gravity.
-    jets.forEach((node,i)=>{
-      const q=clamp((t-i%3*.045)/(1-i%3*.045));
-      const grow=1-Math.pow(1-q,2.7);
-      const angle=[-2.75,-2.12,-1.35,-.65,.12,.65,2.0,2.7][i];
-      const reach=[370,380,400,395,350,330,340,390][i]*grow;
-      const ex=720+Math.cos(angle)*reach,ey=435+Math.sin(angle)*reach+155*q*q;
-      const nx=-Math.sin(angle),ny=Math.cos(angle);
-      const thick=(12+(i%3)*5)*(1-.82*q);
-      const mx=720+(ex-720)*.48+nx*(18+i%2*18)*grow;
-      const my=435+(ey-435)*.36+ny*35*grow;
-      const r=(4+i%3*2)*(1-.45*q);
-      node.setAttribute('d',`M ${720+nx*thick} ${435+ny*thick} C ${720+nx*thick*1.2} ${410+ny*thick} ${mx+nx*thick} ${my+ny*thick} ${ex+nx*r} ${ey+ny*r} Q ${ex+Math.cos(angle)*r*2} ${ey+Math.sin(angle)*r*2} ${ex-nx*r} ${ey-ny*r} C ${mx-nx*thick*.6} ${my-ny*thick*.6} ${710-nx*thick} ${420-ny*thick} ${720-nx*thick} ${435-ny*thick} Q 710 448 ${720+nx*thick} ${435+ny*thick}Z`);
-    });
-    frontJets.forEach(({node,index})=>node.setAttribute('d',jets[index].getAttribute('d')));
-    droplets.forEach(({node,angle,reach,delay})=>{
-      const q=clamp((t-.18-delay)/(.82-delay));
-      node.style.opacity=(fade*smooth(0,.12,q)*(1-smooth(.7,1,q))*.8).toFixed(3);
-      node.style.transform=`translate3d(${720+Math.cos(angle)*reach*q}px,${435+Math.sin(angle)*reach*q+190*q*q}px,0)`;
-    });
+    collision.style.opacity='1';
+    collision.style.setProperty('--collision-ellipse-alpha',smooth(.23,.34,p).toFixed(3));
+    const spots=[[345,150],[1080,210],[285,615],[1125,650],[890,70]];
     ice.forEach((node,i)=>{
-      const q=clamp((t-.045-i*.018)/(.955-i*.018));
-      const angle=[-2.6,-.7,2.7,.35,-1.5][i];
-      const reach=[390,420,340,390,335][i];
-      const flight=1-Math.pow(1-q,2.2);
-      const x=690+Math.cos(angle)*reach*flight;
-      const y=395+Math.sin(angle)*reach*flight+230*q*q;
-      node.style.opacity=(reduce.matches?0:smooth(.08,.28,q)*(1-smooth(.55,1,q))*(i%2?.85:.62)).toFixed(3);
-      node.style.transform=`translate3d(${x}px,${y}px,0) rotate(${(i-2)*13+(i%2?140:-110)*q}deg) scale(${.65+.35*q})`;
+      const q=reduce.matches?entry:smooth(.25+i*.002,.38+i*.002,p);
+      const [x,y]=spots[i];
+      node.style.opacity=(smooth(0,.25,q)*(i%2?.84:.65)).toFixed(3);
+      node.style.transform=`translate3d(${x+1180*(1-q)}px,${y-36*(1-q)}px,0) rotate(${(i-2)*17+(1-q)*35}deg)`;
     });
-    collision.inert=p<.455||p>=.51;
+    collision.inert=p<.38||p>=.51;
     collision.setAttribute('aria-hidden',String(collision.inert));
   }
 
