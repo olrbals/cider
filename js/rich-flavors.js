@@ -1,8 +1,8 @@
-/* RICH V4 / scroll-scrubbed four-scene choreography.
+/* RICH V5 / Slosh-inspired flavor carousel with a timed soda burst.
   History 2024 → 2026 copy rises on a wave → hold → opposed flavor collision
   + water burst → hold → PEACH swept in as a unit → hold → GRAPE over PEACH → hold.
-  Every transition is a pure function of scroll position, so reverse scrolling
-  precisely unwinds the collision, water spray, and incoming scenes.
+  Product screens follow scroll position in both directions. The entry burst
+  plays for 820ms after a 720ms copy hold and reverses below the copy threshold.
   Hero and History scroll controllers are intentionally untouched. */
 (() => {
   'use strict';
@@ -16,6 +16,7 @@
   const grapeTeam = collision?.querySelector('.rich-collision__team--grape');
   const splash = collision?.querySelector('.rich-collision__water');
   const particlesLayer = collision?.querySelector('.rich-collision__droplets');
+  const ice=[...root.querySelectorAll('.rich-collision__ice')];
   const panels = [
     {name:'peach',element:root.querySelector('.rich-fg--peach'),start:.51,end:.66,seed:0},
     {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.80,end:.94,seed:1}
@@ -36,9 +37,27 @@
   let width=window.innerWidth;
   let height=window.innerHeight;
   let raf=0;
+  let pop=0, popFrom=0, popTarget=0, popStarted=0;
+  let copyArrived=null;
+  function popProgress(progress, now){
+    if(progress<.14) copyArrived=null;
+    else if(copyArrived===null) copyArrived=now;
+    const target=progress>=.255 || (copyArrived!==null && now-copyArrived>=720) ? 1 : 0;
+    if(target!==popTarget){
+      popFrom=pop;popTarget=target;popStarted=now;
+    }
+    const t=clamp((now-popStarted)/820);
+    pop=popFrom+(popTarget-popFrom)*t;
+    // Direct jumps and restored deep links must not wait behind a hidden scene.
+    if(progress>=.50) pop=1;
+    const waiting=progress>=.14 && !target;
+    if(waiting || Math.abs(pop-popTarget)>.0001) queue();
+    return pop;
+  }
 
   panels.forEach(panel=>{
     panel.fluidMask=panel.element.querySelector('.rich-fg__fluid-mask');
+    panel.sceneMask=panel.element.querySelector('.rich-fg__scene-mask');
     panel.fluidRim=panel.element.querySelector('.rich-fg__fluid-rim');
     panel.fluidBand=panel.element.querySelector('.rich-fg__fluid-band');
     panel.foam=panel.element.querySelector('.rich-fg__foam');
@@ -98,10 +117,11 @@
   function geometry(){
     width=window.innerWidth;
     height=window.innerHeight;
-    const scale=Math.min(width/1440,height/900);
+    const scale=Math.min(width/(width<750?960:1440),height/900);
     const bandTop=(height-900*scale)/2+648*scale;
     const bandY=bandTop/Math.max(1,height)*1000;
     root.style.setProperty('--rich-design-scale',scale.toFixed(5));
+    root.style.setProperty('--rich-intro-scale',Math.min(width/(width<750?760:1440),height/900).toFixed(5));
     root.style.setProperty('--rich-band-top',bandTop.toFixed(2)+'px');
     panels.forEach(panel=>{
       panel.fluidBand.setAttribute('y',bandY.toFixed(2));
@@ -135,12 +155,12 @@
 
   function updateCollision(progress){
     // Fruit and both PET bottles enter together from opposite sides.
-    const c=reduce.matches?Number(progress>=.33):smooth(.255,.38,progress);
+    const c=reduce.matches?Number(progress>=.33):smooth(.228,.37,progress);
     const travel=reduce.matches?c:backOut(c);
     const pX= -1090*(1-travel);
     const gX=  1090*(1-travel);
     const sway=reduce.matches?0:Math.sin(Math.PI*c)*(1-c)*4;
-    const size=reduce.matches?1:.94+.06*c;
+    const size=reduce.matches?1:.82+.18*c;
     peachTeam.style.transform='translate3d('+pX.toFixed(2)+'px,0,0) rotate('+
       (sway).toFixed(2)+'deg) scale('+size.toFixed(3)+')';
     grapeTeam.style.transform='translate3d('+gX.toFixed(2)+'px,0,0) rotate('+
@@ -175,7 +195,7 @@
   // catch up, then the left boundary clears the canvas to reveal exact Figma.
   function horizontalWave(u,seed){
     const strength=Math.sin(Math.PI*u);
-    const x=95-360*u;
+    const x=1060-2240*u;
     const wobble=Math.sin((2.1*u+.27*seed)*Math.PI);
     const top=x+(95+20*wobble)*strength;
     const middle=x-(185+27*wobble)*strength;
@@ -198,37 +218,68 @@
   function updateFlavor(panel,p){
     const u=reduce.matches?Number(p>=(panel.start+panel.end)/2):
       smooth(panel.start,panel.end,p);
-    panel.element.style.visibility=p>=panel.start-.001?'visible':'hidden';
-    // EVERYTHING (color, image, fruit and footer type) shares this value.
-    panel.element.style.transform='translate3d('+((1-u)*100).toFixed(3)+'%,0,0)';
+    panel.element.style.visibility=u>0?'visible':'hidden';
+    panel.element.style.transform='none';
+    const next=panel.name==='peach'?smooth(.80,.94,p):0;
+    panel.element.inert=u<.99 || next>.01;
+    panel.element.setAttribute('aria-hidden',String(u<.99 || next>.01));
     const shape=horizontalWave(u,panel.seed);
-    panel.fluidMask.setAttribute('d',shape.mask);
+    // Clip the entire screen with the same liquid edge, including fruit and type.
+    panel.sceneMask.setAttribute('d',shape.mask.replace(/-?\d+(?:\.\d+)?/g,n=>(Number(n)/1000).toFixed(5)));
+    panel.fluidMask.setAttribute('d','M0 0H1000V1000H0Z');
     panel.fluidRim.setAttribute('d',shape.rim);
-    panel.fluidRim.setAttribute('stroke-opacity',
-      (reduce.matches?0:Math.sin(Math.PI*u)*.37).toFixed(3));
+    panel.fluidRim.setAttribute('stroke-opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.7).toFixed(3));
     if(panel.foam){
       panel.foam.setAttribute('transform','translate('+shape.x.toFixed(2)+',0)');
-      panel.foam.setAttribute('opacity',(reduce.matches?0:Math.sin(Math.PI*u)*.73).toFixed(3));
+      panel.foam.setAttribute('opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.8).toFixed(3));
     }
-    const lean=reduce.matches?0:Math.sin(Math.PI*u);
+    const active=smooth(panel.end,panel.end+.11,p);
     panel.shells.forEach(({shell,index,bottle})=>{
-      const drift=(bottle?-9:(index%2?6:-7))*lean;
-      const yDrift=(bottle?-5:((index%3)-1)*5)*lean;
-      const turn=(bottle?-2.1:(index%2?2.6:-2.4))*lean;
-      shell.style.opacity='1';
-      shell.style.transform='translate3d('+drift.toFixed(2)+'px,'+
-        yDrift.toFixed(2)+'px,0) rotate('+turn.toFixed(2)+'deg)';
+      const angle=index*1.7;
+      const enter=reduce.matches?0:(1-u);
+      const orbit=reduce.matches?0:active;
+      const dx=(bottle?360:470)*enter-next*720 + (bottle?0:Math.cos(angle)*24*orbit);
+      const dy=bottle?Math.sin(u*Math.PI)*-22:Math.sin(angle)*30*orbit;
+      const turn=reduce.matches?0:(bottle?18*enter-13*next:20*enter+Math.sin(angle)*12*orbit);
+      shell.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0) rotate('+turn.toFixed(2)+'deg)';
     });
   }
 
-  function render(){
+  // Native buttons follow exactly the same scroll choreography as wheel/touch.
+  panels.forEach((panel,index)=>{
+    panel.element.querySelector('[data-rich-prev]').addEventListener('click',()=>goTo(index===0?.44:.72));
+    panel.element.querySelector('[data-rich-next]').addEventListener('click',()=>goTo(index===0?.96:1));
+  });
+  function goTo(progress){
+    const top=root.getBoundingClientRect().top+window.scrollY;
+    const distance=Math.max(1,root.offsetHeight-height);
+    window.scrollTo({top:top+distance*progress+(progress===1?height:0),behavior:reduce.matches?'instant':'smooth'});
+  }
+
+  function render(now=performance.now()){
     raf=0;
     const rect=root.getBoundingClientRect();
     if(rect.top>height||rect.bottom<0)return;
     const distance=Math.max(1,root.offsetHeight-height);
     const progress=clamp(-rect.top/distance);
     updateCopy(progress);
-    updateCollision(progress);
+    copy.setAttribute('aria-hidden',String(pop>.8 || progress>.51));
+    const burst=reduce.matches?Number(progress>=.255):popProgress(progress,now);
+    updateCollision(.228+burst*.262);
+    collision.inert=burst<.99 || progress>=.51;
+    collision.setAttribute('aria-hidden',String(burst<.99 || progress>=.51));
+    const bloom=smooth(.02,.32,burst);
+    const settle=smooth(.55,1,burst);
+    collision.style.setProperty('--water-alpha',(bloom*(1-.50*settle)).toFixed(3));
+    collision.style.setProperty('--water-scale',(.55+.43*backOut(smooth(0,.85,burst))).toFixed(4));
+    collision.style.setProperty('--water-turn',(-9+9*settle).toFixed(2)+'deg');
+    ice.forEach((node,index)=>{
+      const side=index===0?-1:1;
+      const t=reduce.matches?burst:smooth(.08+index*.04,.92,burst);
+      node.style.opacity=(smooth(0,.22,burst)*.86).toFixed(3);
+      node.style.transform='translate3d('+(side*(1-t)*460).toFixed(2)+'px,'+(-170*(1-t)).toFixed(2)+'px,0) rotate('+(side*(28-85*(1-t))).toFixed(2)+'deg) scale('+(reduce.matches?1:.4+.6*t).toFixed(3)+')';
+    });
+    root.dataset.richScene=progress>=.94?'grape':progress>=.66?'peach':burst>=.99?'duo':burst>0?'burst':'copy';
     panels.forEach(panel=>updateFlavor(panel,progress));
   }
   function queue(){if(!raf)raf=requestAnimationFrame(render);}
@@ -245,5 +296,7 @@
     observer.observe(root);
   }else root.classList.add('is-visible');
   root.classList.add('rich-motion-ready');
+  // Predecode the splash before the delayed reveal.
+  root.querySelectorAll('.rich-collision__photo-water').forEach(img=>img.decode?.().catch(()=>{}));
   resize();
 })();

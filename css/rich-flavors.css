@@ -204,3 +204,36 @@
 /* Legible static source if a browser has JavaScript disabled. */
 .rich-flavors:not(.rich-motion-ready) .rich-copy{background:#f7faf8}
 .rich-flavors:not(.rich-motion-ready) .rich-copy__content{opacity:1}
+
+/* V5: reference water/ice and full-bleed Slosh flavor stages. */
+.rich-collision__water{display:none}
+.rich-collision__photo-water{position:absolute;display:block;max-width:none;object-fit:contain;pointer-events:none;
+ left:0;top:-40px;width:1440px;height:960px;transform-origin:50% 49%;
+ opacity:var(--water-alpha,0);transform:scale(var(--water-scale,.55)) rotate(var(--water-turn,-9deg))}
+.rich-collision__photo-water--back{z-index:1}
+.rich-collision__photo-water--front{z-index:4;opacity:calc(var(--water-alpha,0) * .65);
+ clip-path:polygon(0 55%,29% 62%,48% 81%,74% 67%,100% 48%,100% 100%,0 100%)}
+.rich-fg--peach{clip-path:url(#rich-scene-peach)}
+.rich-fg--grape{clip-path:url(#rich-scene-grape)}
+.rich-fg__art{pointer-events:auto}
+.rich-fg__photo-area{pointer-events:none}
+.rich-fg__caption-line .rich-fg__nav{position:absolute;top:32px;width:92px;height:68px;border:0;border-radius:50%;background:transparent;padding:15px;cursor:pointer;color:white}
+.rich-fg__nav--prev{left:400px}.rich-fg__nav--next{left:1000px}
+.rich-fg__caption-line .rich-fg__nav img{position:static;width:62px;height:30px}
+.rich-fg__nav:hover{background:rgba(255,255,255,.15)}
+.rich-fg__nav:focus-visible{outline:3px solid white;outline-offset:3px}
+@media(max-width:750px){
+ .rich-flavors__viewport{min-height:0}
+ .rich-copy__content{width:100%;height:auto;transform:translate(-50%,-50%);padding:0 20px;gap:16px}
+ .rich-copy__year{font-size:24px}
+ .rich-copy__content h2{font-size:clamp(19px,5vw,34px);white-space:normal}
+}
+@media(prefers-reduced-motion:reduce){.rich-collision__photo-water{transform:none}}
+
+.rich-collision__ice{position:absolute;display:block;width:210px;height:210px;object-fit:contain;pointer-events:none;z-index:5;opacity:0}
+.rich-collision__ice--left{left:180px;top:12px;width:160px;height:160px;z-index:1}
+.rich-collision__ice--right{left:1080px;top:620px;filter:drop-shadow(0 12px 9px rgba(73,111,102,.08))}
+
+/* Keep this stage viewport-sized even inside the legacy desktop-width page. */
+.rich-flavors__viewport{width:100vw;max-width:100vw}
+.rich-new-flavor__art{transform:translate(-50%,-50%) scale(var(--rich-intro-scale,var(--rich-design-scale,1)))}
