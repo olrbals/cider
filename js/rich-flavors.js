@@ -128,13 +128,13 @@
   }
 
   function updateCollision(p){
-    const entry=reduce.matches?Number(p>=.29):smooth(.235,.315,p);
+    const entry=reduce.matches?Number(p>=.29):smooth(.265,.315,p);
     const contact=clamp((p-.310)/.125);
     const hit=reduce.matches?0:Math.sin(contact*17)*Math.exp(-contact*6)*smooth(0,.06,contact)*(1-smooth(.7,1,contact));
     [peachTeam,grapeTeam].forEach((node,i)=>{
       const side=i?1:-1;
-      const x=side*(1090*(1-entry)+hit*13);
-      const turn=reduce.matches?0:side*(-9*(1-entry)+hit*3);
+      const x=side*(1090*(1-entry)+hit*22);
+      const turn=reduce.matches?0:side*(-9*(1-entry)+hit*4);
       node.style.transform='translate3d('+x.toFixed(2)+'px,0,0) rotate('+turn.toFixed(2)+'deg)';
     });
     collision.style.visibility=p>.23?'visible':'hidden';
@@ -143,19 +143,19 @@
     const t=clamp((p-.312)/.135);
     const fade=reduce.matches?0:smooth(0,.07,t)*(1-smooth(.62,1,t));
     water.style.opacity=fade.toFixed(3);
-    frontWater.style.opacity=(fade*.64).toFixed(3);
+    frontWater.style.opacity='0';
     // A compressed core opens into sheets, then thins and falls under gravity.
     jets.forEach((node,i)=>{
       const q=clamp((t-i%3*.045)/(1-i%3*.045));
       const grow=1-Math.pow(1-q,2.7);
       const angle=[-2.75,-2.12,-1.35,-.65,.12,.65,2.0,2.7][i];
-      const reach=[275,240,185,310,280,230,225,310][i]*grow;
+      const reach=[370,380,400,395,350,330,340,390][i]*grow;
       const ex=720+Math.cos(angle)*reach,ey=435+Math.sin(angle)*reach+155*q*q;
       const nx=-Math.sin(angle),ny=Math.cos(angle);
-      const thick=(20+(i%3)*11)*(1-.82*q);
+      const thick=(12+(i%3)*5)*(1-.82*q);
       const mx=720+(ex-720)*.48+nx*(18+i%2*18)*grow;
       const my=435+(ey-435)*.36+ny*35*grow;
-      const r=(7+i%3*3)*(1-.45*q);
+      const r=(4+i%3*2)*(1-.45*q);
       node.setAttribute('d',`M ${720+nx*thick} ${435+ny*thick} C ${720+nx*thick*1.2} ${410+ny*thick} ${mx+nx*thick} ${my+ny*thick} ${ex+nx*r} ${ey+ny*r} Q ${ex+Math.cos(angle)*r*2} ${ey+Math.sin(angle)*r*2} ${ex-nx*r} ${ey-ny*r} C ${mx-nx*thick*.6} ${my-ny*thick*.6} ${710-nx*thick} ${420-ny*thick} ${720-nx*thick} ${435-ny*thick} Q 710 448 ${720+nx*thick} ${435+ny*thick}Z`);
     });
     frontJets.forEach(({node,index})=>node.setAttribute('d',jets[index].getAttribute('d')));
@@ -167,10 +167,11 @@
     ice.forEach((node,i)=>{
       const q=clamp((t-.045-i*.018)/(.955-i*.018));
       const angle=[-2.6,-.7,2.7,.35,-1.5][i];
-      const reach=[260,290,200,260,195][i];
-      const x=690+Math.cos(angle)*reach*q;
-      const y=395+Math.sin(angle)*reach*q+190*q*q;
-      node.style.opacity=(reduce.matches?0:smooth(0,.12,q)*(1-smooth(.60,1,q))*(i%2?.85:.62)).toFixed(3);
+      const reach=[390,420,340,390,335][i];
+      const flight=1-Math.pow(1-q,2.2);
+      const x=690+Math.cos(angle)*reach*flight;
+      const y=395+Math.sin(angle)*reach*flight+230*q*q;
+      node.style.opacity=(reduce.matches?0:smooth(.08,.28,q)*(1-smooth(.55,1,q))*(i%2?.85:.62)).toFixed(3);
       node.style.transform=`translate3d(${x}px,${y}px,0) rotate(${(i-2)*13+(i%2?140:-110)*q}deg) scale(${.65+.35*q})`;
     });
     collision.inert=p<.455||p>=.51;
@@ -183,11 +184,11 @@
     if(u<=0)return {mask:'M1040 -40H1100V1040H1040Z',rim:'M1040 -40V1040',x:1040};
     if(u>=1)return {mask:'M-40 -40H1040V1040H-40Z',rim:'M-40 -40V1040',x:-40};
     const ys=[-100,0,110,230,365,490,620,740,865,1000,1100];
-    const delays=[.03,.06,0,.09,.015,.12,.04,.10,0,.08,.04];
+    const delays=[.02,.025,.04,.065,.10,.12,.09,.045,.015,.02,.02];
     const xs=ys.map((y,i)=>{
       const v=smooth(delays[(i+seed*2)%delays.length],.94,u);
       const pulse=smooth(.08,.35,u)*(1-smooth(.62,.96,u));
-      return 1120-1480*v + [30,-40,-150,95,-220,60,-130,85,-180,-20,40][i]*pulse;
+      return 1120-1480*v + [10,-25,-110,-155,15,90,30,-100,-175,-55,10][i]*pulse;
     });
     let rim=`M${xs[0]} ${ys[0]}`;
     for(let i=0;i<ys.length-1;i++){
@@ -196,7 +197,7 @@
     }
     let mask=rim+' L1600 1100L1600 -100Z';
     const lead=smooth(.04,.28,u)*(1-smooth(.48,.72,u));
-    [2,4,8].forEach((i,j)=>{
+    [2,8].forEach((i,j)=>{
       const x=xs[i]-80*lead, y=ys[i],rx=(28+j*8)*lead,ry=(14+j*5)*lead;
       mask+=` M${x-rx} ${y} a${rx} ${ry} 0 1 0 ${rx*2} 0 a${rx} ${ry} 0 1 0 ${-rx*2} 0Z`;
     });
@@ -205,10 +206,10 @@
 
   function updateFlavor(panel,p){
     const u=reduce.matches?Number(p>=(panel.start+panel.end)/2):
-      smooth(panel.start,panel.end,p);
+      clamp((p-panel.start)/(panel.end-panel.start));
     panel.element.style.visibility=u>0?'visible':'hidden';
     panel.element.style.transform='none';
-    const next=panel.name==='peach'?smooth(.80,.94,p):0;
+    const next=panel.name==='peach'?smooth(.795,.925,p):0;
     panel.element.inert=u<.99 || next>.01;
     panel.element.setAttribute('aria-hidden',String(u<.99 || next>.01));
     const shape=horizontalWave(u,panel.seed);
@@ -216,22 +217,23 @@
     panel.sceneMask.setAttribute('d',shape.mask.replace(/-?\d+(?:\.\d+)?/g,n=>(Number(n)/1000).toFixed(5)));
     panel.fluidMask.setAttribute('d','M0 0H1000V1000H0Z');
     panel.fluidRim.setAttribute('d',shape.rim);
-    panel.fluidRim.setAttribute('stroke-opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.7).toFixed(3));
+    panel.fluidRim.setAttribute('stroke-opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.22).toFixed(3));
     if(panel.foam){
       panel.foam.setAttribute('transform','translate('+shape.x.toFixed(2)+',0)');
-      panel.foam.setAttribute('opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.25).toFixed(3));
+      panel.foam.setAttribute('opacity','0');
     }
+    panel.element.querySelector('.rich-fg__caption').style.opacity=(reduce.matches?u:smooth(.45,.88,u)*(1-next)).toFixed(3);
     const active=smooth(panel.end,panel.end+.11,p);
     panel.shells.forEach(({shell,index,bottle})=>{
       const angle=index*1.7;
       const enter=reduce.matches?0:(1-u);
       const orbit=reduce.matches?0:active;
-      const roll=reduce.matches?1:smooth(.08,.94,u);
+      const roll=reduce.matches?1:smooth(0,.88,u);
       const travel=(1-roll)*760-next*960;
-      const dx=bottle?travel:travel*.88+Math.cos(angle)*12*orbit;
+      const dx=bottle?travel:travel+Math.cos(angle)*18*Math.sin(Math.PI*u)+Math.cos(angle)*8*orbit;
       const settle=Math.sin(clamp((u-.75)/.25)*Math.PI*2)*Math.pow(1-clamp((u-.75)/.25),2);
       const dy=bottle?-8*settle:Math.sin(angle)*14*orbit;
-      const turn=reduce.matches?0:(bottle?travel/310*180/Math.PI+settle*1.5:12*enter+Math.sin(angle)*6*orbit);
+      const turn=reduce.matches?0:(bottle?travel/620*180/Math.PI+settle*1.5:12*enter+Math.sin(angle)*6*orbit);
       shell.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0) rotate('+turn.toFixed(2)+'deg)';
     });
   }
