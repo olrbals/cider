@@ -63,7 +63,7 @@ export async function createHeroCan(hero) {
   // droplets with ballistic trajectories towards the lens. No glowing sprites.
   const mobile=matchMedia('(max-width: 700px)');
   const dropletGeometry=new THREE.SphereGeometry(1,8,6);
-  const dropMat=new THREE.MeshPhysicalMaterial({color:0xdce9e3,metalness:.08,roughness:.09,transparent:true,opacity:.74,clearcoat:1,depthWrite:false});
+  const dropMat=new THREE.MeshPhysicalMaterial({color:0xf7faf8,metalness:.02,roughness:.065,transparent:true,opacity:.62,clearcoat:1,depthWrite:false});
   const foamMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.26,transparent:true,opacity:.6,depthWrite:false});
   const droplets=new THREE.InstancedMesh(dropletGeometry,dropMat,12);
   const foam=new THREE.InstancedMesh(dropletGeometry,foamMat,24);
@@ -80,20 +80,20 @@ export async function createHeroCan(hero) {
       let active=false;
       for(let i=0;i<batch.instanceMatrix.count;i++){
         const seed=i+(isFoam?91:7);
-        const start=(isFoam ? .535 : .545)+random(seed)*.027;
-        const duration=isFoam ? .09+random(seed+3)*.04 : .11+random(seed+3)*.06;
+        const start=(isFoam ? .512 : .525)+Math.pow(random(seed),2)*.020;
+        const duration=isFoam ? .045+random(seed+3)*.035 : .085+random(seed+3)*.075;
         const t=(p-start)/duration;
         const visible=i<limit&&t>0&&t<1;
         active ||= visible;
         if(visible){
           const angle=random(seed+8)*Math.PI*2;
-          const speed=isFoam ? .10+random(seed+1)*.19 : .16+random(seed+1)*.36;
-          const radius=((isFoam ? .002 : .004)+random(seed+2)*(isFoam ? .003 : .005))*(isFoam ? 1 : 1+t*.35);
+          const speed=isFoam ? .08+Math.pow(random(seed+1),2)*.25 : .13+random(seed+1)*.43;
+          const radius=((isFoam ? .0012 : .0025)+Math.pow(random(seed+2),2)*(isFoam ? .0038 : .006))*(isFoam ? 1 : 1+t*.35);
           const fade=Math.min(1,t*14)*(1-phase(t,.65,1));
-          const reach=(isFoam ? .06 : .14)+t*(isFoam ? .13 : .28);
+          const reach=(isFoam ? .025 : .09)+t*(isFoam ? .16 : .34)*Math.pow(random(seed+11),.7);
           pose.position.set(Math.cos(angle)*reach*t,1.59+speed*t*3.2-(isFoam ? .34 : .64)*t*t,.25+Math.sin(angle)*reach*t+t*(isFoam ? .09 : .85));
           pose.rotation.set(angle*.3,angle,angle*.7);
-          pose.scale.set(radius*fade,radius*(isFoam?1.1:1.15+random(seed+6)*.55)*fade,radius*fade);
+          pose.scale.set(radius*fade,radius*(isFoam?1.03:1.02+random(seed+6)*.22)*fade,radius*fade);
         }else{
           pose.scale.setScalar(0);
         }

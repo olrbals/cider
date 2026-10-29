@@ -28,9 +28,9 @@
     const cx=mouthX/height,cy=mouthY/height-.105*rise;
     const points=[];
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-    const lobes=[[-2.78,.20,.16],[-2.13,.37,.23],[-1.40,.23,.18],[-.62,.32,.13]];
-    for(let i=0;i<96;i++){
-      const angle=i/96*Math.PI*2,signed=angle>Math.PI?angle-Math.PI*2:angle;
+    const lobes=[[-2.78,.18,.25],[-2.13,.31,.29],[-1.40,.21,.25],[-.62,.27,.23]];
+    for(let i=0;i<24;i++){
+      const angle=i/24*Math.PI*2,signed=angle>Math.PI?angle-Math.PI*2:angle;
       let fingers=0;
       for(const [direction,height,thickness] of lobes){
         const offset=(signed-direction-(burst-.5)*height*.7)/thickness;
@@ -42,17 +42,33 @@
       const ry=(.105*rise+.22*spread)*(Math.sin(angle)>0?1:irregular*extension);
       const x=cx+Math.cos(angle)*rx+Math.sin(angle)*.012*rise*(1-spread);
       const y=cy+Math.sin(angle)*ry;
-      streamData.set([x,y],i*2);points.push([x*height,y*height]);
+      points.push([x*height,y*height]);
       minX=Math.min(minX,x);minY=Math.min(minY,y);
       maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
     }
+    // Periodic cubic interpolation rounds the shoulders and liquid tips.
+    // The same samples feed both optics and the silhouette, avoiding sharp joins.
+    const rounded=[];
+    for(let i=0;i<24;i++){
+      const a=points[(i+23)%24],b=points[i],c=points[(i+1)%24],d=points[(i+2)%24];
+      for(let j=0;j<4;j++){
+        const t=j/4,t2=t*t,t3=t2*t;
+        const point=[0,1].map(k=>.5*((2*b[k])+(-a[k]+c[k])*t+(2*a[k]-5*b[k]+4*c[k]-d[k])*t2+(-a[k]+3*b[k]-3*c[k]+d[k])*t3));
+        streamData.set([point[0]/height,point[1]/height],rounded.length*2);
+        rounded.push(point);
+        minX=Math.min(minX,point[0]/height);minY=Math.min(minY,point[1]/height);
+        maxX=Math.max(maxX,point[0]/height);maxY=Math.max(maxY,point[1]/height);
+      }
+    }
     streamBounds.set([minX-.025,minY-.025,maxX+.025,maxY+.025]);
-    const paths=[points.map((v,i)=>`${i?'L':'M'} ${number(v[0])} ${number(v[1])}`).join(' ')+' Z'];
+    const paths=[curve([...rounded,rounded[0]])+' Z'];
     for(let i=0;i<8;i++){
       const t=phase(p,.518+i*.001,.605+i*.002);
       const fade=1-phase(p,.61,.68);
-      const angle=-2.9+i*.36;
-      const speed=.10+(i%3)*.035;
+      const seed=Math.sin(i*91.7+13.2)*43758.5453;
+      const random=seed-Math.floor(seed);
+      const angle=-3.03+i*.39+(random-.5)*.32;
+      const speed=.075+random*random*.16;
       const x=mouthX/height+Math.cos(angle)*speed*t;
       const y=mouthY/height+Math.sin(angle)*speed*t-.065*t+.05*t*t;
       const r=(.0016+(i%3)*.0007)*Math.sin(t*Math.PI*.8)*fade;
@@ -124,10 +140,13 @@
         vec2 advect=q*scale+vec2(p*5.0,-p*32.0);
         vec2 cell=floor(advect),f=fract(advect);
         vec2 center=.25+.5*vec2(hash(cell),hash(cell+17.0));
-        float radius=.035+.13*pow(hash(cell+29.0),2.0);
+        float radius=.025+.15*pow(hash(cell+29.0),2.8);
         vec2 v=f-center;
         float ring=exp(-abs(length(v)-radius)*65.0);
-        float population=step(.28,hash(cell+41.0));
+        vec2 origin=vec2(u_mouth.x*u_resolution.x/u_resolution.y,u_mouth.y);
+        float pressure=phase(p,.505,.527)*(1.0-phase(p,.55,.61));
+        float cloud=exp(-dot(q-origin,q-origin)/(.0003+.008*phase(p,.51,.60)));
+        float population=step(mix(.48,.06,cloud*pressure),hash(cell+41.0));
         float highlight=sat(dot(normalize(v+vec2(.0001)),vec2(-.65,-.76)));
         return vec2(ring*highlight,ring*(1.0-highlight))*population;
       }
@@ -159,7 +178,8 @@
         float inner=body*(.18+.10*noise(uv*vec2(5.0,8.0)+p*2.0));
         float bright=phase(p,.77,.99);
         float alpha=inner+edge*.37+body*bright*.47;
-        float glint=exp(-abs(d+.013)*210.0)*body*.15;
+        float thickness=.45+.55*noise(uv*vec2(9.0,13.0)+vec2(p*3.0,-p*11.0));
+        float glint=exp(-abs(d+.008)*340.0)*body*(.10+.12*thickness);
         alpha+=glint;
         vec3 color=mix(vec3(.94,.965,.955),vec3(1.0),bright);
         color=mix(color,vec3(.38,.43,.41),edge*.20);
@@ -183,13 +203,13 @@
                                   dFdy(depth)*u_resolution.y*.014,1.0));
           #endif
           vec3 light=normalize(vec3(-.48,.65,1.0));
-          float reflection=pow(max(dot(normal,light),0.0),58.0);
+          float reflection=pow(max(dot(normal,light),0.0),85.0);
           float edgeLight=sat(dot(normal.xy,normalize(light.xy))*.5+.5);
           float innerRim=exp(-abs(water+.0025)*900.0)*inside;
           float outerRim=exp(-abs(water)*900.0);
           float pool=phase(p,.565,.665);
-          float volume=inside*(mix(.075,.018,pool)+depth*.035);
-          float shine=reflection*inside*.43+innerRim*(.16+edgeLight*.48);
+          float volume=inside*(mix(.055,.012,pool)+depth*.035);
+          float shine=reflection*inside*(.25+depth*.32)+innerRim*(.10+edgeLight*.50);
           float shadow=outerRim*(1.0-edgeLight)*.32;
           vec2 fizz=carbonation(q,p,82.0)+carbonation(q+1.7,p,157.0)*.48;
           shine+=fizz.x*inside*.65;
@@ -211,6 +231,15 @@
         color=mix(color,vec3(.33,.38,.36),fizz.y*fizzMask*.22);
         color=mix(color,vec3(1.0),sparkle);
         alpha=sat(alpha+sparkle);
+        // A short, dense pressure core thins radially as it escapes the opening.
+        vec2 mouthQ=vec2(u_mouth.x*u_resolution.x/u_resolution.y,u_mouth.y);
+        vec2 offset=q-mouthQ+vec2(0.0,.012+phase(p,.51,.59)*.045);
+        float pressure=phase(p,.505,.522)*(1.0-phase(p,.55,.605));
+        float core=exp(-dot(offset*vec2(1.2,1.0),offset*vec2(1.2,1.0))/(.00022+.003*phase(p,.51,.59)));
+        vec2 micro=carbonation(q,p,186.0);
+        float sparkleCore=micro.x*core*pressure*.64;
+        color=mix(color,vec3(.99),sparkleCore/max(alpha+sparkleCore,.0001));
+        alpha=1.0-(1.0-alpha)*(1.0-sparkleCore);
         gl_FragColor=vec4(color,alpha);
       }`;
     function compile(type, source) {
