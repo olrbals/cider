@@ -362,6 +362,7 @@
   }
 
   let can3D;
+  let canUnavailable=false;
   let lastProgress=0;
   let lastMovement=-Infinity;
   let settleFrame=0;
@@ -390,8 +391,12 @@
   }
   import('./hero-can-3d.js').then(async module => {
     can3D=await module.createHeroCan(hero);
-    render(lastProgress);
-  }).catch(error => console.warn('Hero 3D unavailable; using existing can fallback.', error));
+    syncProgress(rawProgress);
+  }).catch(error => {
+    canUnavailable=true;
+    console.warn('Hero 3D unavailable; using existing can fallback.',error);
+    syncProgress(rawProgress);
+  });
   function render(progress) {
     if(Math.abs(progress-lastProgress)>1e-7) lastMovement=performance.now();
     lastProgress=progress;
@@ -490,6 +495,8 @@
       return;
     }
     if(releaseState==='armed'&&rawProgress>=.425){
+      // Preserve the burst if the first scroll arrives while the can texture loads.
+      if(!can3D&&!canUnavailable){render(.425);return;}
       releaseState='releasing';releaseHead.progress=.425;
       releaseTimeline=window.gsap.timeline({
         onUpdate:()=>render(releaseHead.progress),
