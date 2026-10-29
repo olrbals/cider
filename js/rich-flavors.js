@@ -49,6 +49,8 @@
       shell.className='rich-fg__motion-shell';
       shell.dataset.role=node.classList.contains('rich-fg__bottle')?'bottle':'fruit';
       bob.className='rich-fg__bob';
+      bob.style.setProperty('--float-duration',(6.4+index*.73)+'s');
+      bob.style.setProperty('--float-delay',(-index*1.37)+'s');
       shell.style.left=node.style.left||'0px';
       shell.style.top=node.style.top||'0px';
       shell.style.width=node.style.width||(node.getAttribute('width')||'96')+'px';
