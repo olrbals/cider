@@ -237,3 +237,6 @@
 /* Keep this stage viewport-sized even inside the legacy desktop-width page. */
 .rich-flavors__viewport{width:100vw;max-width:100vw}
 .rich-new-flavor__art{transform:translate(-50%,-50%) scale(var(--rich-intro-scale,var(--rich-design-scale,1)))}
+
+/* Anchor the shared cursor outline to the copy itself. */
+.rich-copy__content h2{position:relative}

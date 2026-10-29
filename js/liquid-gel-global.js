@@ -16,7 +16,7 @@
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (!precision.matches || motion.matches) return;
 
-  const targets = '.hero, .identity-stage, .korea-stage, .history-3d-stage, .era, .product-explorer, .pop-stage, .outro, .site-header';
+  const targets = '.hero, .identity-stage, .korea-stage, .history-3d-stage, .era, .product-explorer, .pop-stage, .outro, .site-header, .rich-flavors__viewport';
   const svgNS = 'http://www.w3.org/2000/svg';
   const makeSVG = name => document.createElementNS(svgNS, name);
   const svg = makeSVG('svg');
