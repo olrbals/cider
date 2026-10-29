@@ -1,16 +1,16 @@
 /* Figma source: richPeach node 1297:97 and richGrape node 1332:20.
    Each artboard is 1440 x 900: 648px product area + 252px name band.
    No decorative additions; image and typography placement follows Figma. */
-.rich-flavors{position:relative;z-index:5;height:400svh;min-height:2400px;margin-top:-100svh;background:transparent;isolation:isolate}
+.rich-flavors{position:relative;z-index:5;height:700svh;min-height:4200px;margin-top:-100svh;background:transparent;isolation:isolate}
 .rich-flavors__viewport{position:sticky;top:0;left:0;width:100%;height:100svh;min-height:600px;overflow:hidden;isolation:isolate;background:transparent}
 .rich-fg{
-  z-index:1;position:absolute;inset:0;isolation:isolate;
+  z-index:2;position:absolute;inset:0;isolation:isolate;
   overflow:visible;background:transparent;visibility:hidden;
   transform:translate3d(100%,0,0);
 }
 
 .rich-fg--peach{--fg-top:#ffdbdb;--fg-bottom:#f92a66}
-.rich-fg--grape{z-index:2;--fg-top:#d3ff6e;--fg-bottom:#058836}
+.rich-fg--grape{z-index:3;--fg-top:#d3ff6e;--fg-bottom:#058836}
 .rich-fg__art{position:absolute;left:50%;top:50%;width:1440px;height:900px;transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));transform-origin:center center;pointer-events:none}
 .rich-fg__photo-area{position:absolute;inset:0;height:648px}
 .rich-fg__bottle,.rich-fg__fruit,.rich-fg__fruit-group{position:absolute;display:block;object-fit:contain}
@@ -28,13 +28,13 @@
 .rich-fg__caption-line img:last-child{left:1020px}
 .rich-fg--grape .rich-fg__caption-line img:first-child{left:417px}
 .rich-fg--grape .rich-fg__caption-line img:last-child{left:1023px}
-@media(max-width:750px){.rich-flavors{height:380svh;min-height:2000px}.rich-flavors__viewport{min-height:520px}}
+@media(max-width:750px){.rich-flavors{height:620svh;min-height:3400px}.rich-flavors__viewport{min-height:520px}}
 @media(prefers-reduced-motion:reduce){.rich-fg,.rich-new-flavor{will-change:auto}}
 
 
 /* Figma newFlavor 1334:63: no replacement background effects or decorative additions.
    The two original blurred ellipse vectors and five image layers keep source geometry. */
-.rich-new-flavor{position:absolute;inset:0;z-index:0;overflow:hidden;isolation:isolate;background:#f7faf8;transform:translate3d(0,100%,0);will-change:transform}
+.rich-new-flavor{position:absolute;inset:0;z-index:1;overflow:hidden;isolation:isolate;background:#f7faf8;visibility:hidden;opacity:0;transform:none}
 .rich-new-flavor__art{position:absolute;width:1440px;height:900px;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));transform-origin:center center;pointer-events:none}
 .rich-new-flavor__ellipse,.rich-new-flavor__asset{position:absolute;display:block;max-width:none;object-fit:contain;pointer-events:none}
 .rich-new-flavor__ellipse--peach{left:0;top:0;width:895px;height:900px}
@@ -126,4 +126,75 @@
 .rich-flavors:not(.rich-motion-ready) .rich-fg--grape{visibility:hidden}
 @media(prefers-reduced-motion:reduce){
   .rich-fg,.rich-fg__motion-shell{will-change:auto!important}
+}
+
+/* PHASE 4 / Figma 1340:96 → 1334:63 → 1297:97 → 1332:20
+   All transition values are determined from scroll position, not elapsed time.
+   Original Figma artwork remains crisp and static when each scene settles. */
+.rich-copy{
+  position:absolute;inset:0;z-index:0;overflow:hidden;isolation:isolate;
+  pointer-events:none;background:transparent;
+}
+.rich-copy__wave{position:absolute;inset:0;width:100%;height:100%;display:block}
+.rich-copy__content{
+  position:absolute;top:50%;left:50%;width:1440px;height:900px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;color:#149f5c;text-align:center;
+  transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));
+  transform-origin:center center;
+  opacity:var(--copy-opacity,0);
+}
+.rich-copy__year{
+  margin:0;font-family:"Archivo","Pretendard",sans-serif;
+  font-size:40px;font-weight:600;line-height:1.3;letter-spacing:-.8px;
+}
+.rich-copy__content h2{
+  margin:0;font-family:"Yaldevi Colombo SemiBold","Pretendard","Apple SD Gothic Neo",sans-serif;
+  font-size:52px;font-weight:700;line-height:1.3;letter-spacing:-1.04px;
+  white-space:nowrap;
+}
+.rich-new-flavor__ellipse--peach{left:0;top:0;width:978px;height:900px}
+.rich-new-flavor__ellipse--grape{left:480px;top:0;width:960px;height:900px}
+.rich-collision__team{position:absolute;inset:0;z-index:2;transform-origin:50% 50%;pointer-events:none}
+.rich-collision__team--grape{z-index:3}
+.rich-new-flavor__slice{left:322px;top:212px;width:301px;height:283px;z-index:1}
+.rich-new-flavor__peach-bottle{left:450px;top:81px;width:332px;height:648px;z-index:2}
+.rich-new-flavor__peach-whole{left:271px;top:534px;width:266px;height:266px;z-index:3}
+.rich-new-flavor__grape-bunch{left:670px;top:137px;width:536px;height:536px;z-index:1}
+.rich-new-flavor__grape-bottle{left:616px;top:143px;width:416px;height:676px;z-index:2}
+.rich-collision__water{
+  position:absolute;inset:0;z-index:1;width:1440px;height:900px;
+  pointer-events:none;opacity:var(--impact-opacity,0);
+  transform:scale(var(--impact-scale,.78));
+  transform-origin:720px 440px;
+  filter:drop-shadow(0 3px 5px rgba(46,162,167,.12));
+}
+.rich-collision__droplets{position:absolute;inset:0;z-index:5;pointer-events:none}
+.rich-collision__drop{
+  position:absolute;left:0;top:0;border-radius:50%;
+  width:var(--drop-size,12px);height:var(--drop-size,12px);
+  background:radial-gradient(circle at 28% 22%,rgba(255,255,255,.98) 0 10%,
+    rgba(245,255,255,.66) 20%,rgba(142,227,225,.13) 56%,rgba(255,255,255,.75) 93%);
+  border:1px solid rgba(255,255,255,.62);
+  box-shadow:inset -2px -2px 5px rgba(68,192,182,.16),0 2px 3px rgba(29,129,135,.13);
+  opacity:0;will-change:auto;
+}
+.rich-collision__drop[data-type="spark"]{
+  width:var(--drop-size,14px);height:var(--drop-size,14px);
+  background:none;box-shadow:none;border:0;border-radius:0;
+}
+.rich-collision__drop[data-type="spark"]::before,
+.rich-collision__drop[data-type="spark"]::after{
+  content:"";position:absolute;background:rgba(255,255,255,.96);
+  box-shadow:0 0 8px rgba(255,255,255,.95);border-radius:100%;
+}
+.rich-collision__drop[data-type="spark"]::before{height:100%;width:2px;left:50%;top:0}
+.rich-collision__drop[data-type="spark"]::after{width:100%;height:2px;left:0;top:50%}
+/* No perpetual animation during a requested static hold. */
+.rich-new-flavor .rich-new-flavor__asset{animation:none!important}
+.rich-flavors .rich-fg__bob{animation:none!important}
+.rich-fg__foam{pointer-events:none;mix-blend-mode:screen}
+@media(prefers-reduced-motion:reduce){
+ .rich-collision__drop,.rich-collision__water{transition:none;filter:none}
+ .rich-copy__year,.rich-copy__content h2{animation:none}
 }
