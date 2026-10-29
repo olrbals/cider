@@ -16,7 +16,66 @@
   const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
   const phase = (value, start, end) => smooth((value - start) / (end - start));
   const number = value => Number(value.toFixed(2));
-  // The late curtain is retained; the 3D can owns its opening and local spray.
+  // Three short, connected volumes share their geometry with the optical
+  // renderer and live-background refraction mask. Their tips become wet pools.
+  const streamSpecs=[
+    {x:-.10,y:-.105,bend:-.030,radius:.018,delay:0,pool:.9},
+    {x:.012,y:-.145,bend:.018,radius:.020,delay:.005,pool:1},
+    {x:.10,y:-.116,bend:.030,radius:.017,delay:.011,pool:.84}
+  ];
+  const streamData=new Float32Array(3*9*3);
+  const poolData=new Float32Array(3*4);
+  const streamBounds=new Float32Array(4);
+  function sampleStreams(p,mouthX,mouthY,width,height){
+    streamData.fill(0);poolData.fill(0);streamBounds.fill(0);
+    if(p<.505||p>=.76) return [];
+    const spread=phase(p,.565,.665),merge=phase(p,.565,.69);
+    const paths=[];
+    streamSpecs.forEach((spec,branch)=>{
+      const rise=phase(p,.505+spec.delay,.557+spec.delay);
+      const tip=[mouthX+spec.x*(1+.4*merge)*height*rise,mouthY+(spec.y-.025*merge)*height*rise];
+      const c1=[mouthX+spec.x*.14*height*rise,mouthY-.04*height*rise];
+      const c2=[mouthX+(spec.x*.65+spec.bend)*height*rise,mouthY+(spec.y*.7-.015*merge)*height*rise];
+      const points=[];
+      for(let i=0;i<9;i++){
+        const t=i/8,u=1-t;
+        const x=u*u*u*mouthX+3*u*u*t*c1[0]+3*u*t*t*c2[0]+t*t*t*tip[0];
+        const y=u*u*u*mouthY+3*u*u*t*c1[1]+3*u*t*t*c2[1]+t*t*t*tip[1];
+        const r=spec.radius*Math.sqrt(rise)*(.8+.28*Math.sin(t*Math.PI))*(1+.15*merge);
+        const offset=(branch*9+i)*3;
+        streamData.set([x/height,y/height,r],offset);
+        points.push([x,y,r*height+2]);
+      }
+      if(rise>.001){
+        const left=[],right=[];
+        points.forEach((point,i)=>{
+          const a=points[Math.max(0,i-1)],b=points[Math.min(8,i+1)];
+          const dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy)||1;
+          left.push([point[0]-dy/length*point[2],point[1]+dx/length*point[2]]);
+          right.push([point[0]+dy/length*point[2],point[1]-dx/length*point[2]]);
+        });
+        const back=curve(right.reverse());
+        paths.push(`${curve(left)} A ${number(points[8][2])} ${number(points[8][2])} 0 0 1 ${number(right[0][0])} ${number(right[0][1])} ${back.slice(back.indexOf(' C'))} Z`);
+      }
+      const rx=(.006+(width/height*.48+.06)*spread)*spec.pool;
+      const ry=.004+.18*spread*(.86+branch*.06);
+      poolData.set([tip[0]/height,tip[1]/height,rx,ry],branch*4);
+      if(spread>.001){
+        const x=tip[0],y=tip[1],a=rx*height+2,b=ry*height+2;
+        paths.push(`M ${number(x-a)} ${number(y)} a ${number(a)} ${number(b)} 0 1 0 ${number(2*a)} 0 a ${number(a)} ${number(b)} 0 1 0 ${number(-2*a)} 0 Z`);
+      }
+    });
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    const include=(x,y,rx,ry)=>{
+      minX=Math.min(minX,x-rx);minY=Math.min(minY,y-ry);
+      maxX=Math.max(maxX,x+rx);maxY=Math.max(maxY,y+ry);
+    };
+    for(let i=0;i<27;i++) include(streamData[i*3],streamData[i*3+1],streamData[i*3+2],streamData[i*3+2]);
+    for(let i=0;i<3;i++) include(poolData[i*4],poolData[i*4+1],poolData[i*4+2],poolData[i*4+3]);
+    streamBounds.set([minX-.022,minY-.022,maxX+.022,maxY+.022]);
+    return paths;
+  }
+  // The late curtain is retained; the connected early streams join it above.
   function createLiquidSurface() {
     const canvas = document.createElement('canvas');
     canvas.className = 'hs-liquid-webgl';
@@ -26,12 +85,16 @@
       premultipliedAlpha: false, powerPreference: 'low-power'
     });
     if (!gl) return null;
+    const derivatives=gl.getExtension('OES_standard_derivatives');
     const vertex = `attribute vec2 a_position;
       void main() { gl_Position = vec4(a_position, 0.0, 1.0); }`;
-    const fragment = `precision highp float;
+    const fragment = `${derivatives ? '#extension GL_OES_standard_derivatives : enable\n#define HS_STREAM_NORMALS\n' : ''}precision highp float;
       uniform vec2 u_resolution;
       uniform vec2 u_mouth;
       uniform float u_progress;
+      uniform vec3 u_streams[27];
+      uniform vec4 u_pools[3];
+      uniform vec4 u_stream_bounds;
       float sat(float v) { return clamp(v, 0.0, 1.0); }
       float phase(float v, float a, float b) {
         float t = sat((v-a)/(b-a)); return t*t*(3.0-2.0*t);
@@ -48,6 +111,22 @@
       }
       float unite(float a,float b,float k) {
         float h=sat(.5+.5*(b-a)/k); return mix(b,a,h)-k*h*(1.0-h);
+      }
+      float streamSurface(vec2 q) {
+        float d=10.0;
+        for(int branch=0;branch<3;branch++) {
+          for(int i=0;i<8;i++) {
+            vec3 a=u_streams[branch*9+i], b=u_streams[branch*9+i+1];
+            float segment=capsule(q,a.xy,b.xy,a.z,b.z);
+            d=unite(d,segment,.007);
+          }
+          vec4 pool=u_pools[branch];
+          vec2 v=q-pool.xy;
+          float ellipse=(length(v/max(pool.zw,vec2(.0001)))-1.0)*min(pool.z,pool.w);
+          ellipse+=(noise(q*23.0+u_progress*1.7)-.5)*.004*phase(u_progress,.565,.665);
+          d=unite(d,ellipse,max(.0001,.012*phase(u_progress,.565,.665)));
+        }
+        return d;
       }
       void main() {
         vec2 uv=gl_FragCoord.xy/u_resolution;
@@ -83,6 +162,38 @@
         color=mix(color,vec3(.42,.78,.62),edge*.25);
         color+=vec3(glint*.4);
         alpha=sat(alpha);
+        // Early liquid is a continuous volume, not detached particle sprites.
+        // The same three lobes widen into overlapping lens pools; the retained
+        // curtain covers this region before the early surface hands over.
+        vec2 q=uv*vec2(u_resolution.x/u_resolution.y,1.0);
+        if(p>=.505 && p<.76 && q.x>u_stream_bounds.x && q.y>u_stream_bounds.y
+           && q.x<u_stream_bounds.z && q.y<u_stream_bounds.w) {
+          float water=streamSurface(q);
+          float visible=phase(p,.505,.525)*(1.0-phase(p,.70,.76));
+          float inside=1.0-smoothstep(-.0015,.0015,water);
+          float depth=sqrt(max(0.0,1.0-pow(sat(1.0+water/.024),2.0)));
+          vec3 normal=vec3(0.0,0.0,1.0);
+          #ifdef HS_STREAM_NORMALS
+            normal=normalize(vec3(-dFdx(depth)*u_resolution.x*.014,
+                                  dFdy(depth)*u_resolution.y*.014,1.0));
+          #endif
+          vec3 light=normalize(vec3(-.48,.65,1.0));
+          float reflection=pow(max(dot(normal,light),0.0),28.0);
+          float edgeLight=sat(dot(normal.xy,normalize(light.xy))*.5+.5);
+          float innerRim=exp(-abs(water+.0025)*900.0)*inside;
+          float outerRim=exp(-abs(water)*900.0);
+          float pool=phase(p,.565,.665);
+          float volume=inside*(mix(.075,.018,pool)+depth*.035);
+          float shine=reflection*inside*.36+innerRim*(.10+edgeLight*.32);
+          float shadow=outerRim*(1.0-edgeLight)*.23;
+          float surfaceAlpha=volume+shine+shadow;
+          float liquidAlpha=surfaceAlpha*visible;
+          vec3 liquidColor=(vec3(.97,.985,.98)*volume+vec3(1.0)*shine
+                           +vec3(.28,.32,.30)*shadow)/max(surfaceAlpha,.0001);
+          float combined=1.0-(1.0-alpha)*(1.0-liquidAlpha);
+          color=(liquidColor*liquidAlpha+color*alpha*(1.0-liquidAlpha))/max(combined,.0001);
+          alpha=combined;
+        }
         gl_FragColor=vec4(color,alpha);
       }`;
     function compile(type, source) {
@@ -111,6 +222,9 @@
     const resolution=gl.getUniformLocation(program,'u_resolution');
     const mouth=gl.getUniformLocation(program,'u_mouth');
     const progress=gl.getUniformLocation(program,'u_progress');
+    const streams=gl.getUniformLocation(program,'u_streams[0]');
+    const pools=gl.getUniformLocation(program,'u_pools[0]');
+    const bounds=gl.getUniformLocation(program,'u_stream_bounds');
     stage.append(canvas);
     stage.classList.add('hs-webgl-ready');
     canvas.addEventListener('webglcontextlost', event => {
@@ -131,6 +245,9 @@
       gl.uniform2f(resolution,w,h);
       gl.uniform2f(mouth,x,y);
       gl.uniform1f(progress,p);
+      gl.uniform3fv(streams,streamData);
+      gl.uniform4fv(pools,poolData);
+      gl.uniform4fv(bounds,streamBounds);
       gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
     }
     return {draw,canvas};
@@ -143,6 +260,26 @@
   sprayFilm.className='hs-spray-film';
   sprayFilm.setAttribute('aria-hidden','true');
   stage.append(sprayFilm);
+  const optics=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  optics.setAttribute('width','0');optics.setAttribute('height','0');
+  optics.setAttribute('aria-hidden','true');
+  optics.style.position='absolute';
+  optics.innerHTML=`<defs>
+    <filter id="hs-stream-lens-filter" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".018 .026" numOctaves="2" seed="17" result="lensNoise"/>
+      <feDisplacementMap in="SourceGraphic" in2="lensNoise" scale="13" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <clipPath id="hs-stream-wet-clip" clipPathUnits="userSpaceOnUse"></clipPath>
+  </defs>`;
+  const streamClip=optics.querySelector('clipPath');
+  const streamClipPaths=Array.from({length:6},()=>{
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    streamClip.append(path);return path;
+  });
+  const streamRefraction=document.createElement('div');
+  streamRefraction.className='hs-stream-refraction';
+  streamRefraction.setAttribute('aria-hidden','true');
+  stage.append(optics,streamRefraction);
   /* Catmull-Rom conversion keeps each varying drip tangent to its neighbour. */
   function curve(points) {
     let path = `M ${number(points[0][0])} ${number(points[0][1])}`;
@@ -205,16 +342,20 @@
     const opening = canSlot.getBoundingClientRect();
     const mouthX = ((projected?.x ?? opening.left + opening.width * .5) - stageBox.left) / stageBox.width * 1000;
     const mouthY = ((projected?.y ?? opening.top + opening.height * .53) - stageBox.top) / stageBox.height * 1000;
+    const streamPaths=sampleStreams(p,mouthX/1000*stageBox.width,mouthY/1000*stageBox.height,stageBox.width,stageBox.height);
+    streamClipPaths.forEach((path,i)=>path.setAttribute('d',streamPaths[i]||''));
+    streamRefraction.style.opacity=(phase(p,.505,.525)*(1-phase(p,.70,.76))).toFixed(4);
+    streamRefraction.style.display=streamPaths.length?'block':'none';
     liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
 
-    // A feathered wet film starts at the opening after the foam pops. It has
-    // no visible ring; the retained top curtain takes over as it spreads.
+    // The branches and their pools cause the first wetting. Only once they
+    // have merged does the retained broad wet film take over (unchanged late).
     const spray=phase(p,.52,.65);
     const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.51,.69));
     const mask=`radial-gradient(circle ${radius}px at ${number(mouthX/10)}% ${number(mouthY/10)}%, #000 15%, rgba(0,0,0,.82) 55%, transparent 100%)`;
     sprayFilm.style.maskImage=mask;
     sprayFilm.style.webkitMaskImage=mask;
-    sprayFilm.style.opacity=(spray*(1-phase(p,.70,.83))*.68).toFixed(3);
+    sprayFilm.style.opacity=(spray*phase(p,.62,.74)*(1-phase(p,.70,.83))*.68).toFixed(3);
     const spread = phase(p, .46, .70);
     const flow = phase(p, .60, .98);
     const half = 28 + 550 * spread;
@@ -312,6 +453,7 @@
       stage.style.removeProperty('background-color');
       refract.style.opacity = '0';
       sprayFilm.style.opacity = '0';
+      streamRefraction.style.display='none';
     } else if (!window.ScrollTrigger?.getById('hero-splash-only')) {
       initialize();
     }

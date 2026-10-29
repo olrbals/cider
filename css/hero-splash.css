@@ -9,6 +9,7 @@
 #top .hero-splash-tab { position: absolute; z-index: 2; left: 19%; top: 30%; width: 64%; height: 31%; border: 2px solid #dbe7de; border-radius: 52% 52% 44% 44%; background: linear-gradient(170deg,#fafffa,#aabcb3 58%,#718c82); box-shadow: 0 2px 4px #16493888, inset 0 1px 2px #fff; transform-origin: 50% 80%; transform: perspective(130px) translateY(calc(var(--hs-tab) * -13px)) rotate(calc(var(--hs-tab) * -25deg)) rotateX(calc(var(--hs-tab) * -43deg)); }
 #top .hero-splash-tab::after { content: ''; position: absolute; left: 33%; top: 18%; width: 34%; height: 60%; border: 2px solid #f8fff9; border-radius: 50%; box-shadow: inset 0 1px 2px #527769, 0 1px 1px #526d60; }
 #top .hs-spray-film { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; background: rgba(255,255,255,.15); backdrop-filter: blur(2.8px) brightness(1.065) saturate(.9); -webkit-backdrop-filter: blur(2.8px) brightness(1.065) saturate(.9); }
+#top .hs-stream-refraction { position:absolute; z-index:4; inset:0; display:none; pointer-events:none; background:rgba(255,255,255,.015); clip-path:url(#hs-stream-wet-clip); backdrop-filter:url(#hs-stream-lens-filter) blur(.35px) brightness(1.015); -webkit-backdrop-filter:url(#hs-stream-lens-filter) blur(.35px) brightness(1.015); }
 
 #top .hero-splash-effects { position: absolute; z-index: 5; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 #top .hs-liquid-webgl { position: absolute; z-index: 5; inset: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
@@ -33,7 +34,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   #top.hero { height: 100svh; }
-  #top .hero-splash-effects, #top .hs-liquid-webgl, #top .hs-spray-film { display: none; }
+  #top .hero-splash-effects, #top .hs-liquid-webgl, #top .hs-spray-film, #top .hs-stream-refraction { display: none; }
 }
 
 /* The existing image is retained only as a loading/WebGL fallback. */

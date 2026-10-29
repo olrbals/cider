@@ -65,8 +65,8 @@ export async function createHeroCan(hero) {
   const dropletGeometry=new THREE.SphereGeometry(1,8,6);
   const dropMat=new THREE.MeshPhysicalMaterial({color:0xdce9e3,metalness:.08,roughness:.09,transparent:true,opacity:.74,clearcoat:1,depthWrite:false});
   const foamMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.26,transparent:true,opacity:.6,depthWrite:false});
-  const droplets=new THREE.InstancedMesh(dropletGeometry,dropMat,28);
-  const foam=new THREE.InstancedMesh(dropletGeometry,foamMat,64);
+  const droplets=new THREE.InstancedMesh(dropletGeometry,dropMat,12);
+  const foam=new THREE.InstancedMesh(dropletGeometry,foamMat,24);
   for(const batch of [droplets,foam]){
     batch.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     batch.frustumCulled=false;
@@ -80,7 +80,7 @@ export async function createHeroCan(hero) {
       let active=false;
       for(let i=0;i<batch.instanceMatrix.count;i++){
         const seed=i+(isFoam?91:7);
-        const start=.485+random(seed)*.027;
+        const start=(isFoam ? .535 : .545)+random(seed)*.027;
         const duration=isFoam ? .09+random(seed+3)*.04 : .11+random(seed+3)*.06;
         const t=(p-start)/duration;
         const visible=i<limit&&t>0&&t<1;
@@ -88,12 +88,12 @@ export async function createHeroCan(hero) {
         if(visible){
           const angle=random(seed+8)*Math.PI*2;
           const speed=isFoam ? .10+random(seed+1)*.19 : .16+random(seed+1)*.36;
-          const radius=((isFoam ? .002 : .006)+random(seed+2)*(isFoam ? .004 : .009))*(isFoam ? 1 : 1+t*.6);
+          const radius=((isFoam ? .002 : .004)+random(seed+2)*(isFoam ? .003 : .005))*(isFoam ? 1 : 1+t*.35);
           const fade=Math.min(1,t*14)*(1-phase(t,.65,1));
           const reach=(isFoam ? .06 : .14)+t*(isFoam ? .13 : .28);
           pose.position.set(Math.cos(angle)*reach*t,1.59+speed*t*3.2-(isFoam ? .34 : .64)*t*t,.25+Math.sin(angle)*reach*t+t*(isFoam ? .09 : .85));
           pose.rotation.set(angle*.3,angle,angle*.7);
-          pose.scale.set(radius*fade,radius*(isFoam?1.1:1.7+random(seed+6))*fade,radius*fade);
+          pose.scale.set(radius*fade,radius*(isFoam?1.1:1.15+random(seed+6)*.55)*fade,radius*fade);
         }else{
           pose.scale.setScalar(0);
         }
