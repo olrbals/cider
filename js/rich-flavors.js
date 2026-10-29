@@ -13,7 +13,7 @@
   const ice=[...root.querySelectorAll('.rich-collision__ice')];
   const panels = [
     {name:'peach',element:root.querySelector('.rich-fg--peach'),start:.51,end:.66,seed:0},
-    {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.85,end:.94,seed:1}
+    {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.835,end:.92,seed:1}
   ];
   if (![copy,copyWave,copyGlint,collision,peachTeam,grapeTeam,particlesLayer].every(Boolean)
       || panels.some(p=>!p.element)) return;
