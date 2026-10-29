@@ -54,6 +54,8 @@
     return t * t * (3 - 2 * t);
   };
   let frame = 0;
+  let pointerX = 0;
+  let pointerY = 0;
   let viewportWidth = innerWidth;
   let viewportHeight = innerHeight;
 
@@ -91,8 +93,8 @@
       // The bottle crosses ahead of the flavor-color curtain.
       const direction = bottle ? 1 : (index % 3 === 0 ? -1 : 1);
       const initialX = bottle ? viewportWidth * .75 : viewportWidth * (.32 + (index % 4) * .11);
-      const entryX = (1 - local) * initialX * direction;
-      const entryY = (1 - local) * (bottle ? -48 : (index % 2 ? -96 : 115));
+      const entryX = (1 - local) * initialX * direction - pointerX * (bottle ? 22 : 44) * local;
+      const entryY = (1 - local) * (bottle ? -48 : (index % 2 ? -96 : 115)) - pointerY * (bottle ? 16 : 36) * local;
       const turnY = bottle ? (1 - local) * (panel.name === 'peach' ? 20 : -18) : (1 - local) * 11;
       const turnZ = bottle ? (1 - local) * (panel.name === 'peach' ? 12 : -13) :
         (1 - local) * (index % 2 ? -12 : 12);
@@ -124,6 +126,16 @@
   window.addEventListener('resize', resize, { passive: true });
   window.addEventListener('pageshow', resize);
   reducedMotion.addEventListener?.('change', requestFrame);
+  section.addEventListener('pointermove', event => {
+    if (reducedMotion.matches || event.pointerType === 'touch') return;
+    pointerX = event.clientX / Math.max(1, viewportWidth) - .5;
+    pointerY = event.clientY / Math.max(1, viewportHeight) - .5;
+    requestFrame();
+  }, { passive: true });
+  section.addEventListener('pointerleave', () => {
+    pointerX = pointerY = 0;
+    requestFrame();
+  }, { passive: true });
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
       section.classList.toggle('is-visible', entries[0]?.isIntersecting ?? false);
@@ -133,5 +145,6 @@
   } else {
     section.classList.add('is-visible');
   }
+  section.classList.add('rich-motion-ready');
   resize();
 })();
