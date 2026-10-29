@@ -19,30 +19,51 @@
   // One pressure crown shares its contour with the live refraction mask.
   const streamData=new Float32Array(192);
   const streamBounds=new Float32Array(4);
+  const dropData=new Float32Array(24);
   function sampleStreams(p,mouthX,mouthY,width,height){
-    streamData.fill(0);streamBounds.fill(0);
+    streamData.fill(0);streamBounds.fill(0);dropData.fill(0);
     if(p<.505||p>=.76) return [];
     const rise=1-Math.pow(1-clamp((p-.505)/.045),3);
-    const spread=phase(p,.575,.69),burst=phase(p,.51,.57);
-    const cx=mouthX/height,cy=mouthY/height-.075*rise;
+    const spread=phase(p,.56,.69),burst=phase(p,.505,.57);
+    const cx=mouthX/height,cy=mouthY/height-.105*rise;
     const points=[];
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    const lobes=[[-2.78,.20,.16],[-2.13,.37,.23],[-1.40,.23,.18],[-.62,.32,.13]];
     for(let i=0;i<96;i++){
-      const angle=i/96*Math.PI*2,upward=Math.max(0,-Math.sin(angle));
-      const teeth=Math.pow(Math.max(0,Math.sin(angle*7+1.3+burst*2.4)),6)
-        +.55*Math.pow(Math.max(0,Math.sin(angle*11-2.1-burst*1.8)),8);
-      const irregular=1+.08*Math.sin(angle*3+burst*3)+.045*Math.cos(angle*13-burst*4);
-      const finger=1+teeth*(.08+.26*upward)*(1-spread*.7)*burst;
-      const rx=(.027*rise+spread*width/height*.60)*irregular*finger;
-      const ry=(.075*rise+.20*spread)*(Math.sin(angle)>0 ? 1 : irregular*finger);
-      const x=cx+Math.cos(angle)*rx;
-      const y=i===24 ? mouthY/height+spread*.20 : cy+Math.sin(angle)*ry;
+      const angle=i/96*Math.PI*2,signed=angle>Math.PI?angle-Math.PI*2:angle;
+      let fingers=0;
+      for(const [direction,height,thickness] of lobes){
+        const offset=(signed-direction-(burst-.5)*height*.7)/thickness;
+        fingers+=height*Math.exp(-offset*offset);
+      }
+      const irregular=1+.055*Math.sin(angle*3+burst*3)+.035*Math.cos(angle*5-burst*4);
+      const extension=1+fingers*burst*(1-spread*.6);
+      const rx=(.043*rise+spread*width/height*.63)*irregular*extension;
+      const ry=(.105*rise+.22*spread)*(Math.sin(angle)>0?1:irregular*extension);
+      const x=cx+Math.cos(angle)*rx+Math.sin(angle)*.012*rise*(1-spread);
+      const y=cy+Math.sin(angle)*ry;
       streamData.set([x,y],i*2);points.push([x*height,y*height]);
       minX=Math.min(minX,x);minY=Math.min(minY,y);
       maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
     }
     streamBounds.set([minX-.025,minY-.025,maxX+.025,maxY+.025]);
-    return [points.map((v,i)=>`${i?'L':'M'} ${number(v[0])} ${number(v[1])}`).join(' ')+' Z'];
+    const paths=[points.map((v,i)=>`${i?'L':'M'} ${number(v[0])} ${number(v[1])}`).join(' ')+' Z'];
+    for(let i=0;i<8;i++){
+      const t=phase(p,.518+i*.001,.605+i*.002);
+      const fade=1-phase(p,.61,.68);
+      const angle=-2.9+i*.36;
+      const speed=.10+(i%3)*.035;
+      const x=mouthX/height+Math.cos(angle)*speed*t;
+      const y=mouthY/height+Math.sin(angle)*speed*t-.065*t+.05*t*t;
+      const r=(.0016+(i%3)*.0007)*Math.sin(t*Math.PI*.8)*fade;
+      dropData.set([x,y,r],i*3);
+      streamBounds[0]=Math.min(streamBounds[0],x-r-.01);
+      streamBounds[1]=Math.min(streamBounds[1],y-r-.01);
+      streamBounds[2]=Math.max(streamBounds[2],x+r+.01);
+      streamBounds[3]=Math.max(streamBounds[3],y+r+.01);
+      if(r>.00001) paths.push(`M ${number((x-r)*height)} ${number(y*height)} a ${number(r*height)} ${number(r*height)} 0 1 0 ${number(2*r*height)} 0 a ${number(r*height)} ${number(r*height)} 0 1 0 ${number(-2*r*height)} 0 Z`);
+    }
+    return paths;
   }
   function createLiquidSurface() {
     const canvas = document.createElement('canvas');
@@ -62,6 +83,7 @@
       uniform float u_progress;
       uniform vec2 u_streams[96];
       uniform vec4 u_stream_bounds;
+      uniform vec3 u_drops[8];
       float sat(float v) { return clamp(v, 0.0, 1.0); }
       float phase(float v, float a, float b) {
         float t = sat((v-a)/(b-a)); return t*t*(3.0-2.0*t);
@@ -91,7 +113,11 @@
           }
           a=b;
         }
-        return distanceToEdge*signValue;
+        float d=distanceToEdge*signValue;
+        for(int i=0;i<8;i++) {
+          if(u_drops[i].z>0.00001) d=min(d,length(q-u_drops[i].xy)-u_drops[i].z);
+        }
+        return d;
       }
       // Hollow micro-cavities advect with the water; no independent bubble system.
       vec2 carbonation(vec2 q,float p,float scale) {
@@ -147,7 +173,9 @@
           float water=streamSurface(q);
           float visible=phase(p,.505,.525)*(1.0-phase(p,.70,.76));
           float inside=1.0-smoothstep(-.0015,.0015,water);
-          float folds=noise(q*47.0+vec2(p*7.0,-p*19.0));
+          vec2 material=q-vec2(u_mouth.x*u_resolution.x/u_resolution.y,u_mouth.y);
+          float folds=noise(material*34.0+vec2(p*13.0,-p*28.0));
+          float foldRidge=abs(noise(material*17.0+vec2(p*5.0,-p*21.0))-.5);
           float depth=sqrt(max(0.0,1.0-pow(sat(1.0+water/.024),2.0)))*(.72+.28*folds);
           vec3 normal=vec3(0.0,0.0,1.0);
           #ifdef HS_STREAM_NORMALS
@@ -166,6 +194,8 @@
           vec2 fizz=carbonation(q,p,82.0)+carbonation(q+1.7,p,157.0)*.48;
           shine+=fizz.x*inside*.65;
           shine+=pow(folds,12.0)*inside*.24;
+          shine+=exp(-foldRidge*110.0)*inside*.055;
+          shadow+=exp(-abs(foldRidge-.028)*100.0)*inside*.025;
           shadow+=fizz.y*inside*.15;
           float surfaceAlpha=volume+shine+shadow;
           float liquidAlpha=surfaceAlpha*visible;
@@ -211,6 +241,7 @@
     const progress=gl.getUniformLocation(program,'u_progress');
     const streams=gl.getUniformLocation(program,'u_streams[0]');
     const bounds=gl.getUniformLocation(program,'u_stream_bounds');
+    const drops=gl.getUniformLocation(program,'u_drops[0]');
     stage.append(canvas);
     stage.classList.add('hs-webgl-ready');
     canvas.addEventListener('webglcontextlost', event => {
@@ -233,6 +264,7 @@
       gl.uniform1f(progress,p);
       gl.uniform2fv(streams,streamData);
       gl.uniform4fv(bounds,streamBounds);
+      gl.uniform3fv(drops,dropData);
       gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
     }
     return {draw,canvas};
@@ -257,7 +289,8 @@
     <clipPath id="hs-stream-wet-clip" clipPathUnits="userSpaceOnUse"></clipPath>
   </defs>`;
   const streamClip=optics.querySelector('clipPath');
-  const streamClipPaths=Array.from({length:1},()=>{
+  const liquidDisplacement=optics.querySelector('feDisplacementMap');
+  const streamClipPaths=Array.from({length:9},()=>{
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
     streamClip.append(path);return path;
   });
@@ -327,6 +360,7 @@
     const opening = canSlot.getBoundingClientRect();
     const mouthX = ((projected?.x ?? opening.left + opening.width * .5) - stageBox.left) / stageBox.width * 1000;
     const mouthY = ((projected?.y ?? opening.top + opening.height * .53) - stageBox.top) / stageBox.height * 1000;
+    liquidDisplacement.setAttribute('scale',number(8+18*phase(p,.505,.60)*(1-phase(p,.85,1))));
     const streamPaths=sampleStreams(p,mouthX/1000*stageBox.width,mouthY/1000*stageBox.height,stageBox.width,stageBox.height);
     streamClipPaths.forEach((path,i)=>path.setAttribute('d',streamPaths[i]||''));
     streamRefraction.style.opacity=(phase(p,.505,.525)*(1-phase(p,.70,.76))).toFixed(4);
@@ -385,6 +419,43 @@
     hero.style.setProperty('--hs-reveal', reveal.toFixed(4));
   }
 
+  let rawProgress=0;
+  let releaseState='armed';
+  let releaseTimeline;
+  const releaseHead={progress:0};
+  function syncProgress(value){
+    rawProgress=clamp(value);
+    if(motion.matches){render(0);return;}
+    if(!window.gsap){render(rawProgress);return;}
+    if(rawProgress<.405){
+      if(releaseState==='armed'){render(rawProgress);return;}
+      if(releaseState==='resetting') return;
+      releaseTimeline?.kill();
+      releaseState='resetting';
+      releaseTimeline=window.gsap.to(releaseHead,{
+        progress:rawProgress,duration:.24,ease:'power2.out',
+        onUpdate:()=>render(releaseHead.progress),
+        onComplete:()=>{releaseState='armed';syncProgress(rawProgress);}
+      });
+      return;
+    }
+    if(releaseState==='armed'&&rawProgress>=.425){
+      releaseState='releasing';releaseHead.progress=.425;
+      releaseTimeline=window.gsap.timeline({
+        onUpdate:()=>render(releaseHead.progress),
+        onComplete:()=>{releaseState='released';syncProgress(rawProgress);}
+      }).to(releaseHead,{progress:.505,duration:.24,ease:'power2.inOut'})
+        .to(releaseHead,{progress:.655,duration:.48,ease:'power3.out'})
+        .to(releaseHead,{progress:()=>Math.max(.655,rawProgress),duration:.28,ease:'power1.inOut'});
+      return;
+    }
+    if(releaseState==='releasing'||releaseState==='resetting') return;
+    // Reverse scrubbing restores the original geometry; crossing the lower
+    // hysteresis threshold rearms the single release for the next approach.
+    const p=releaseState==='released'?Math.max(.655,rawProgress):Math.min(rawProgress,.425);
+    releaseHead.progress=p;render(p);
+  }
+
   function initialize() {
     if (motion.matches) {
       render(0);
@@ -401,16 +472,16 @@
           end:'bottom bottom',
           scrub:true,
           invalidateOnRefresh:true,
-          onRefresh:self=>render(self.progress)
+          onRefresh:self=>syncProgress(self.progress)
         }
       }).fromTo(playhead,{progress:0},{
         progress:1,duration:1,ease:'none',immediateRender:false,
-        onUpdate:()=>render(playhead.progress)
+        onUpdate:()=>syncProgress(playhead.progress)
       });
-      render(heroTimeline.scrollTrigger.progress);
+      syncProgress(heroTimeline.scrollTrigger.progress);
     } else {
       // A native fallback preserves the scene when GSAP is unavailable.
-      const update = () => render(-hero.getBoundingClientRect().top / Math.max(1, hero.offsetHeight - innerHeight));
+      const update = () => syncProgress(-hero.getBoundingClientRect().top / Math.max(1, hero.offsetHeight - innerHeight));
       window.addEventListener('scroll', update, { passive: true });
       window.addEventListener('resize', update, { passive: true });
       fallbackCleanup=()=>{
@@ -423,6 +494,8 @@
 
   motion.addEventListener('change', () => {
     if (motion.matches) {
+      releaseTimeline?.kill();
+      releaseState='armed';
       cancelAnimationFrame(settleFrame);
       settleFrame=0;
       can3D?.update(0);
