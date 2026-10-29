@@ -290,3 +290,25 @@
 .rich-flavors.is-visible[data-rich-scene="duo"] .rich-collision__ice{animation-play-state:running}
 @keyframes rich-ice-drift{0%,100%{translate:0 7px;rotate:-2deg}50%{translate:5px -10px;rotate:2deg}}
 @media(prefers-reduced-motion:reduce){.rich-collision__ice{animation:none}}
+
+/* Product leads at 77–88.5%; green liquid follows at 85–94%. */
+.rich-motion-ready .rich-fg--grape{clip-path:none}
+.rich-fg__motion-shell[data-role="fruit"][data-depth="front"]{z-index:5}
+
+/* Only the flavor name slides; shared brand line and navigation stay anchored. */
+.rich-fg__name-window{position:absolute;left:500px;top:0;width:440px;height:131px;overflow:hidden}
+.rich-fg__caption-line .rich-fg__name-window h2{left:0;top:0;width:100%}
+
+/* The grape bottle rides a swell during entry and keeps buoyant at rest. */
+.rich-flavors .rich-fg--grape .rich-fg__motion-shell[data-role="bottle"] .rich-fg__bob{
+ animation-name:rich-wave-buoyancy!important;animation-duration:7.5s!important;animation-delay:-1.2s!important;
+ transform-origin:50% 62%;
+}
+.rich-flavors.is-visible .rich-fg--grape.is-buoyant .rich-fg__bob{animation-play-state:running!important}
+@keyframes rich-wave-buoyancy{
+ 0%,100%{translate:0 2px;rotate:-.8deg}
+ 25%{translate:1px 0;rotate:0deg}
+ 50%{translate:0 -2px;rotate:.8deg}
+ 75%{translate:-1px 0;rotate:0deg}
+}
+@media(prefers-reduced-motion:reduce){.rich-flavors .rich-fg--grape .rich-fg__bob{animation:none!important}}

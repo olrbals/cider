@@ -13,7 +13,7 @@
   const ice=[...root.querySelectorAll('.rich-collision__ice')];
   const panels = [
     {name:'peach',element:root.querySelector('.rich-fg--peach'),start:.51,end:.66,seed:0},
-    {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.80,end:.94,seed:1}
+    {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.835,end:.92,seed:1}
   ];
   if (![copy,copyWave,copyGlint,collision,peachTeam,grapeTeam,particlesLayer].every(Boolean)
       || panels.some(p=>!p.element)) return;
@@ -38,6 +38,11 @@
     panel.fluidRim=panel.element.querySelector('.rich-fg__fluid-rim');
     panel.fluidBand=panel.element.querySelector('.rich-fg__fluid-band');
     panel.foam=panel.element.querySelector('.rich-fg__foam');
+    panel.nameLabel=panel.element.querySelector('.rich-fg__caption-line h2');
+    const nameWindow=document.createElement('div');
+    nameWindow.className='rich-fg__name-window';
+    panel.nameLabel.parentNode.insertBefore(nameWindow,panel.nameLabel);
+    nameWindow.append(panel.nameLabel);
     const figmaImages=[...panel.element.querySelectorAll(
       '.rich-fg__bottle,.rich-fg__fruit,.rich-fg__fruit-group'
     )];
@@ -48,6 +53,7 @@
       const bob=document.createElement('span');
       shell.className='rich-fg__motion-shell';
       shell.dataset.role=node.classList.contains('rich-fg__bottle')?'bottle':'fruit';
+      if(shell.dataset.role==='fruit' && parseFloat(node.style.left)<720 && parseFloat(node.style.top)>=390) shell.dataset.depth='front';
       bob.className='rich-fg__bob';
       bob.style.setProperty('--float-duration',(6.4+index*.73)+'s');
       bob.style.setProperty('--float-delay',(-index*1.37)+'s');
@@ -165,33 +171,47 @@
   function updateFlavor(panel,p){
     const u=reduce.matches?Number(p>=(panel.start+panel.end)/2):
       clamp((p-panel.start)/(panel.end-panel.start));
-    panel.element.style.visibility=u>0?'visible':'hidden';
+    const productU=panel.name==='grape'?(reduce.matches?Number(p>=.85):clamp((p-.77)/.115)):u;
+    panel.element.style.visibility=productU>0?'visible':'hidden';
     panel.element.style.transform='none';
-    const next=panel.name==='peach'?smooth(.795,.925,p):0;
+    const next=panel.name==='peach'?smooth(.795,.89,p):0;
     panel.element.inert=u<.99 || next>.01;
     panel.element.setAttribute('aria-hidden',String(u<.99 || next>.01));
     const shape=horizontalWave(u,panel.seed);
     // Clip the entire screen with the same liquid edge, including fruit and type.
     panel.sceneMask.setAttribute('d',shape.mask.replace(/-?\d+(?:\.\d+)?/g,n=>(Number(n)/1000).toFixed(5)));
-    panel.fluidMask.setAttribute('d','M0 0H1000V1000H0Z');
+    panel.fluidMask.setAttribute('d',panel.name==='grape'?shape.mask:'M0 0H1000V1000H0Z');
     panel.fluidRim.setAttribute('d',shape.rim);
     panel.fluidRim.setAttribute('stroke-opacity',reduce.matches?'0':(Math.sin(Math.PI*u)*.22).toFixed(3));
     if(panel.foam){
       panel.foam.setAttribute('transform','translate('+shape.x.toFixed(2)+',0)');
       panel.foam.setAttribute('opacity','0');
     }
-    panel.element.querySelector('.rich-fg__caption').style.opacity=(reduce.matches?u:smooth(.45,.88,u)*(1-next)).toFixed(3);
+    const caption=panel.element.querySelector('.rich-fg__caption');
+    // Product first, then a shared opposing title slide, then background.
+    const titleSwap=reduce.matches?Number(p>=.82):smooth(.795,.835,p);
+    const titleX=panel.name==='grape'?440*(1-titleSwap):-440*titleSwap;
+    caption.style.transform='none';
+    panel.nameLabel.style.transform='translate3d('+titleX.toFixed(2)+'px,0,0)';
+    caption.style.opacity=(panel.name==='grape'?1:(reduce.matches?u:smooth(.45,.88,u))).toFixed(3);
+    panel.element.classList.toggle('is-buoyant',panel.name==='grape' && productU>0);
     const active=smooth(panel.end,panel.end+.11,p);
     panel.shells.forEach(({shell,index,bottle})=>{
       const angle=index*1.7;
-      const enter=reduce.matches?0:(1-u);
+      const enter=reduce.matches?0:(1-productU);
       const orbit=reduce.matches?0:active;
-      const roll=reduce.matches?1:smooth(0,.88,u);
+      const roll=reduce.matches?1:smooth(0,.88,productU);
       const travel=(1-roll)*760-next*960;
-      const dx=bottle?travel:travel+Math.cos(angle)*18*Math.sin(Math.PI*u)+Math.cos(angle)*8*orbit;
-      const settle=Math.sin(clamp((u-.75)/.25)*Math.PI*2)*Math.pow(1-clamp((u-.75)/.25),2);
-      const dy=bottle?-8*settle:Math.sin(angle)*14*orbit;
-      const turn=reduce.matches?0:(bottle?travel/620*180/Math.PI+settle*1.5:12*enter+Math.sin(angle)*6*orbit);
+      const dx=bottle?travel:travel+Math.cos(angle)*18*Math.sin(Math.PI*productU)+Math.cos(angle)*8*orbit;
+      const settle=Math.sin(clamp((productU-.75)/.25)*Math.PI*2)*Math.pow(1-clamp((productU-.75)/.25),2);
+      // A broad crest lifts the incoming group; a smaller trough settles it.
+      // The scroll envelope returns exactly to zero, while the inner bob keeps floating.
+      const crest=reduce.matches?0:Math.sin(Math.PI*productU);
+      const swell=panel.name==='grape'?(-5*crest-2*Math.sin(2*Math.PI*productU)*crest):0;
+      const rock=reduce.matches?0:1.2*Math.sin(2*Math.PI*productU)*crest;
+      const dy=bottle?(swell-5*settle+(panel.name==='peach'?next*8:0)):swell*.9+Math.sin(angle)*14*orbit;
+      const bottleTurn=panel.name==='grape'?1.5*(1-roll)+rock+settle*.2:(1-roll)*18-next*7+settle;
+      const turn=reduce.matches?0:(bottle?bottleTurn:6*enter+(panel.name==='grape'?rock*.45:0)+Math.sin(angle)*6*orbit);
       shell.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0) rotate('+turn.toFixed(2)+'deg)';
     });
   }
