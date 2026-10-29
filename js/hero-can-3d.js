@@ -88,7 +88,7 @@ export async function createHeroCan(hero) {
         if(visible){
           const angle=random(seed+8)*Math.PI*2;
           const speed=isFoam ? .08+Math.pow(random(seed+1),2)*.25 : .13+random(seed+1)*.43;
-          const radius=((isFoam ? .0012 : .0025)+Math.pow(random(seed+2),2)*(isFoam ? .0038 : .006))*(isFoam ? 1 : 1+t*.35);
+          const radius=((isFoam ? .002 : .003)+Math.pow(random(seed+2),2)*(isFoam ? .0055 : .008))*(isFoam ? 1 : 1+t*.35);
           const fade=Math.min(1,t*14)*(1-phase(t,.65,1));
           const reach=(isFoam ? .025 : .09)+t*(isFoam ? .16 : .34)*Math.pow(random(seed+11),.7);
           pose.position.set(Math.cos(angle)*reach*t,1.59+speed*t*3.2-(isFoam ? .34 : .64)*t*t,.25+Math.sin(angle)*reach*t+t*(isFoam ? .09 : .85));

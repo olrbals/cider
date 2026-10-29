@@ -25,7 +25,7 @@
     if(p<.505||p>=.76) return [];
     const rise=1-Math.pow(1-clamp((p-.505)/.045),3);
     const spread=phase(p,.56,.69),burst=phase(p,.505,.57);
-    const cx=mouthX/height,cy=mouthY/height-.105*rise;
+    const cx=mouthX/height,cy=mouthY/height-.064*rise;
     const points=[];
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     const lobes=[[-2.78,.18,.25],[-2.13,.31,.29],[-1.40,.21,.25],[-.62,.27,.23]];
@@ -39,8 +39,8 @@
       const irregular=1+.055*Math.sin(angle*3+burst*3)+.035*Math.cos(angle*5-burst*4);
       const extension=1+fingers*burst*(1-spread*.6);
       const rx=(.043*rise+spread*width/height*.63)*irregular*extension;
-      const ry=(.105*rise+.22*spread)*(Math.sin(angle)>0?1:irregular*extension);
-      const x=cx+Math.cos(angle)*rx+Math.sin(angle)*.012*rise*(1-spread);
+      const ry=(.064*rise+.22*spread)*(Math.sin(angle)>0?1:irregular*extension);
+      const x=cx+Math.cos(angle)*rx+Math.min(0,Math.sin(angle))*.012*rise*(1-spread);
       const y=cy+Math.sin(angle)*ry;
       points.push([x*height,y*height]);
       minX=Math.min(minX,x);minY=Math.min(minY,y);
@@ -71,7 +71,7 @@
       const speed=.075+random*random*.16;
       const x=mouthX/height+Math.cos(angle)*speed*t;
       const y=mouthY/height+Math.sin(angle)*speed*t-.065*t+.05*t*t;
-      const r=(.0016+(i%3)*.0007)*Math.sin(t*Math.PI*.8)*fade;
+      const r=(.0022+random*random*.0035)*Math.sin(t*Math.PI*.8)*fade;
       dropData.set([x,y,r],i*3);
       streamBounds[0]=Math.min(streamBounds[0],x-r-.01);
       streamBounds[1]=Math.min(streamBounds[1],y-r-.01);
@@ -131,7 +131,7 @@
         }
         float d=distanceToEdge*signValue;
         for(int i=0;i<8;i++) {
-          if(u_drops[i].z>0.00001) d=min(d,length(q-u_drops[i].xy)-u_drops[i].z);
+          if(u_drops[i].z>0.00001) d=unite(d,length(q-u_drops[i].xy)-u_drops[i].z,.002);
         }
         return d;
       }
@@ -175,7 +175,7 @@
         float d=sheet+(1.0-sheetVisible)*.12;
         float body=1.0-smoothstep(-.005,.003,d);
         float edge=exp(-abs(d)*145.0)*sheetVisible;
-        float inner=body*(.18+.10*noise(uv*vec2(5.0,8.0)+p*2.0));
+        float inner=body*(.12+.07*noise(uv*vec2(5.0,8.0)+p*2.0));
         float bright=phase(p,.77,.99);
         float alpha=inner+edge*.37+body*bright*.47;
         float thickness=.45+.55*noise(uv*vec2(9.0,13.0)+vec2(p*3.0,-p*11.0));
@@ -195,7 +195,6 @@
           float inside=1.0-smoothstep(-.0015,.0015,water);
           vec2 material=q-vec2(u_mouth.x*u_resolution.x/u_resolution.y,u_mouth.y);
           float folds=noise(material*34.0+vec2(p*13.0,-p*28.0));
-          float foldRidge=abs(noise(material*17.0+vec2(p*5.0,-p*21.0))-.5);
           float depth=sqrt(max(0.0,1.0-pow(sat(1.0+water/.024),2.0)))*(.72+.28*folds);
           vec3 normal=vec3(0.0,0.0,1.0);
           #ifdef HS_STREAM_NORMALS
@@ -209,13 +208,13 @@
           float outerRim=exp(-abs(water)*900.0);
           float pool=phase(p,.565,.665);
           float volume=inside*(mix(.055,.012,pool)+depth*.035);
-          float shine=reflection*inside*(.25+depth*.32)+innerRim*(.10+edgeLight*.50);
-          float shadow=outerRim*(1.0-edgeLight)*.32;
+          float shine=reflection*inside*(.25+depth*.32)+innerRim*(.10+edgeLight*.50)*(1.0-pool*.62);
+          float shadow=outerRim*(1.0-edgeLight)*.32*(1.0-pool*.65);
           vec2 fizz=carbonation(q,p,82.0)+carbonation(q+1.7,p,157.0)*.48;
           shine+=fizz.x*inside*.65;
           shine+=pow(folds,12.0)*inside*.24;
-          shine+=exp(-foldRidge*110.0)*inside*.055;
-          shadow+=exp(-abs(foldRidge-.028)*100.0)*inside*.025;
+          shine+=pow(folds,20.0)*inside*.12;
+
           shadow+=fizz.y*inside*.15;
           float surfaceAlpha=volume+shine+shadow;
           float liquidAlpha=surfaceAlpha*visible;
@@ -234,12 +233,34 @@
         // A short, dense pressure core thins radially as it escapes the opening.
         vec2 mouthQ=vec2(u_mouth.x*u_resolution.x/u_resolution.y,u_mouth.y);
         vec2 offset=q-mouthQ+vec2(0.0,.012+phase(p,.51,.59)*.045);
-        float pressure=phase(p,.505,.522)*(1.0-phase(p,.55,.605));
+        float pressure=phase(p,.505,.516)*(1.0-phase(p,.555,.60));
         float core=exp(-dot(offset*vec2(1.2,1.0),offset*vec2(1.2,1.0))/(.00022+.003*phase(p,.51,.59)));
         vec2 micro=carbonation(q,p,186.0);
-        float sparkleCore=micro.x*core*pressure*.64;
+        float sparkleCore=micro.x*core*pressure*.85;
         color=mix(color,vec3(.99),sparkleCore/max(alpha+sparkleCore,.0001));
         alpha=1.0-(1.0-alpha)*(1.0-sparkleCore);
+        // Small lens-facing droplets carry paired bright/dark menisci.
+        // Their contrast survives the white typography without adding glow.
+        for(int i=0;i<8;i++) {
+          vec3 drop=u_drops[i];
+          if(drop.z>.00001) {
+            vec2 v=(q-drop.xy)/drop.z;
+            float rr=dot(v,v);
+            if(rr<1.35) {
+              float disc=1.0-smoothstep(.82,1.2,rr);
+              vec3 n=normalize(vec3(v,sqrt(max(.001,1.0-min(rr,1.0)))));
+              float shine=pow(max(dot(n,normalize(vec3(-.5,-.65,1.0))),0.0),22.0);
+              float rim=exp(-abs(rr-.80)*16.0);
+              float light=shine*.70+rim*max(0.0,-v.x-v.y)*.35;
+              float shade=rim*max(0.0,v.x+v.y)*.28;
+              float a=(.035+light+shade)*disc*(1.0-phase(p,.64,.70));
+              vec3 dropColor=(vec3(1.0)*(.035+light)+vec3(.16,.22,.19)*shade)/max(.035+light+shade,.001);
+              float combined=1.0-(1.0-alpha)*(1.0-a);
+              color=(dropColor*a+color*alpha*(1.0-a))/max(combined,.0001);
+              alpha=combined;
+            }
+          }
+        }
         gl_FragColor=vec4(color,alpha);
       }`;
     function compile(type, source) {
@@ -389,7 +410,7 @@
     const opening = canSlot.getBoundingClientRect();
     const mouthX = ((projected?.x ?? opening.left + opening.width * .5) - stageBox.left) / stageBox.width * 1000;
     const mouthY = ((projected?.y ?? opening.top + opening.height * .53) - stageBox.top) / stageBox.height * 1000;
-    liquidDisplacement.setAttribute('scale',number(8+18*phase(p,.505,.60)*(1-phase(p,.85,1))));
+    liquidDisplacement.setAttribute('scale',number(6+12*phase(p,.505,.55)*(1-phase(p,.63,.80))));
     const streamPaths=sampleStreams(p,mouthX/1000*stageBox.width,mouthY/1000*stageBox.height,stageBox.width,stageBox.height);
     streamClipPaths.forEach((path,i)=>path.setAttribute('d',streamPaths[i]||''));
     streamRefraction.style.opacity=(phase(p,.505,.525)*(1-phase(p,.70,.76))).toFixed(4);
@@ -474,7 +495,8 @@
         onUpdate:()=>render(releaseHead.progress),
         onComplete:()=>{releaseState='released';syncProgress(rawProgress);}
       }).to(releaseHead,{progress:.505,duration:.24,ease:'power2.inOut'})
-        .to(releaseHead,{progress:.655,duration:.48,ease:'power3.out'})
+        .to(releaseHead,{progress:.545,duration:.16,ease:'power2.out'})
+        .to(releaseHead,{progress:.655,duration:.32,ease:'power2.in'})
         .to(releaseHead,{progress:()=>Math.max(.655,rawProgress),duration:.28,ease:'power1.inOut'});
       return;
     }
