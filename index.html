@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400&family=Archivo+Black&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;800&family=Archivo+Black&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/history-3d.css">
   <link rel="stylesheet" href="css/experience.css">
@@ -22,7 +22,8 @@
   <link rel="stylesheet" href="css/liquid-typography-global.css">
   <link rel="stylesheet" href="css/ambient-carbonation.css">
   <link rel="stylesheet" href="css/scene-polish.css">
-  <script defer src="js/script.js"></script>
+  <link rel="stylesheet" href="css/rich-flavors.css">
+  
   <script defer src="js/experience.js"></script>
   <script defer src="js/pop-scroll.js"></script>
   <script defer src="js/liquid-gel-global.js"></script>
@@ -35,13 +36,14 @@
   <script defer src="js/hero-wave-transition.js"></script>
   <script defer src="js/scene-polish.js"></script>
   <script defer src="js/liquid-fill-wave.js"></script>
+  <script defer src="js/rich-flavors.js"></script>
   <script type="module" src="js/history-3d.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#identity">본문으로 바로가기</a>
   <header class="site-header">
     <a class="header-logo" href="#top" aria-label="칠성사이다, 맨 위로"><img src="img/brand/Chilsung_Cider_2024.webp" alt="칠성사이다" width="232" height="92"></a>
-    <nav aria-label="주 메뉴"><a href="#identity">BRAND</a><a href="#history">HISTORY</a><a href="#products">PRODUCTS</a></nav>
+    <nav aria-label="주 메뉴"><a href="#identity">BRAND</a><a href="#history">HISTORY</a><a href="#rich-flavors">PRODUCTS</a></nav>
   </header>
 
   <main>
@@ -123,14 +125,67 @@
 
     </section>
 
-    <section class="products" id="products" aria-label="제품 탐색">
-      <div class="product-explorer" aria-label="제품 탐색">
-        <p class="product-backtype" aria-hidden="true">ORIGINAL!</p>
-        <div class="product-tabs" role="group" aria-label="제품 종류"><button class="product-kind is-selected" type="button" data-kind="original" aria-pressed="true">ORIGINAL</button><button class="product-kind" type="button" data-kind="peach" aria-pressed="false">RICH PEACH</button><button class="product-kind" type="button" data-kind="grape" aria-pressed="false">RICH GRAPE</button></div>
-        <div class="product-stage"><img id="product-image" src="img/display/original-can.png" alt="칠성사이다 오리지널 캔" width="208" height="397" loading="lazy"><span class="product-stage-star" aria-hidden="true">✳</span></div>
-        <div class="product-details"><h3 id="product-name">칠성사이다<br>오리지널</h3><div class="package-options" role="group" aria-label="패키지 형태"><button class="package-option is-selected" type="button" data-package="can" aria-pressed="true">CAN</button><button class="package-option" type="button" data-package="pet" aria-pressed="false">PET</button></div></div>
-      </div>
+    <!-- Figma: richPeach 1297:97 → richGrape 1332:20. -->
+    <section class="rich-flavors" id="rich-flavors" aria-label="칠성사이다 리치 복숭아맛과 청포도맛">
+      <div class="rich-flavors__viewport">
+        <!-- Figma newFlavor / node 1334:63: 1440 × 900. Scroll-up reveal after the 2024 history. -->
+        <section class="rich-new-flavor" aria-labelledby="rich-new-flavor-title">
+          <h2 id="rich-new-flavor-title" class="visually-hidden">칠성사이다 리치 복숭아맛과 청포도맛</h2>
+          <div class="rich-new-flavor__art" aria-hidden="true">
+            <img class="rich-new-flavor__ellipse rich-new-flavor__ellipse--peach" src="img/flavors/intro-pink-ellipse.svg" alt="" width="895" height="900">
+            <img class="rich-new-flavor__ellipse rich-new-flavor__ellipse--grape" src="img/flavors/intro-lime-ellipse.svg" alt="" width="835" height="900">
+            <img class="rich-new-flavor__asset rich-new-flavor__slice" src="img/flavors/intro-peach-piece.png" alt="" width="389" height="365">
+            <img class="rich-new-flavor__asset rich-new-flavor__peach-bottle" src="img/flavors/intro-peach-bottle.png" alt="" width="332" height="648">
+            <img class="rich-new-flavor__asset rich-new-flavor__peach-whole" src="img/flavors/intro-peach-whole.png" alt="" width="190" height="190">
+            <img class="rich-new-flavor__asset rich-new-flavor__grape-bunch" src="img/flavors/intro-grape-bunch.png" alt="" width="506" height="506">
+            <img class="rich-new-flavor__asset rich-new-flavor__grape-bottle" src="img/flavors/intro-grape-bottle.png" alt="" width="416" height="676">
+          </div>
+        </section>
+      <article class="rich-fg rich-fg--peach" aria-label="칠성사이다 리치 복숭아맛">
+        <div class="rich-fg__sweep" aria-hidden="true"></div>
+        <div class="rich-fg__art">
+          <div class="rich-fg__photo-area">
+          <img class="rich-fg__fruit" src="img/flavors/figma-peach.png" alt="" aria-hidden="true" width="110" height="110" style="left:575px;top:178px;width:110px;height:110px">
+          <img class="rich-fg__bottle" src="img/flavors/figma-peach-bottle.png" alt="칠성사이다 리치 복숭아맛 페트병" width="332" height="648" style="left:560px;top:0px">
 
+          <img class="rich-fg__fruit" src="img/flavors/figma-peach.png" alt="" aria-hidden="true" loading="lazy" width="100" height="100" style="left:475px;top:288px;width:100px;height:100px">
+          <img class="rich-fg__fruit" src="img/flavors/figma-peach.png" alt="" aria-hidden="true" loading="lazy" width="102" height="102" style="left:536px;top:409px;width:102px;height:102px">
+          <img class="rich-fg__fruit" src="img/flavors/figma-peach.png" alt="" aria-hidden="true" loading="lazy" width="110" height="110" style="left:836px;top:257px;width:110px;height:110px">
+          <img class="rich-fg__fruit" src="img/flavors/figma-peach.png" alt="" aria-hidden="true" loading="lazy" width="123" height="123" style="left:823px;top:417px;width:123px;height:123px">
+          </div>
+          <div class="rich-fg__caption">
+            <p>Chilsung Cider RICH</p>
+            <div class="rich-fg__caption-line">
+              <img src="img/flavors/figma-arrow-left.svg" width="62" height="30" alt="" aria-hidden="true">
+              <h2>PEACH</h2>
+              <img src="img/flavors/figma-arrow-right.svg" width="62" height="30" alt="" aria-hidden="true">
+            </div>
+          </div>
+        </div>
+      </article>
+      <article class="rich-fg rich-fg--grape" aria-label="칠성사이다 리치 청포도맛">
+        <div class="rich-fg__sweep" aria-hidden="true"></div>
+        <div class="rich-fg__art">
+          <div class="rich-fg__photo-area">
+          <img class="rich-fg__fruit" src="img/flavors/figma-grape.png" alt="" aria-hidden="true" width="96" height="96" style="left:581px;top:196px;transform:scaleX(-1)">
+          <span class="rich-fg__fruit-group" style="left:449px;top:280px;width:131px;height:131px"><img src="img/flavors/figma-grape.png" alt="" aria-hidden="true" width="96" height="96" style="transform:rotate(-150deg) scaleY(-1)"></span>
+          <img class="rich-fg__bottle" src="img/flavors/figma-grape-bottle.png" alt="칠성사이다 리치 청포도맛 페트병" width="332" height="648" style="left:551px;top:0px">
+
+          <img class="rich-fg__fruit" src="img/flavors/figma-grape.png" alt="" aria-hidden="true" width="110" height="110" style="left:810px;top:411px;width:110px;height:110px">
+          <img class="rich-fg__fruit" src="img/flavors/figma-grape.png" alt="" aria-hidden="true" width="79" height="80" style="left:841px;top:252px;width:79px;height:80px">
+          <span class="rich-fg__fruit-group" style="left:521px;top:422px;width:123px;height:123px"><img src="img/flavors/figma-grape.png" alt="" aria-hidden="true" width="96" height="96" style="transform:rotate(-160deg) scaleY(-1)"></span>
+          </div>
+          <div class="rich-fg__caption">
+            <p>Chilsung Cider RICH</p>
+            <div class="rich-fg__caption-line">
+              <img src="img/flavors/figma-arrow-left.svg" width="62" height="30" alt="" aria-hidden="true">
+              <h2>GRAPE</h2>
+              <img src="img/flavors/figma-arrow-right.svg" width="62" height="30" alt="" aria-hidden="true">
+            </div>
+          </div>
+        </div>
+      </article>
+      </div>
     </section>
     <section class="pop-scene" id="pop" aria-label="칠성사이다, 짠!">
       <div class="pop-stage">
