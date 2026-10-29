@@ -203,8 +203,9 @@
       const travel=(1-roll)*760-next*960;
       const dx=bottle?travel:travel+Math.cos(angle)*18*Math.sin(Math.PI*productU)+Math.cos(angle)*8*orbit;
       const settle=Math.sin(clamp((productU-.75)/.25)*Math.PI*2)*Math.pow(1-clamp((productU-.75)/.25),2);
-      const dy=bottle?-8*settle:Math.sin(angle)*14*orbit;
-      const turn=reduce.matches?0:(bottle?travel/620*180/Math.PI+settle*1.5:12*enter+Math.sin(angle)*6*orbit);
+      const dy=bottle?(-5*settle+(panel.name==='grape'?8*Math.sin(Math.PI*productU):next*8)):Math.sin(angle)*14*orbit;
+      const bottleTurn=panel.name==='grape'?6*(1-roll)+settle*.6:(1-roll)*18-next*7+settle;
+      const turn=reduce.matches?0:(bottle?bottleTurn:6*enter+Math.sin(angle)*6*orbit);
       shell.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0) rotate('+turn.toFixed(2)+'deg)';
     });
   }
