@@ -1,4 +1,4 @@
-/* Chilsung RICH: scroll-scrubbed product-first, rounded liquid sweep,
+/* Chilsung RICH: scroll-scrubbed product-first, asymmetric fluid curtain + PET inertia,
    fruit depth and idle hover. Independent of Hero and History modules. */
 (() => {
   'use strict';
@@ -16,7 +16,9 @@
   // Separate GPU-composited travel from the original Figma image rotations.
   // The inner "bob" layer never changes the layout or original image texture.
   panels.forEach((panel, panelIndex) => {
-    panel.sweep = panel.node.querySelector('.rich-fg__sweep');
+    panel.fluidMask = panel.node.querySelector('.rich-fg__fluid-mask');
+    panel.fluidRim = panel.node.querySelector('.rich-fg__fluid-rim');
+    panel.fluidBand = panel.node.querySelector('.rich-fg__fluid-band');
     panel.captionNode = panel.node.querySelector('.rich-fg__caption');
     const elements = [...panel.node.querySelectorAll(
       '.rich-fg__bottle,.rich-fg__fruit,.rich-fg__fruit-group'
@@ -66,6 +68,43 @@
     const bottomBandTop = (viewportHeight - 900 * scale) / 2 + 648 * scale;
     section.style.setProperty('--rich-design-scale', scale.toFixed(5));
     section.style.setProperty('--rich-band-top', bottomBandTop.toFixed(2) + 'px');
+    const bandY = (bottomBandTop / Math.max(1, viewportHeight)) * 1000;
+    panels.forEach(panel => {
+      panel.fluidBand.setAttribute('y',bandY.toFixed(2));
+      panel.fluidBand.setAttribute('height',Math.max(0,1000-bandY).toFixed(2));
+    });
+  }
+
+  // Scroll-deterministic liquid front, unlike a translated rounded rectangle.
+  // The midsection runs ahead of the top/bottom, then relaxes to a straight,
+  // fully covered screen. Works equally when the visitor reverses the scroll.
+  function fluidEdge(u, seed) {
+    const bulge = Math.sin(Math.PI * u);
+    const x = 1100 - 1230 * u;
+    const wave = Math.sin((u * 2.25 + seed * .29) * Math.PI);
+    const top = x + (48 + 12 * wave) * bulge;
+    const middle = x - (114 + 16 * wave) * bulge;
+    const bottom = x + (44 - 11 * wave) * bulge;
+    const front = [
+      'M', top.toFixed(2), '-40',
+      'C', (x + 63 * bulge).toFixed(2), '105',
+      (x + 28 * bulge).toFixed(2), '191',
+      (x - 38 * bulge).toFixed(2), '310',
+      'C', (middle - 12 * bulge).toFixed(2), '424',
+      (middle - 22 * bulge).toFixed(2), '559',
+      (x - 53 * bulge).toFixed(2), '689',
+      'C', (x + 18 * bulge).toFixed(2), '790',
+      (x + 47 * bulge).toFixed(2), '927',
+      bottom.toFixed(2), '1040'
+    ].join(' ');
+    return { mask: front + ' L 1040 1040 L 1040 -40 Z', rim: front };
+  }
+  // A restrained overshoot creates bottle weight without sacrificing
+  // exact final Figma positioning and reverse-scroll stability.
+  function settleEase(progress) {
+    const t = clamp(progress);
+    const q = t - 1;
+    return 1 + 2.0 * q * q * q + 1.0 * q * q;
   }
 
   function updatePanel(panel, p) {
@@ -79,8 +118,11 @@
       ease(panel.caption[0], panel.caption[1], p);
 
     panel.node.style.visibility = p >= panel.bottle[0] - .025 ? 'visible' : 'hidden';
-    panel.sweep.style.setProperty('--fg-sweep-x',
-      ((1 - backgroundProgress) * viewportWidth * 1.13).toFixed(1) + 'px');
+    const shape = fluidEdge(backgroundProgress, panel.name === 'peach' ? 0 : 1);
+    panel.fluidMask.setAttribute('d', shape.mask);
+    panel.fluidRim.setAttribute('d',shape.rim);
+    panel.fluidRim.setAttribute('stroke-opacity',
+      (Math.sin(Math.PI * backgroundProgress) * .26).toFixed(3));
     panel.captionNode.style.setProperty('--fg-caption-opacity', captionProgress.toFixed(3));
     panel.captionNode.style.setProperty('--fg-caption-x',
       ((1 - captionProgress) * 65).toFixed(1) + 'px');
@@ -90,15 +132,20 @@
       const local = bottle ? bottleProgress :
         reducedMotion.matches ? fruitProgress :
         ease(panel.fruit[0] + stagger, panel.fruit[1] + stagger, p);
-      // The bottle crosses ahead of the flavor-color curtain.
+      // The leading PET is slightly springy and visibly pulls the curtain.
+      // Idle fruit motion stays unchanged for Phase 3 depth fine-tuning.
+      const travel = bottle && !reducedMotion.matches ? settleEase(local) : local;
       const direction = bottle ? 1 : (index % 3 === 0 ? -1 : 1);
       const initialX = bottle ? viewportWidth * .75 : viewportWidth * (.32 + (index % 4) * .11);
-      const entryX = (1 - local) * initialX * direction - pointerX * (bottle ? 22 : 44) * local;
-      const entryY = (1 - local) * (bottle ? -48 : (index % 2 ? -96 : 115)) - pointerY * (bottle ? 16 : 36) * local;
+      const entryX = (1 - travel) * initialX * direction - pointerX * (bottle ? 22 : 44) * local;
+      const entryY = (1 - travel) * (bottle ? -48 : (index % 2 ? -96 : 115)) - pointerY * (bottle ? 16 : 36) * local;
+      const settleSwing = bottle && !reducedMotion.matches ?
+        Math.sin(local * Math.PI * 2.8) * Math.pow(1 - local, 1.6) * 3.7 : 0;
       const turnY = bottle ? (1 - local) * (panel.name === 'peach' ? 20 : -18) : (1 - local) * 11;
-      const turnZ = bottle ? (1 - local) * (panel.name === 'peach' ? 12 : -13) :
+      const turnZ = bottle ?
+        (1 - travel) * (panel.name === 'peach' ? 12 : -13) + settleSwing :
         (1 - local) * (index % 2 ? -12 : 12);
-      const scale = bottle ? .86 + .14 * local : .75 + .25 * local;
+      const scale = bottle ? .86 + .14 * travel : .75 + .25 * local;
       shell.style.opacity = local.toFixed(3);
       shell.style.setProperty('--fg-entry-x', entryX.toFixed(1) + 'px');
       shell.style.setProperty('--fg-entry-y', entryY.toFixed(1) + 'px');
