@@ -194,6 +194,7 @@
     caption.style.transform='none';
     panel.nameLabel.style.transform='translate3d('+titleX.toFixed(2)+'px,0,0)';
     caption.style.opacity=(panel.name==='grape'?1:(reduce.matches?u:smooth(.45,.88,u))).toFixed(3);
+    panel.element.classList.toggle('is-buoyant',panel.name==='grape' && productU>0);
     const active=smooth(panel.end,panel.end+.11,p);
     panel.shells.forEach(({shell,index,bottle})=>{
       const angle=index*1.7;
@@ -203,9 +204,14 @@
       const travel=(1-roll)*760-next*960;
       const dx=bottle?travel:travel+Math.cos(angle)*18*Math.sin(Math.PI*productU)+Math.cos(angle)*8*orbit;
       const settle=Math.sin(clamp((productU-.75)/.25)*Math.PI*2)*Math.pow(1-clamp((productU-.75)/.25),2);
-      const dy=bottle?(-5*settle+(panel.name==='grape'?8*Math.sin(Math.PI*productU):next*8)):Math.sin(angle)*14*orbit;
-      const bottleTurn=panel.name==='grape'?6*(1-roll)+settle*.6:(1-roll)*18-next*7+settle;
-      const turn=reduce.matches?0:(bottle?bottleTurn:6*enter+Math.sin(angle)*6*orbit);
+      // A broad crest lifts the incoming group; a smaller trough settles it.
+      // The scroll envelope returns exactly to zero, while the inner bob keeps floating.
+      const crest=reduce.matches?0:Math.sin(Math.PI*productU);
+      const swell=panel.name==='grape'?(-38*crest-14*Math.sin(2*Math.PI*productU)*crest):0;
+      const rock=reduce.matches?0:5*Math.sin(2*Math.PI*productU)*crest;
+      const dy=bottle?(swell-5*settle+(panel.name==='peach'?next*8:0)):swell*.9+Math.sin(angle)*14*orbit;
+      const bottleTurn=panel.name==='grape'?6*(1-roll)+rock+settle*.6:(1-roll)*18-next*7+settle;
+      const turn=reduce.matches?0:(bottle?bottleTurn:6*enter+(panel.name==='grape'?rock*.45:0)+Math.sin(angle)*6*orbit);
       shell.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0) rotate('+turn.toFixed(2)+'deg)';
     });
   }
