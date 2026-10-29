@@ -18,16 +18,16 @@ assert(!/popProgress|setTimeout|setInterval|performance.now/.test(src),'no wall 
 assert.equal((src.match(/addEventListener\('scroll'/g)||[]).length,1);
 console.log('PASS: 2002 finite wave states, reverse determinism, full coverage endpoints, one scroll listener, no timed burst');
 
-const node=()=>({style:{setProperty(k,v){this[k]=v}},attrs:{},setAttribute(k,v){this.attrs[k]=v},getAttribute(k){return this.attrs[k]}});
-const peachTeam=node(),grapeTeam=node(),collision=node(),water=node(),frontWater=node();
-const jets=Array.from({length:8},node),ice=Array.from({length:5},node);
-const frontJets=[{node:node(),index:1}],droplets=Array.from({length:22},(_,i)=>({node:node(),angle:i,reach:200,delay:.02}));
-const collisionBlock=src.slice(src.indexOf('  function updateCollision'),src.indexOf('  // Nonperiodic'));
-const update=new Function('clamp','smooth','reduce','peachTeam','grapeTeam','collision','water','frontWater','jets','frontJets','droplets','ice',collisionBlock+';return updateCollision;')(clamp,smooth,{matches:false},peachTeam,grapeTeam,collision,water,frontWater,jets,frontJets,droplets,ice);
-const snapshot=()=>JSON.stringify([peachTeam,grapeTeam,water,jets,ice,droplets]);
+
+const node=()=>({style:{setProperty(k,v){this[k]=v}},attrs:{},setAttribute(k,v){this.attrs[k]=v}});
+const peachTeam=node(),grapeTeam=node(),collision=node(),collisionMask=node(),ice=Array.from({length:5},node);
+const block2=src.slice(src.indexOf('  function updateCollision'),src.indexOf('  // Nonperiodic'));
+const update=new Function('clamp','smooth','reduce','horizontalWave','peachTeam','grapeTeam','collision','collisionMask','ice',block2+';return updateCollision;')(clamp,smooth,{matches:false},wave,peachTeam,grapeTeam,collision,collisionMask,ice);
+const snap=()=>JSON.stringify([peachTeam,grapeTeam,collisionMask,ice]);
 const states=[];
-for(let i=0;i<=1000;i++){update(i/1000);assert(!/NaN|Infinity/.test(snapshot()));states.push(snapshot());}
-for(let i=1000;i>=0;i--){update(i/1000);assert.equal(snapshot(),states[i]);}
-update(.30);assert(ice.every(n=>Number(n.style.opacity)===0));
-update(.46);assert(ice.every(n=>Number(n.style.opacity)===0));assert.equal(Number(water.style.opacity),0);
-console.log('PASS: collision forward/reverse exact states; ice hidden before contact and after settling; finite trajectories');
+for(let i=0;i<=1000;i++){update(i/1000);assert(!/NaN|Infinity/.test(snap()));states.push(snap());}
+for(let i=1000;i>=0;i--){update(i/1000);assert.equal(snap(),states[i]);}
+update(.27);assert(peachTeam.style.transform.includes('translate3d('));assert.equal(peachTeam.style.transform.split(',')[0],grapeTeam.style.transform.split(',')[0]);
+update(.46);assert(ice.every(n=>Number(n.style.opacity)>.6));
+assert(!src.includes('rich-impact-fluid'),'water stream renderer removed');
+console.log('PASS: rightward entry shared by both bottles, reverse determinism, five settled ice objects, no streams');

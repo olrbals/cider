@@ -283,3 +283,10 @@
 @media(prefers-reduced-motion:reduce){
  .rich-flavors .rich-fg__bob,.rich-flavors .rich-new-flavor .rich-new-flavor__asset{animation:none!important}
 }
+
+/* V9: one incoming liquid color field with ice, no impact streams. */
+.rich-motion-ready .rich-new-flavor{clip-path:url(#rich-intro-surge)}
+.rich-collision__ice{animation:rich-ice-drift 8s ease-in-out infinite;animation-delay:var(--ice-delay,0s);animation-play-state:paused}
+.rich-flavors.is-visible[data-rich-scene="duo"] .rich-collision__ice{animation-play-state:running}
+@keyframes rich-ice-drift{0%,100%{translate:0 7px;rotate:-2deg}50%{translate:5px -10px;rotate:2deg}}
+@media(prefers-reduced-motion:reduce){.rich-collision__ice{animation:none}}
