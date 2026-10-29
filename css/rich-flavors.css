@@ -301,14 +301,14 @@
 
 /* The grape bottle rides a swell during entry and keeps buoyant at rest. */
 .rich-flavors .rich-fg--grape .rich-fg__motion-shell[data-role="bottle"] .rich-fg__bob{
- animation-name:rich-wave-buoyancy!important;animation-duration:4.8s!important;animation-delay:-1.2s!important;
+ animation-name:rich-wave-buoyancy!important;animation-duration:7.5s!important;animation-delay:-1.2s!important;
  transform-origin:50% 62%;
 }
 .rich-flavors.is-visible .rich-fg--grape.is-buoyant .rich-fg__bob{animation-play-state:running!important}
 @keyframes rich-wave-buoyancy{
- 0%,100%{translate:-3px 7px;rotate:-1.3deg}
- 25%{translate:1px -2px;rotate:-.2deg}
- 50%{translate:4px -12px;rotate:1.4deg}
- 75%{translate:0 -1px;rotate:.2deg}
+ 0%,100%{translate:0 2px;rotate:-.8deg}
+ 25%{translate:1px 0;rotate:0deg}
+ 50%{translate:0 -2px;rotate:.8deg}
+ 75%{translate:-1px 0;rotate:0deg}
 }
 @media(prefers-reduced-motion:reduce){.rich-flavors .rich-fg--grape .rich-fg__bob{animation:none!important}}

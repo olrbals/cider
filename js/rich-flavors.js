@@ -207,10 +207,10 @@
       // A broad crest lifts the incoming group; a smaller trough settles it.
       // The scroll envelope returns exactly to zero, while the inner bob keeps floating.
       const crest=reduce.matches?0:Math.sin(Math.PI*productU);
-      const swell=panel.name==='grape'?(-38*crest-14*Math.sin(2*Math.PI*productU)*crest):0;
-      const rock=reduce.matches?0:5*Math.sin(2*Math.PI*productU)*crest;
+      const swell=panel.name==='grape'?(-5*crest-2*Math.sin(2*Math.PI*productU)*crest):0;
+      const rock=reduce.matches?0:1.2*Math.sin(2*Math.PI*productU)*crest;
       const dy=bottle?(swell-5*settle+(panel.name==='peach'?next*8:0)):swell*.9+Math.sin(angle)*14*orbit;
-      const bottleTurn=panel.name==='grape'?6*(1-roll)+rock+settle*.6:(1-roll)*18-next*7+settle;
+      const bottleTurn=panel.name==='grape'?1.5*(1-roll)+rock+settle*.2:(1-roll)*18-next*7+settle;
       const turn=reduce.matches?0:(bottle?bottleTurn:6*enter+(panel.name==='grape'?rock*.45:0)+Math.sin(angle)*6*orbit);
       shell.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0) rotate('+turn.toFixed(2)+'deg)';
     });
