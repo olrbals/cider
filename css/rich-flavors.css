@@ -3,7 +3,7 @@
    No decorative additions; image and typography placement follows Figma. */
 .rich-flavors{position:relative;z-index:5;height:400svh;min-height:2400px;margin-top:-100svh;background:transparent;isolation:isolate}
 .rich-flavors__viewport{position:sticky;top:0;left:0;width:100%;height:100svh;min-height:600px;overflow:hidden;isolation:isolate;background:transparent}
-.rich-fg{z-index:1;position:absolute;inset:0;isolation:isolate;overflow:hidden;transform:translate3d(100%,0,0);will-change:transform;background:linear-gradient(to bottom,var(--fg-top) 0,var(--fg-top) var(--rich-band-top,72%),var(--fg-bottom) var(--rich-band-top,72%),var(--fg-bottom) 100%)}
+.rich-fg{z-index:1;position:absolute;inset:0;isolation:isolate;overflow:hidden;background:transparent;visibility:hidden}
 .rich-fg--peach{--fg-top:#ffdbdb;--fg-bottom:#f92a66}
 .rich-fg--grape{z-index:2;--fg-top:#d3ff6e;--fg-bottom:#058836}
 .rich-fg__art{position:absolute;left:50%;top:50%;width:1440px;height:900px;transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));transform-origin:center center;pointer-events:none}
@@ -39,3 +39,73 @@
 .rich-new-flavor__peach-whole{left:377px;top:554px;width:190px;height:190px;z-index:3}
 .rich-new-flavor__grape-bunch{left:650px;top:161px;width:506px;height:506px;z-index:4}
 .rich-new-flavor__grape-bottle{left:591px;top:112px;width:416px;height:676px;z-index:5}
+
+
+/* Staggered product-first / liquid-curtain-second choreography.
+   The sweep is a rounded 112vw overlay, not a flat full-section slide;
+   when it settles its curved edge is outside the viewport. */
+.rich-fg__sweep{
+  position:absolute;z-index:0;top:0;bottom:0;left:-12vw;width:112vw;
+  background:linear-gradient(to bottom,var(--fg-top) 0,var(--fg-top) var(--rich-band-top,72%),var(--fg-bottom) var(--rich-band-top,72%),var(--fg-bottom) 100%);
+  border-radius:44% 0 0 38%/58% 0 0 46%;
+  transform:translate3d(var(--fg-sweep-x,112vw),0,0);
+  will-change:transform;
+}
+.rich-fg__sweep:before{
+  content:"";position:absolute;left:-2.6vw;top:24%;height:36%;width:9.5vw;
+  border-radius:50%;background:var(--fg-top);opacity:.96;
+}
+.rich-fg__art{z-index:1}
+.rich-fg__caption{
+  opacity:var(--fg-caption-opacity,0);
+  translate:var(--fg-caption-x,60px) 0;
+  will-change:opacity,translate;
+}
+.rich-fg__motion-shell{
+  position:absolute;display:block;left:0;top:0;
+  z-index:4;transform-origin:50% 51%;opacity:0;
+  transform:translate3d(var(--fg-entry-x,90vw),var(--fg-entry-y,0px),0)
+    perspective(950px) rotateY(var(--fg-turn-y,0deg))
+    rotateZ(var(--fg-turn-z,0deg)) scale(var(--fg-entry-scale,1));
+  will-change:transform,opacity;pointer-events:none;
+}
+.rich-fg__motion-shell[data-role="bottle"]{
+  z-index:3;filter:drop-shadow(14px 24px 16px rgba(31,48,28,.17));
+}
+.rich-fg__bob{position:absolute;inset:0;display:block;transform-origin:50% 52%;
+  animation:rich-product-hover var(--fg-bob-duration,4.4s) ease-in-out infinite;
+  animation-delay:var(--fg-bob-delay,-1.8s);
+  animation-play-state:paused;
+}
+.rich-fg__motion-shell[data-role="bottle"] .rich-fg__bob{
+  animation-duration:5.4s;
+}
+.rich-fg__bob>.rich-fg__bottle,
+.rich-fg__bob>.rich-fg__fruit,
+.rich-fg__bob>.rich-fg__fruit-group{
+  position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;
+}
+.rich-fg__bob>.rich-fg__fruit-group{display:flex;align-items:center;justify-content:center}
+.rich-flavors.is-visible .rich-fg__bob{animation-play-state:running}
+@keyframes rich-product-hover{
+  0%,100%{transform:translate3d(0,5px,0) rotate(-1deg)}
+  50%{transform:translate3d(0,-9px,0) rotate(1.2deg)}
+}
+.rich-new-flavor__asset{
+  animation:rich-intro-hover 5.2s ease-in-out infinite;
+  animation-play-state:paused;
+  animation-delay:var(--rich-intro-delay,-1.2s);
+}
+.rich-new-flavor__slice{--rich-intro-delay:-2.6s}
+.rich-new-flavor__peach-whole{--rich-intro-delay:-1.3s}
+.rich-new-flavor__grape-bunch{--rich-intro-delay:-3.2s}
+.rich-new-flavor__grape-bottle{--rich-intro-delay:-.4s}
+.rich-flavors.is-visible .rich-new-flavor__asset{animation-play-state:running}
+@keyframes rich-intro-hover{
+  0%,100%{translate:0 2px}
+  50%{translate:0 -8px}
+}
+@media (prefers-reduced-motion:reduce){
+  .rich-fg__bob,.rich-new-flavor__asset{animation:none}
+  .rich-fg__sweep,.rich-fg__motion-shell,.rich-fg__caption{will-change:auto}
+}
