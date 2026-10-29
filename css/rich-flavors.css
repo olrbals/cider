@@ -290,3 +290,7 @@
 .rich-flavors.is-visible[data-rich-scene="duo"] .rich-collision__ice{animation-play-state:running}
 @keyframes rich-ice-drift{0%,100%{translate:0 7px;rotate:-2deg}50%{translate:5px -10px;rotate:2deg}}
 @media(prefers-reduced-motion:reduce){.rich-collision__ice{animation:none}}
+
+/* Product leads at 77–88.5%; green liquid follows at 85–94%. */
+.rich-motion-ready .rich-fg--grape{clip-path:none}
+.rich-fg__motion-shell[data-role="fruit"][data-depth="front"]{z-index:5}
