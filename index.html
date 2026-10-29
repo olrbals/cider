@@ -183,6 +183,7 @@
                 <circle cx="590" cy="620" r="6"/><circle cx="847" cy="727" r="7"/>
               </g>
             </svg>
+            <img class="rich-collision__photo-water rich-collision__photo-water--back" src="img/flavors/v5-water-ice.png" alt="" width="1536" height="1024">
             <div class="rich-collision__team rich-collision__team--peach">
               <img class="rich-new-flavor__asset rich-new-flavor__slice" src="img/flavors/v4-peach-piece.png" alt="" width="301" height="283">
               <img class="rich-new-flavor__asset rich-new-flavor__peach-bottle" src="img/flavors/v4-peach-bottle.png" alt="" width="332" height="648">
@@ -192,14 +193,18 @@
               <img class="rich-new-flavor__asset rich-new-flavor__grape-bunch" src="img/flavors/v4-grape-bunch.png" alt="" width="536" height="536">
               <img class="rich-new-flavor__asset rich-new-flavor__grape-bottle" src="img/flavors/v4-grape-bottle.png" alt="" width="416" height="676">
             </div>
+            <img class="rich-collision__photo-water rich-collision__photo-water--front" src="img/flavors/v5-water-ice.png" alt="" width="1536" height="1024">
+            <img class="rich-collision__ice rich-collision__ice--left" src="img/flavors/v5-ice-cube.png" alt="" width="1024" height="1024">
+            <img class="rich-collision__ice rich-collision__ice--right" src="img/flavors/v5-ice-cube.png" alt="" width="1024" height="1024">
             <div class="rich-collision__droplets" aria-hidden="true"></div>
           </div>
         </section>
       <article class="rich-fg rich-fg--peach" aria-label="칠성사이다 리치 복숭아맛">
         <svg class="rich-fg__fluid" aria-hidden="true" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <defs><clipPath id="rich-liquid-peach" clipPathUnits="userSpaceOnUse"><path class="rich-fg__fluid-mask"></path></clipPath></defs>
+          <defs><clipPath id="rich-scene-peach" clipPathUnits="objectBoundingBox"><path class="rich-fg__scene-mask"></path></clipPath><clipPath id="rich-liquid-peach" clipPathUnits="userSpaceOnUse"><path class="rich-fg__fluid-mask"></path></clipPath></defs>
           <g clip-path="url(#rich-liquid-peach)">
             <rect x="0" y="0" width="1000" height="1000" fill="#ffdbdb"></rect>
+            <image href="img/flavors/v5-peach-pattern.svg" x="0" y="0" width="1000" height="1000" preserveAspectRatio="none"></image>
             <rect class="rich-fg__fluid-band" x="0" y="720" width="1000" height="280" fill="#f92a66"></rect>
           </g>
           <path class="rich-fg__fluid-rim" fill="none" stroke="white" stroke-opacity="0" stroke-width="8" stroke-linecap="round"></path>
@@ -225,18 +230,19 @@
           <div class="rich-fg__caption">
             <p>Chilsung Cider RICH</p>
             <div class="rich-fg__caption-line">
-              <img src="img/flavors/figma-arrow-left.svg" width="62" height="30" alt="" aria-hidden="true">
+              <button type="button" class="rich-fg__nav rich-fg__nav--prev" data-rich-prev aria-label="이전 제품 보기"><img src="img/flavors/figma-arrow-left.svg" width="62" height="30" alt=""></button>
               <h2>PEACH</h2>
-              <img src="img/flavors/figma-arrow-right.svg" width="62" height="30" alt="" aria-hidden="true">
+              <button type="button" class="rich-fg__nav rich-fg__nav--next" data-rich-next aria-label="다음 제품 보기"><img src="img/flavors/figma-arrow-right.svg" width="62" height="30" alt=""></button>
             </div>
           </div>
         </div>
       </article>
       <article class="rich-fg rich-fg--grape" aria-label="칠성사이다 리치 청포도맛">
         <svg class="rich-fg__fluid" aria-hidden="true" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <defs><clipPath id="rich-liquid-grape" clipPathUnits="userSpaceOnUse"><path class="rich-fg__fluid-mask"></path></clipPath></defs>
+          <defs><clipPath id="rich-scene-grape" clipPathUnits="objectBoundingBox"><path class="rich-fg__scene-mask"></path></clipPath><clipPath id="rich-liquid-grape" clipPathUnits="userSpaceOnUse"><path class="rich-fg__fluid-mask"></path></clipPath></defs>
           <g clip-path="url(#rich-liquid-grape)">
             <rect x="0" y="0" width="1000" height="1000" fill="#d3ff6e"></rect>
+            <image href="img/flavors/v5-grape-pattern.svg" x="0" y="0" width="1000" height="1000" preserveAspectRatio="none"></image>
             <rect class="rich-fg__fluid-band" x="0" y="720" width="1000" height="280" fill="#058836"></rect>
           </g>
           <path class="rich-fg__fluid-rim" fill="none" stroke="white" stroke-opacity="0" stroke-width="8" stroke-linecap="round"></path>
@@ -262,9 +268,9 @@
           <div class="rich-fg__caption">
             <p>Chilsung Cider RICH</p>
             <div class="rich-fg__caption-line">
-              <img src="img/flavors/figma-arrow-left.svg" width="62" height="30" alt="" aria-hidden="true">
+              <button type="button" class="rich-fg__nav rich-fg__nav--prev" data-rich-prev aria-label="이전 제품 보기"><img src="img/flavors/figma-arrow-left.svg" width="62" height="30" alt=""></button>
               <h2>GRAPE</h2>
-              <img src="img/flavors/figma-arrow-right.svg" width="62" height="30" alt="" aria-hidden="true">
+              <button type="button" class="rich-fg__nav rich-fg__nav--next" data-rich-next aria-label="다음 제품 보기"><img src="img/flavors/figma-arrow-right.svg" width="62" height="30" alt=""></button>
             </div>
           </div>
         </div>
