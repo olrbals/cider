@@ -38,6 +38,11 @@
     panel.fluidRim=panel.element.querySelector('.rich-fg__fluid-rim');
     panel.fluidBand=panel.element.querySelector('.rich-fg__fluid-band');
     panel.foam=panel.element.querySelector('.rich-fg__foam');
+    panel.nameLabel=panel.element.querySelector('.rich-fg__caption-line h2');
+    const nameWindow=document.createElement('div');
+    nameWindow.className='rich-fg__name-window';
+    panel.nameLabel.parentNode.insertBefore(nameWindow,panel.nameLabel);
+    nameWindow.append(panel.nameLabel);
     const figmaImages=[...panel.element.querySelectorAll(
       '.rich-fg__bottle,.rich-fg__fruit,.rich-fg__fruit-group'
     )];
@@ -185,8 +190,9 @@
     const caption=panel.element.querySelector('.rich-fg__caption');
     // Product first, then a shared opposing title slide, then background.
     const titleSwap=reduce.matches?Number(p>=.82):smooth(.795,.835,p);
-    const titleX=panel.name==='grape'?1440*(1-titleSwap):-1440*titleSwap;
-    caption.style.transform='translate3d('+titleX.toFixed(2)+'px,0,0)';
+    const titleX=panel.name==='grape'?440*(1-titleSwap):-440*titleSwap;
+    caption.style.transform='none';
+    panel.nameLabel.style.transform='translate3d('+titleX.toFixed(2)+'px,0,0)';
     caption.style.opacity=(panel.name==='grape'?1:(reduce.matches?u:smooth(.45,.88,u))).toFixed(3);
     const active=smooth(panel.end,panel.end+.11,p);
     panel.shells.forEach(({shell,index,bottle})=>{

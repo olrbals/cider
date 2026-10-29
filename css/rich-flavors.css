@@ -294,3 +294,7 @@
 /* Product leads at 77–88.5%; green liquid follows at 85–94%. */
 .rich-motion-ready .rich-fg--grape{clip-path:none}
 .rich-fg__motion-shell[data-role="fruit"][data-depth="front"]{z-index:5}
+
+/* Only the flavor name slides; shared brand line and navigation stay anchored. */
+.rich-fg__name-window{position:absolute;left:500px;top:0;width:440px;height:131px;overflow:hidden}
+.rich-fg__caption-line .rich-fg__name-window h2{left:0;top:0;width:100%}
