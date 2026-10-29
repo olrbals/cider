@@ -22,9 +22,9 @@
   const dropData=new Float32Array(24);
   function sampleStreams(p,mouthX,mouthY,width,height){
     streamData.fill(0);streamBounds.fill(0);dropData.fill(0);
-    if(p<.505||p>=.76) return [];
+    if(p<.58||p>=.76) return [];
     const rise=1-Math.pow(1-clamp((p-.505)/.045),3);
-    const spread=phase(p,.56,.69),burst=phase(p,.505,.57);
+    const spread=phase(p,.552,.66),burst=phase(p,.505,.57);
     const cx=mouthX/height,cy=mouthY/height-.064*rise;
     const points=[];
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
@@ -191,7 +191,7 @@
         if(p>=.505 && p<.76 && q.x>u_stream_bounds.x && q.y>u_stream_bounds.y
            && q.x<u_stream_bounds.z && q.y<u_stream_bounds.w) {
           float water=streamSurface(q);
-          float visible=phase(p,.505,.525)*(1.0-phase(p,.70,.76));
+          float visible=phase(p,.58,.62)*(1.0-phase(p,.70,.76));
           float inside=1.0-smoothstep(-.0015,.0015,water);
           vec2 material=q-vec2(u_mouth.x*u_resolution.x/u_resolution.y,u_mouth.y);
           float folds=noise(material*34.0+vec2(p*13.0,-p*28.0));
@@ -413,7 +413,7 @@
     liquidDisplacement.setAttribute('scale',number(6+12*phase(p,.505,.55)*(1-phase(p,.63,.80))));
     const streamPaths=sampleStreams(p,mouthX/1000*stageBox.width,mouthY/1000*stageBox.height,stageBox.width,stageBox.height);
     streamClipPaths.forEach((path,i)=>path.setAttribute('d',streamPaths[i]||''));
-    streamRefraction.style.opacity=(phase(p,.505,.525)*(1-phase(p,.70,.76))).toFixed(4);
+    streamRefraction.style.opacity=(phase(p,.58,.62)*(1-phase(p,.70,.76))).toFixed(4);
     streamRefraction.style.display=streamPaths.length?'block':'none';
     liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
 
