@@ -253,3 +253,33 @@
 /* Full viewport color field, independent of the scaled product artboard. */
 .rich-new-flavor{background:linear-gradient(105deg,#f8cdd9 0%,#f9dce0 32%,#f0e8b7 65%,#e2ef9d 100%)}
 .rich-new-flavor__ellipse{opacity:calc(var(--collision-ellipse-alpha,1) * .35)}
+
+/* V8: shrink the product compositions, keeping the full-bleed backdrop/type. */
+.rich-new-flavor__art{transform:translate(-50%,-50%) scale(calc(var(--rich-intro-scale,var(--rich-design-scale,1)) * .8))}
+.rich-fg__photo-area{transform:scale(.8);transform-origin:720px 324px}
+/* All fruit sits behind its PET. Animate inner wrappers, preserving scroll transforms. */
+.rich-fg__motion-shell[data-role="fruit"]{z-index:1}
+.rich-fg__motion-shell[data-role="bottle"]{z-index:3}
+.rich-new-flavor__peach-whole,.rich-new-flavor__slice,.rich-new-flavor__grape-bunch{z-index:1}
+.rich-new-flavor__peach-bottle,.rich-new-flavor__grape-bottle{z-index:3}
+.rich-flavors .rich-fg__bob{animation:rich-orbit var(--float-duration,7s) ease-in-out infinite!important;animation-delay:var(--float-delay,0s)!important;animation-play-state:paused!important}
+.rich-flavors .rich-fg__motion-shell[data-role="bottle"] .rich-fg__bob{animation-name:rich-bottle-float!important;animation-duration:7.8s!important}
+.rich-flavors.is-visible[data-rich-scene="peach"] .rich-fg--peach .rich-fg__bob,
+.rich-flavors.is-visible[data-rich-scene="grape"] .rich-fg--grape .rich-fg__bob{animation-play-state:running!important}
+.rich-flavors .rich-new-flavor .rich-new-flavor__asset{animation:rich-orbit 7.2s ease-in-out infinite!important;animation-delay:var(--rich-intro-delay,-1.2s)!important;animation-play-state:paused!important}
+.rich-flavors .rich-new-flavor .rich-new-flavor__peach-bottle,
+.rich-flavors .rich-new-flavor .rich-new-flavor__grape-bottle{animation-name:rich-bottle-float!important;animation-duration:8s!important}
+.rich-flavors.is-visible[data-rich-scene="duo"] .rich-new-flavor .rich-new-flavor__asset{animation-play-state:running!important}
+@keyframes rich-orbit{
+  0%,100%{translate:-12px 0;rotate:-2deg}
+  25%{translate:0 -19px;rotate:0deg}
+  50%{translate:15px 0;rotate:2deg}
+  75%{translate:0 16px;rotate:0deg}
+}
+@keyframes rich-bottle-float{
+  0%,100%{translate:0 5px;rotate:-.45deg}
+  50%{translate:0 -6px;rotate:.45deg}
+}
+@media(prefers-reduced-motion:reduce){
+ .rich-flavors .rich-fg__bob,.rich-flavors .rich-new-flavor .rich-new-flavor__asset{animation:none!important}
+}
