@@ -1,11 +1,11 @@
 /* Figma source: richPeach node 1297:97 and richGrape node 1332:20.
    Each artboard is 1440 x 900: 648px product area + 252px name band.
    No decorative additions; image and typography placement follows Figma. */
-.rich-flavors{position:relative;z-index:5;height:300svh;min-height:1900px;background:#eaf8f2;isolation:isolate}
-.rich-flavors__viewport{position:sticky;top:0;left:0;width:100%;height:100svh;min-height:600px;overflow:hidden;isolation:isolate;background:#eaf8f2}
-.rich-fg{position:absolute;inset:0;isolation:isolate;overflow:hidden;transform:translate3d(100%,0,0);will-change:transform;background:linear-gradient(to bottom,var(--fg-top) 0,var(--fg-top) var(--rich-band-top,72%),var(--fg-bottom) var(--rich-band-top,72%),var(--fg-bottom) 100%)}
+.rich-flavors{position:relative;z-index:5;height:400svh;min-height:2400px;margin-top:-100svh;background:transparent;isolation:isolate}
+.rich-flavors__viewport{position:sticky;top:0;left:0;width:100%;height:100svh;min-height:600px;overflow:hidden;isolation:isolate;background:transparent}
+.rich-fg{z-index:1;position:absolute;inset:0;isolation:isolate;overflow:hidden;transform:translate3d(100%,0,0);will-change:transform;background:linear-gradient(to bottom,var(--fg-top) 0,var(--fg-top) var(--rich-band-top,72%),var(--fg-bottom) var(--rich-band-top,72%),var(--fg-bottom) 100%)}
 .rich-fg--peach{--fg-top:#ffdbdb;--fg-bottom:#f92a66}
-.rich-fg--grape{--fg-top:#d3ff6e;--fg-bottom:#058836}
+.rich-fg--grape{z-index:2;--fg-top:#d3ff6e;--fg-bottom:#058836}
 .rich-fg__art{position:absolute;left:50%;top:50%;width:1440px;height:900px;transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));transform-origin:center center;pointer-events:none}
 .rich-fg__photo-area{position:absolute;inset:0;height:648px}
 .rich-fg__bottle,.rich-fg__fruit,.rich-fg__fruit-group{position:absolute;display:block;object-fit:contain}
@@ -23,5 +23,19 @@
 .rich-fg__caption-line img:last-child{left:1020px}
 .rich-fg--grape .rich-fg__caption-line img:first-child{left:417px}
 .rich-fg--grape .rich-fg__caption-line img:last-child{left:1023px}
-@media(max-width:750px){.rich-flavors{height:280svh;min-height:1600px}.rich-flavors__viewport{min-height:520px}}
-@media(prefers-reduced-motion:reduce){.rich-fg{will-change:auto}}
+@media(max-width:750px){.rich-flavors{height:380svh;min-height:2000px}.rich-flavors__viewport{min-height:520px}}
+@media(prefers-reduced-motion:reduce){.rich-fg,.rich-new-flavor{will-change:auto}}
+
+
+/* Figma newFlavor 1334:63: no replacement background effects or decorative additions.
+   The two original blurred ellipse vectors and five image layers keep source geometry. */
+.rich-new-flavor{position:absolute;inset:0;z-index:0;overflow:hidden;isolation:isolate;background:#f7faf8;transform:translate3d(0,100%,0);will-change:transform}
+.rich-new-flavor__art{position:absolute;width:1440px;height:900px;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));transform-origin:center center;pointer-events:none}
+.rich-new-flavor__ellipse,.rich-new-flavor__asset{position:absolute;display:block;max-width:none;object-fit:contain;pointer-events:none}
+.rich-new-flavor__ellipse--peach{left:0;top:0;width:895px;height:900px}
+.rich-new-flavor__ellipse--grape{left:605px;top:0;width:835px;height:900px}
+.rich-new-flavor__slice{left:278px;top:161px;width:389px;height:365px;z-index:1}
+.rich-new-flavor__peach-bottle{left:446px;top:78px;width:332px;height:648px;z-index:2}
+.rich-new-flavor__peach-whole{left:377px;top:554px;width:190px;height:190px;z-index:3}
+.rich-new-flavor__grape-bunch{left:650px;top:161px;width:506px;height:506px;z-index:4}
+.rich-new-flavor__grape-bottle{left:591px;top:112px;width:416px;height:676px;z-index:5}

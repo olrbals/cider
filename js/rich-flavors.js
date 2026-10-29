@@ -1,12 +1,13 @@
-/* Faithful horizontal handoff: 2024 history → PEACH → GRAPE.
+/* Figma scroll handoff: history 2024 → intro rises from below → PEACH slides left → GRAPE slides left.
    Updates only during user scroll/resize. Reverses when scrolling up. */
 (() => {
   'use strict';
   const section=document.querySelector('#rich-flavors');
   if(!section)return;
+  const intro=section.querySelector('.rich-new-flavor');
   const peach=section.querySelector('.rich-fg--peach');
   const grape=section.querySelector('.rich-fg--grape');
-  if(!peach||!grape)return;
+  if(!intro||!peach||!grape)return;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
   const clamp=t=>Math.min(1,Math.max(0,t));
   const smooth=(start,end,p)=>{const t=clamp((p-start)/(end-start));return t*t*(3-2*t);};
@@ -26,8 +27,10 @@
     if(b.top>vh||b.bottom<0)return;
     const scrollRange=Math.max(1,section.offsetHeight-vh);
     const progress=clamp(-b.top/scrollRange);
-    const peachIn=reduced.matches?Number(progress>=.12):smooth(0.00,.25,progress);
-    const grapeIn=reduced.matches?Number(progress>=.63):smooth(.46,.73,progress);
+    const introIn=reduced.matches?Number(progress>=.11):smooth(.0,.22,progress);
+    const peachIn=reduced.matches?Number(progress>=.40):smooth(.28,.51,progress);
+    const grapeIn=reduced.matches?Number(progress>=.70):smooth(.57,.79,progress);
+    intro.style.transform='translate3d(0,'+((1-introIn)*100).toFixed(3)+'%,0)';
     peach.style.transform='translate3d('+((1-peachIn)*100).toFixed(3)+'%,0,0)';
     grape.style.transform='translate3d('+((1-grapeIn)*100).toFixed(3)+'%,0,0)';
   }
