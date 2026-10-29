@@ -182,7 +182,12 @@
       panel.foam.setAttribute('transform','translate('+shape.x.toFixed(2)+',0)');
       panel.foam.setAttribute('opacity','0');
     }
-    panel.element.querySelector('.rich-fg__caption').style.opacity=(reduce.matches?u:smooth(.45,.88,u)*(1-next)).toFixed(3);
+    const caption=panel.element.querySelector('.rich-fg__caption');
+    // Product first, then a shared opposing title slide, then background.
+    const titleSwap=reduce.matches?Number(p>=.82):smooth(.795,.835,p);
+    const titleX=panel.name==='grape'?1440*(1-titleSwap):-1440*titleSwap;
+    caption.style.transform='translate3d('+titleX.toFixed(2)+'px,0,0)';
+    caption.style.opacity=(panel.name==='grape'?1:(reduce.matches?u:smooth(.45,.88,u))).toFixed(3);
     const active=smooth(panel.end,panel.end+.11,p);
     panel.shells.forEach(({shell,index,bottle})=>{
       const angle=index*1.7;
