@@ -198,3 +198,9 @@
  .rich-collision__drop,.rich-collision__water{transition:none;filter:none}
  .rich-copy__year,.rich-copy__content h2{animation:none}
 }
+
+/* The Figma color ellipses emerge behind the two incoming products. */
+.rich-new-flavor__ellipse{opacity:var(--collision-ellipse-alpha,1)}
+/* Legible static source if a browser has JavaScript disabled. */
+.rich-flavors:not(.rich-motion-ready) .rich-copy{background:#f7faf8}
+.rich-flavors:not(.rich-motion-ready) .rich-copy__content{opacity:1}
