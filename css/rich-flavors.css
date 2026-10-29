@@ -109,3 +109,12 @@
   .rich-fg__bob,.rich-new-flavor__asset{animation:none}
   .rich-fg__sweep,.rich-fg__motion-shell,.rich-fg__caption{will-change:auto}
 }
+
+/* Conserve GPU layers when the long-page experience is offscreen.
+   The unanimated Figma intro remains visible if JavaScript is disabled. */
+.rich-fg__sweep,.rich-fg__motion-shell,.rich-fg__caption,.rich-new-flavor{will-change:auto}
+.rich-flavors.is-visible .rich-fg__sweep,
+.rich-flavors.is-visible .rich-new-flavor{will-change:transform}
+.rich-flavors.is-visible .rich-fg__motion-shell{will-change:transform,opacity}
+.rich-flavors.is-visible .rich-fg__caption{will-change:opacity,translate}
+.rich-flavors:not(.rich-motion-ready) .rich-new-flavor{transform:none}
