@@ -1,45 +1,22 @@
-/* Rich Peach & Green Grape — independent post-history experience.
-   No global scroll hijack; scroll progress is sampled only inside this section. */
-.rich-flavors{height:300svh;min-height:2100px;position:relative;isolation:isolate;background:#ecf9f1;overflow:clip;font-family:var(--font-family-base,"Pretendard",sans-serif)}
-.rich-flavors *{box-sizing:border-box}
-.rich-flavors__pin{position:sticky;top:0;width:100%;height:100svh;min-height:610px;overflow:hidden;isolation:isolate;background:#e9f7f0}
-.rich-flavors__bridge{position:absolute;inset:0;display:grid;place-content:center;color:#139f63;gap:14px;text-align:center;letter-spacing:.22em;font-size:13px;font-weight:800}
-.rich-flavors__bridge strong{font-family:var(--font-family-display,"Archivo Black",sans-serif);font-size:clamp(44px,9vw,150px);letter-spacing:-.07em}
-.rich-flavor{position:absolute;inset:0;overflow:hidden;isolation:isolate;transform:translate3d(100%,0,0);will-change:transform;contain:paint;background:var(--rich-bg);color:var(--rich-ink)}
-.rich-flavor--peach{--rich-bg:#ffb8d0;--rich-accent:#f82970;--rich-ink:#d92161;--rich-bar:#f8276d;--rich-label:#fff7e1}
-.rich-flavor--grape{--rich-bg:#d8ff7c;--rich-accent:#158342;--rich-ink:#08783e;--rich-bar:#008a4c;--rich-label:#e5ff70}
-.rich-flavor__gradient{position:absolute;inset:0;z-index:0;pointer-events:none}
-.rich-flavor--peach .rich-flavor__gradient{background:radial-gradient(ellipse 43% 44% at 53% 41%,rgba(255,250,235,.48),transparent 100%),linear-gradient(128deg,#ffb7d2 0%,#ffc6d6 48%,#ffb5cc 100%)}
-.rich-flavor--grape .rich-flavor__gradient{background:radial-gradient(ellipse 48% 50% at 51% 42%,rgba(255,255,223,.52),transparent 100%),linear-gradient(135deg,#ddff8c 0%,#d7fc75 60%,#bdf670 100%)}
-.rich-flavor__flow{position:absolute;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:.55}
-.rich-flavor--peach .rich-flavor__flow{width:145vw;height:40vw;left:-25%;top:11%;border-radius:47% 53% 50% 50%;border:clamp(28px,7vw,124px) solid rgba(255,248,226,.55);transform:rotate(-24deg)}
-.rich-flavor--peach .rich-flavor__flow--second{width:110vw;height:25vw;left:33%;top:30%;border-width:clamp(22px,5vw,88px);opacity:.4;transform:rotate(16deg)}
-.rich-flavor--grape .rich-flavor__flow{width:65vw;height:65vw;left:-21%;top:-22%;border:1px solid rgba(6,121,62,.2);border-radius:50%;box-shadow:0 0 0 75px rgba(255,255,255,.05),0 0 0 160px rgba(20,151,81,.035);transform:none;mix-blend-mode:normal}
-.rich-flavor--grape .rich-flavor__flow--second{width:54vw;height:54vw;left:67%;top:13%;opacity:.75}
-.rich-flavor__bubble{position:absolute;z-index:1;width:var(--bubble-size,18px);height:var(--bubble-size,18px);top:var(--bubble-y);left:var(--bubble-x);border-radius:50%;border:1px solid rgba(255,255,255,.8);background:radial-gradient(circle at 32% 27%,rgba(255,255,255,.82),rgba(255,255,255,.06) 43%,rgba(255,255,255,.18) 75%,rgba(255,255,255,.48));box-shadow:inset -3px -3px 5px rgba(42,123,71,.11),0 1px 4px rgba(30,123,65,.07);pointer-events:none}
-.rich-flavor--peach .rich-flavor__bubble{opacity:.5}
-.rich-flavor__spark{position:absolute;z-index:2;top:var(--spark-y);left:var(--spark-x);font-size:var(--spark-size,34px);font-weight:400;color:var(--rich-accent);opacity:.74;pointer-events:none}
-.rich-flavor__head{position:absolute;z-index:5;top:clamp(95px,15vh,170px);left:clamp(38px,7.5vw,130px);pointer-events:none}
-.rich-flavor__eyebrow{margin:0 0 12px;font-size:clamp(11px,.9vw,15px);font-weight:800;letter-spacing:.24em;color:var(--rich-ink)}
-.rich-flavor__headline{margin:0;font:400 clamp(92px,17vw,295px)/.81 var(--font-family-display,"Archivo Black",Impact,sans-serif);letter-spacing:-.095em;color:var(--rich-ink);opacity:.13}
-.rich-flavor--grape .rich-flavor__headline{font-size:clamp(75px,12vw,220px)}
-.rich-flavor__orbit{position:absolute;z-index:1;left:50%;top:41%;width:min(57vw,850px);aspect-ratio:1;transform:translate(-50%,-50%) rotate(-18deg);border-radius:50%;border:1px solid color-mix(in srgb,var(--rich-ink) 25%,transparent);pointer-events:none}
-.rich-flavor__orbit:after{content:"";position:absolute;inset:13%;border:1px solid color-mix(in srgb,var(--rich-ink) 14%,transparent);border-radius:50%}
-.rich-flavor__bottle{position:absolute;z-index:7;left:50%;top:43%;margin:0;width:clamp(210px,20.5vw,350px);height:clamp(390px,67vh,660px);transform:translate(-50%,-50%) rotate(-9deg);filter:drop-shadow(15px 24px 18px rgba(85,42,50,.2));pointer-events:none}
-.rich-flavor--grape .rich-flavor__bottle{transform:translate(-50%,-50%) rotate(8deg);filter:drop-shadow(16px 24px 18px rgba(23,86,40,.22))}
-.rich-flavor__bottle img{display:block;width:100%;height:100%;object-fit:contain}
-.rich-flavor__fruit{position:absolute;z-index:6;display:block;width:var(--fruit-size,170px);height:auto;filter:drop-shadow(8px 15px 12px rgba(69,73,23,.18));pointer-events:none;transform:translate3d(0,var(--parallax-y,0px),0) rotate(var(--fruit-tilt,0deg));will-change:transform}
-.rich-flavor__fruit--back{z-index:4;opacity:.9;filter:blur(.6px) drop-shadow(6px 8px 8px rgba(40,60,10,.08))}
-.rich-flavor__fruit--front{z-index:9}
-.rich-flavor__bottom{position:absolute;z-index:8;left:0;bottom:0;width:100%;height:clamp(156px,23vh,226px);background:var(--rich-bar);color:var(--rich-label);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 36px 15px;isolation:isolate}
-.rich-flavor__bottom::before{content:"";position:absolute;top:-10px;left:0;right:0;height:21px;background:var(--rich-bar);clip-path:polygon(0 45%,15% 58%,29% 35%,44% 58%,60% 30%,75% 55%,88% 43%,100% 57%,100% 100%,0 100%);opacity:.98}
-.rich-flavor__brand{font-size:clamp(11px,1vw,15px);letter-spacing:.14em;font-weight:700;margin:0}
-.rich-flavor__name{font:400 clamp(54px,8.1vw,138px)/.98 var(--font-family-display,"Archivo Black",Impact,sans-serif);letter-spacing:-.055em;margin:4px 0 0;text-align:center}
-.rich-flavor__caption{font-size:clamp(11px,.9vw,14px);font-weight:500;letter-spacing:.06em;margin:8px 0 0;opacity:.91}
-.rich-flavors__progress{position:absolute;z-index:12;right:clamp(32px,4vw,72px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;pointer-events:none}
-.rich-flavors__progress i{width:7px;height:7px;border-radius:50%;border:1.5px solid #166743;opacity:.45;transition:opacity .2s,background .2s}
-.rich-flavors[data-active="peach"] .rich-flavors__progress i:first-child,.rich-flavors[data-active="grape"] .rich-flavors__progress i:last-child{background:#166743;opacity:1}
-.rich-flavor__index{position:absolute;z-index:5;right:clamp(35px,5vw,85px);top:clamp(105px,16vh,195px);font-size:12px;font-weight:800;letter-spacing:.16em}
-.rich-flavors__hint{position:absolute;z-index:15;left:clamp(24px,4vw,80px);bottom:clamp(176px,25vh,245px);font-size:11px;letter-spacing:.2em;color:#11653b;pointer-events:none;mix-blend-mode:multiply}
-@media(max-width:900px){.rich-flavors{min-height:1750px}.rich-flavors__pin{min-height:520px}.rich-flavor__head{top:12%;left:4%}.rich-flavor__headline{font-size:clamp(76px,13.5vw,155px)}.rich-flavor__bottle{width:clamp(188px,27vw,270px);height:59vh;top:42%}.rich-flavor__fruit{width:calc(var(--fruit-size,160px)*.72)}.rich-flavor__bottom{height:22vh}.rich-flavor__name{font-size:clamp(42px,7vw,84px)}}
-@media(prefers-reduced-motion:reduce){.rich-flavor,.rich-flavor__fruit{will-change:auto}.rich-flavors__progress i{transition:none}}
+/* Figma source: richPeach node 1297:97 and richGrape node 1332:20.
+   Each artboard is 1440 x 900: 648px product area + 252px name band.
+   No decorative additions; image and typography placement follows Figma. */
+.rich-flavors{position:relative;z-index:5;height:300svh;min-height:1900px;background:#eaf8f2;isolation:isolate}
+.rich-flavors__viewport{position:sticky;top:0;left:0;width:100%;height:100svh;min-height:600px;overflow:hidden;isolation:isolate;background:#eaf8f2}
+.rich-fg{position:absolute;inset:0;isolation:isolate;overflow:hidden;transform:translate3d(100%,0,0);will-change:transform;background:linear-gradient(to bottom,var(--fg-top) 0,var(--fg-top) var(--rich-band-top,72%),var(--fg-bottom) var(--rich-band-top,72%),var(--fg-bottom) 100%)}
+.rich-fg--peach{--fg-top:#ffdbdb;--fg-bottom:#f92a66}
+.rich-fg--grape{--fg-top:#d3ff6e;--fg-bottom:#058836}
+.rich-fg__art{position:absolute;left:50%;top:50%;width:1440px;height:900px;transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));transform-origin:center center;pointer-events:none}
+.rich-fg__photo-area{position:absolute;inset:0;height:648px}
+.rich-fg__bottle,.rich-fg__fruit,.rich-fg__fruit-group{position:absolute;display:block;object-fit:contain}
+.rich-fg__bottle{z-index:3;width:332px;height:648px}
+.rich-fg__fruit{z-index:4}
+.rich-fg__fruit-group{z-index:4;display:flex;align-items:center;justify-content:center}
+.rich-fg__fruit-group img{display:block;width:96px;height:96px;object-fit:contain}
+.rich-fg__caption{position:absolute;top:648px;left:0;width:1440px;height:252px;color:#f7faf8;text-align:center;font-family:"Archivo","Pretendard",Arial,sans-serif}
+.rich-fg__caption p{position:absolute;top:35px;left:0;right:0;margin:0;font-weight:500;font-size:32px;line-height:35px;white-space:nowrap}
+.rich-fg__caption-line{position:absolute;top:86px;left:50%;transform:translateX(-50%);width:600px;height:131px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.rich-fg__caption-line h2{font-family:"Archivo","Archivo Black","Pretendard",sans-serif;font-weight:800;font-size:120px;line-height:131px;white-space:nowrap;letter-spacing:-.035em;margin:0;min-width:0}
+.rich-fg__caption-line img{display:block;flex:0 0 62px;width:62px;height:30px;object-fit:contain}
+@media(max-width:750px){.rich-flavors{height:280svh;min-height:1600px}.rich-flavors__viewport{min-height:520px}}
+@media(prefers-reduced-motion:reduce){.rich-fg{will-change:auto}}
