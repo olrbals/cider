@@ -16,66 +16,34 @@
   const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
   const phase = (value, start, end) => smooth((value - start) / (end - start));
   const number = value => Number(value.toFixed(2));
-  // Three short, connected volumes share their geometry with the optical
-  // renderer and live-background refraction mask. Their tips become wet pools.
-  const streamSpecs=[
-    {x:-.10,y:-.105,bend:-.030,radius:.018,delay:0,pool:.9},
-    {x:.012,y:-.145,bend:.018,radius:.020,delay:.005,pool:1},
-    {x:.10,y:-.116,bend:.030,radius:.017,delay:.011,pool:.84}
-  ];
-  const streamData=new Float32Array(3*9*3);
-  const poolData=new Float32Array(3*4);
+  // One pressure crown shares its contour with the live refraction mask.
+  const streamData=new Float32Array(96);
   const streamBounds=new Float32Array(4);
   function sampleStreams(p,mouthX,mouthY,width,height){
-    streamData.fill(0);poolData.fill(0);streamBounds.fill(0);
+    streamData.fill(0);streamBounds.fill(0);
     if(p<.505||p>=.76) return [];
-    const spread=phase(p,.565,.665),merge=phase(p,.565,.69);
-    const paths=[];
-    streamSpecs.forEach((spec,branch)=>{
-      const rise=phase(p,.505+spec.delay,.557+spec.delay);
-      const tip=[mouthX+spec.x*(1+.4*merge)*height*rise,mouthY+(spec.y-.025*merge)*height*rise];
-      const c1=[mouthX+spec.x*.14*height*rise,mouthY-.04*height*rise];
-      const c2=[mouthX+(spec.x*.65+spec.bend)*height*rise,mouthY+(spec.y*.7-.015*merge)*height*rise];
-      const points=[];
-      for(let i=0;i<9;i++){
-        const t=i/8,u=1-t;
-        const x=u*u*u*mouthX+3*u*u*t*c1[0]+3*u*t*t*c2[0]+t*t*t*tip[0];
-        const y=u*u*u*mouthY+3*u*u*t*c1[1]+3*u*t*t*c2[1]+t*t*t*tip[1];
-        const r=spec.radius*Math.sqrt(rise)*(.8+.28*Math.sin(t*Math.PI))*(1+.15*merge);
-        const offset=(branch*9+i)*3;
-        streamData.set([x/height,y/height,r],offset);
-        points.push([x,y,r*height+2]);
-      }
-      if(rise>.001){
-        const left=[],right=[];
-        points.forEach((point,i)=>{
-          const a=points[Math.max(0,i-1)],b=points[Math.min(8,i+1)];
-          const dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy)||1;
-          left.push([point[0]-dy/length*point[2],point[1]+dx/length*point[2]]);
-          right.push([point[0]+dy/length*point[2],point[1]-dx/length*point[2]]);
-        });
-        const back=curve(right.reverse());
-        paths.push(`${curve(left)} A ${number(points[8][2])} ${number(points[8][2])} 0 0 1 ${number(right[0][0])} ${number(right[0][1])} ${back.slice(back.indexOf(' C'))} Z`);
-      }
-      const rx=(.006+(width/height*.48+.06)*spread)*spec.pool;
-      const ry=.004+.18*spread*(.86+branch*.06);
-      poolData.set([tip[0]/height,tip[1]/height,rx,ry],branch*4);
-      if(spread>.001){
-        const x=tip[0],y=tip[1],a=rx*height+2,b=ry*height+2;
-        paths.push(`M ${number(x-a)} ${number(y)} a ${number(a)} ${number(b)} 0 1 0 ${number(2*a)} 0 a ${number(a)} ${number(b)} 0 1 0 ${number(-2*a)} 0 Z`);
-      }
-    });
+    const rise=1-Math.pow(1-clamp((p-.505)/.045),3);
+    const spread=phase(p,.55,.69),burst=phase(p,.51,.57);
+    const cx=mouthX/height,cy=mouthY/height-.075*rise;
+    const points=[];
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-    const include=(x,y,rx,ry)=>{
-      minX=Math.min(minX,x-rx);minY=Math.min(minY,y-ry);
-      maxX=Math.max(maxX,x+rx);maxY=Math.max(maxY,y+ry);
-    };
-    for(let i=0;i<27;i++) include(streamData[i*3],streamData[i*3+1],streamData[i*3+2],streamData[i*3+2]);
-    for(let i=0;i<3;i++) include(poolData[i*4],poolData[i*4+1],poolData[i*4+2],poolData[i*4+3]);
-    streamBounds.set([minX-.022,minY-.022,maxX+.022,maxY+.022]);
-    return paths;
+    for(let i=0;i<48;i++){
+      const angle=i/48*Math.PI*2,upward=Math.max(0,-Math.sin(angle));
+      const teeth=Math.pow(Math.max(0,Math.sin(angle*7+1.3+burst*2.4)),6)
+        +.55*Math.pow(Math.max(0,Math.sin(angle*11-2.1-burst*1.8)),8);
+      const irregular=1+.08*Math.sin(angle*3+burst*3)+.045*Math.cos(angle*13-burst*4);
+      const finger=1+teeth*(.32+.28*upward)*(1-spread*.7)*burst;
+      const rx=(.027*rise+spread*width/height*.60)*irregular*finger;
+      const ry=(.075*rise+.20*spread)*irregular*finger;
+      const x=cx+Math.cos(angle)*rx;
+      const y=i===12 ? mouthY/height+spread*.20 : cy+Math.sin(angle)*ry;
+      streamData.set([x,y],i*2);points.push([x*height,y*height]);
+      minX=Math.min(minX,x);minY=Math.min(minY,y);
+      maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
+    }
+    streamBounds.set([minX-.025,minY-.025,maxX+.025,maxY+.025]);
+    return [points.map((v,i)=>`${i?'L':'M'} ${number(v[0])} ${number(v[1])}`).join(' ')+' Z'];
   }
-  // The late curtain is retained; the connected early streams join it above.
   function createLiquidSurface() {
     const canvas = document.createElement('canvas');
     canvas.className = 'hs-liquid-webgl';
@@ -92,8 +60,7 @@
       uniform vec2 u_resolution;
       uniform vec2 u_mouth;
       uniform float u_progress;
-      uniform vec3 u_streams[27];
-      uniform vec4 u_pools[3];
+      uniform vec2 u_streams[48];
       uniform vec4 u_stream_bounds;
       float sat(float v) { return clamp(v, 0.0, 1.0); }
       float phase(float v, float a, float b) {
@@ -113,20 +80,30 @@
         float h=sat(.5+.5*(b-a)/k); return mix(b,a,h)-k*h*(1.0-h);
       }
       float streamSurface(vec2 q) {
-        float d=10.0;
-        for(int branch=0;branch<3;branch++) {
-          for(int i=0;i<8;i++) {
-            vec3 a=u_streams[branch*9+i], b=u_streams[branch*9+i+1];
-            float segment=capsule(q,a.xy,b.xy,a.z,b.z);
-            d=unite(d,segment,.007);
+        float distanceToEdge=10.0,signValue=1.0;
+        vec2 a=u_streams[47];
+        for(int i=0;i<48;i++) {
+          vec2 b=u_streams[i],e=b-a,v=q-a;
+          vec2 nearest=v-e*clamp(dot(v,e)/max(dot(e,e),.0000001),0.0,1.0);
+          distanceToEdge=min(distanceToEdge,length(nearest));
+          if((a.y>q.y)!=(b.y>q.y)) {
+            if(q.x<(b.x-a.x)*(q.y-a.y)/(b.y-a.y)+a.x) signValue=-signValue;
           }
-          vec4 pool=u_pools[branch];
-          vec2 v=q-pool.xy;
-          float ellipse=(length(v/max(pool.zw,vec2(.0001)))-1.0)*min(pool.z,pool.w);
-          ellipse+=(noise(q*23.0+u_progress*1.7)-.5)*.004*phase(u_progress,.565,.665);
-          d=unite(d,ellipse,max(.0001,.012*phase(u_progress,.565,.665)));
+          a=b;
         }
-        return d;
+        return distanceToEdge*signValue;
+      }
+      // Hollow micro-cavities advect with the water; no independent bubble system.
+      vec2 carbonation(vec2 q,float p,float scale) {
+        vec2 advect=q*scale+vec2(p*5.0,-p*32.0);
+        vec2 cell=floor(advect),f=fract(advect);
+        vec2 center=.25+.5*vec2(hash(cell),hash(cell+17.0));
+        float radius=.035+.13*pow(hash(cell+29.0),2.0);
+        vec2 v=f-center;
+        float ring=exp(-abs(length(v)-radius)*65.0);
+        float population=step(.28,hash(cell+41.0));
+        float highlight=sat(dot(normalize(v+vec2(.0001)),vec2(-.65,-.76)));
+        return vec2(ring*highlight,ring*(1.0-highlight))*population;
       }
       void main() {
         vec2 uv=gl_FragCoord.xy/u_resolution;
@@ -158,34 +135,38 @@
         float alpha=inner+edge*.37+body*bright*.47;
         float glint=exp(-abs(d+.013)*210.0)*body*.15;
         alpha+=glint;
-        vec3 color=mix(vec3(.75,.94,.85),vec3(1.0),.55+bright*.42);
-        color=mix(color,vec3(.42,.78,.62),edge*.25);
+        vec3 color=mix(vec3(.94,.965,.955),vec3(1.0),bright);
+        color=mix(color,vec3(.38,.43,.41),edge*.20);
         color+=vec3(glint*.4);
         alpha=sat(alpha);
         // Early liquid is a continuous volume, not detached particle sprites.
-        // The same three lobes widen into overlapping lens pools; the retained
-        // curtain covers this region before the early surface hands over.
+        // The pressure crown expands into a wet sheet before the curtain takes over.
         vec2 q=uv*vec2(u_resolution.x/u_resolution.y,1.0);
         if(p>=.505 && p<.76 && q.x>u_stream_bounds.x && q.y>u_stream_bounds.y
            && q.x<u_stream_bounds.z && q.y<u_stream_bounds.w) {
           float water=streamSurface(q);
           float visible=phase(p,.505,.525)*(1.0-phase(p,.70,.76));
           float inside=1.0-smoothstep(-.0015,.0015,water);
-          float depth=sqrt(max(0.0,1.0-pow(sat(1.0+water/.024),2.0)));
+          float folds=noise(q*47.0+vec2(p*7.0,-p*19.0));
+          float depth=sqrt(max(0.0,1.0-pow(sat(1.0+water/.024),2.0)))*(.72+.28*folds);
           vec3 normal=vec3(0.0,0.0,1.0);
           #ifdef HS_STREAM_NORMALS
             normal=normalize(vec3(-dFdx(depth)*u_resolution.x*.014,
                                   dFdy(depth)*u_resolution.y*.014,1.0));
           #endif
           vec3 light=normalize(vec3(-.48,.65,1.0));
-          float reflection=pow(max(dot(normal,light),0.0),28.0);
+          float reflection=pow(max(dot(normal,light),0.0),58.0);
           float edgeLight=sat(dot(normal.xy,normalize(light.xy))*.5+.5);
           float innerRim=exp(-abs(water+.0025)*900.0)*inside;
           float outerRim=exp(-abs(water)*900.0);
           float pool=phase(p,.565,.665);
           float volume=inside*(mix(.075,.018,pool)+depth*.035);
-          float shine=reflection*inside*.36+innerRim*(.10+edgeLight*.32);
-          float shadow=outerRim*(1.0-edgeLight)*.23;
+          float shine=reflection*inside*.43+innerRim*(.16+edgeLight*.48);
+          float shadow=outerRim*(1.0-edgeLight)*.32;
+          vec2 fizz=carbonation(q,p,82.0)+carbonation(q+1.7,p,157.0)*.48;
+          shine+=fizz.x*inside*.65;
+          shine+=pow(folds,12.0)*inside*.24;
+          shadow+=fizz.y*inside*.15;
           float surfaceAlpha=volume+shine+shadow;
           float liquidAlpha=surfaceAlpha*visible;
           vec3 liquidColor=(vec3(.97,.985,.98)*volume+vec3(1.0)*shine
@@ -194,6 +175,12 @@
           color=(liquidColor*liquidAlpha+color*alpha*(1.0-liquidAlpha))/max(combined,.0001);
           alpha=combined;
         }
+        vec2 fizz=carbonation(q,p,82.0)+carbonation(q+1.7,p,157.0)*.48;
+        float fizzMask=body*sheetVisible*(1.0-phase(p,.88,1.0));
+        float sparkle=fizz.x*fizzMask*.42;
+        color=mix(color,vec3(.33,.38,.36),fizz.y*fizzMask*.22);
+        color=mix(color,vec3(1.0),sparkle);
+        alpha=sat(alpha+sparkle);
         gl_FragColor=vec4(color,alpha);
       }`;
     function compile(type, source) {
@@ -223,7 +210,6 @@
     const mouth=gl.getUniformLocation(program,'u_mouth');
     const progress=gl.getUniformLocation(program,'u_progress');
     const streams=gl.getUniformLocation(program,'u_streams[0]');
-    const pools=gl.getUniformLocation(program,'u_pools[0]');
     const bounds=gl.getUniformLocation(program,'u_stream_bounds');
     stage.append(canvas);
     stage.classList.add('hs-webgl-ready');
@@ -245,8 +231,7 @@
       gl.uniform2f(resolution,w,h);
       gl.uniform2f(mouth,x,y);
       gl.uniform1f(progress,p);
-      gl.uniform3fv(streams,streamData);
-      gl.uniform4fv(pools,poolData);
+      gl.uniform2fv(streams,streamData);
       gl.uniform4fv(bounds,streamBounds);
       gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
     }
@@ -267,12 +252,12 @@
   optics.innerHTML=`<defs>
     <filter id="hs-stream-lens-filter" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency=".018 .026" numOctaves="2" seed="17" result="lensNoise"/>
-      <feDisplacementMap in="SourceGraphic" in2="lensNoise" scale="13" xChannelSelector="R" yChannelSelector="G"/>
+      <feDisplacementMap in="SourceGraphic" in2="lensNoise" scale="21" xChannelSelector="R" yChannelSelector="G"/>
     </filter>
     <clipPath id="hs-stream-wet-clip" clipPathUnits="userSpaceOnUse"></clipPath>
   </defs>`;
   const streamClip=optics.querySelector('clipPath');
-  const streamClipPaths=Array.from({length:6},()=>{
+  const streamClipPaths=Array.from({length:1},()=>{
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
     streamClip.append(path);return path;
   });
@@ -348,8 +333,7 @@
     streamRefraction.style.display=streamPaths.length?'block':'none';
     liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
 
-    // The branches and their pools cause the first wetting. Only once they
-    // have merged does the retained broad wet film take over (unchanged late).
+    // The expanding crown causes the first wetting before the broad film takes over.
     const spray=phase(p,.52,.65);
     const radius=Math.round(24+Math.max(stageBox.width,stageBox.height)*1.3*phase(p,.51,.69));
     const mask=`radial-gradient(circle ${radius}px at ${number(mouthX/10)}% ${number(mouthY/10)}%, #000 15%, rgba(0,0,0,.82) 55%, transparent 100%)`;
