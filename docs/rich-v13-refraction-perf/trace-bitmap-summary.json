@@ -1,0 +1,26 @@
+{
+  "FunctionCall": {
+    "inclusive_ms": 3012.21,
+    "count": 10152
+  },
+  "Paint": {
+    "inclusive_ms": 159.49,
+    "count": 2565
+  },
+  "PrePaint": {
+    "inclusive_ms": 223.04,
+    "count": 3299
+  },
+  "Layout": {
+    "inclusive_ms": 152.34,
+    "count": 2753
+  },
+  "UpdateLayoutTree": {
+    "inclusive_ms": 885.07,
+    "count": 3351
+  },
+  "RasterTask": {
+    "inclusive_ms": 166.31,
+    "count": 12201
+  }
+}

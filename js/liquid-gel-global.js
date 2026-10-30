@@ -298,10 +298,31 @@
     [speeds, nextSpeeds] = [nextSpeeds, speeds];
   }
 
+  function encodeGelBitmap(rgba, width, height) {
+    const stride = (width * 3 + 3) & ~3;
+    const bytes = new Uint8Array(54 + stride * height);
+    const header = new DataView(bytes.buffer);
+    bytes[0]=66; bytes[1]=77;
+    header.setUint32(2,bytes.length,true); header.setUint32(10,54,true);
+    header.setUint32(14,40,true); header.setInt32(18,width,true);
+    header.setInt32(22,-height,true); header.setUint16(26,1,true);
+    header.setUint16(28,24,true); header.setUint32(34,stride*height,true);
+    for(let y=0;y<height;y++) for(let x=0;x<width;x++) {
+      const src=(y*width+x)*4,dst=54+y*stride+x*3;
+      bytes[dst]=rgba[src+2]; bytes[dst+1]=rgba[src+1]; bytes[dst+2]=rgba[src];
+    }
+    let binary='';
+    for(let i=0;i<bytes.length;i+=8192) binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+    return 'data:image/bmp;base64,'+btoa(binary);
+  }
+
+  // Optimize only RICH; preserve the established effects in every other section.
+  const richTarget = () => active?.classList.contains('rich-flavors__viewport');
   function writeTexture(force = false) {
     if (!active || !pixelData) return;
     // V4 originally takes the height gradient in a WebGL shader.
     // Encode that same gradient into feDisplacementMap's RG channels.
+    let changed = force;
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const i = y * cols + x;
@@ -312,14 +333,21 @@
         const dx = heights[r] - heights[l];
         const dy = heights[d] - heights[u];
         const j = i * 4;
-        pixelData.data[j] = Math.round(clamp(127.5 + dx * 200, 0, 255));
-        pixelData.data[j+1] = Math.round(clamp(127.5 + dy * 200, 0, 255));
+        const red = Math.round(clamp(127.5 + dx * 200, 0, 255));
+        const green = Math.round(clamp(127.5 + dy * 200, 0, 255));
+        if (pixelData.data[j] !== red || pixelData.data[j+1] !== green) changed = true;
+        pixelData.data[j] = red;
+        pixelData.data[j+1] = green;
       }
     }
-    ctx.putImageData(pixelData, 0, 0);
-    // Tiny texture only (180x66..170). Browser resolves this data URL
-    // in the SVG filter; no screenshot or frozen poster is involved.
-    surface.setAttribute('href', mapCanvas.toDataURL('image/png'));
+    if (richTarget() && !changed) return;
+    if (!richTarget()) ctx.putImageData(pixelData, 0, 0);
+    // RICH uses the exact opaque RGB field as a lossless top-down bitmap.
+    // This avoids canvas readback + PNG encoding; feImage still displaces
+    // the actual live DOM/WebGL scene. Other sections keep their PNG path.
+    surface.setAttribute('href', richTarget()
+      ? encodeGelBitmap(pixelData.data, cols, rows)
+      : mapCanvas.toDataURL('image/png'));
     if (force) setAmount();
   }
 
@@ -333,11 +361,11 @@
     for (const stroke of strokes) pushGel(stroke);
     simulate(dt);
     // 30Hz image uploads keep text, 3D and scrolling responsive.
-    if (time - mapStamp >= 33 || strokes.length > 0) {
+    if (time - mapStamp >= 33 || (!richTarget() && strokes.length > 0)) {
       writeTexture();
       mapStamp = time;
     }
-    if (interacting || pending.length || motionEnergy > .00025) schedule();
+    if ((!richTarget() && interacting) || pending.length || motionEnergy > .00025) schedule();
   }
 
   function schedule() {
