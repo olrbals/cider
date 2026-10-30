@@ -114,11 +114,12 @@
   }
 
   function updateCollision(p){
+    const burstEase=t=>{const x=t-1;return 1+1.9*x*x*x+.9*x*x;};
     const entry=reduce.matches?Number(p>=.25):smooth(.19,.275,p);
     const meet=reduce.matches?Number(p>=.35):smooth(.29,.375,p);
     const ink=reduce.matches?meet:smooth(.335,.44,p);
     const depth=reduce.matches?meet:smooth(.335,.405,p);
-    const burst=reduce.matches?meet:backOut(smooth(.325,.385,p));
+    const burst=reduce.matches?meet:burstEase(smooth(.325,.385,p));
     collision.style.visibility=p>.18?'visible':'hidden';
     collision.style.opacity=smooth(.18,.205,p).toFixed(3);
     collision.style.setProperty('--r11-ink',ink.toFixed(4));
@@ -130,7 +131,7 @@
       const tilt=reduce.matches?0:Math.sin(entry*Math.PI*2)*1.1*(1-meet);
       node.style.left=(mix(pre[0],post[0])+drift).toFixed(3)+'px';
       node.style.top=(mix(pre[1],post[1])+swell).toFixed(3)+'px';
-      const fruit = !['peach','grape'].includes(node.dataset.r11);
+      const fruit = !['peach','grape'].includes(node.dataset?.r11);
       const sizeMix = (a,b)=>a+(b-a)*(fruit?burst:meet);
       node.style.width=sizeMix(pre[2],post[2]).toFixed(3)+'px';
       node.style.height=sizeMix(pre[3],post[3]).toFixed(3)+'px';
@@ -139,7 +140,7 @@
     });
     depthSlots.forEach((node,i)=>{
       const [x,y,w,h,angle,alpha]=depthGeometry[i];
-      const toward=.18+.82*backOut(depth);
+      const toward=.18+.82*burstEase(depth);
       node.style.left=(720+(x-720)*depth).toFixed(2)+'px';
       node.style.top=(460+(y-460)*depth)+'px';node.style.width=w+'px';node.style.height=h+'px';
       node.style.transform='translate(-50%,-50%) rotate('+angle+'deg) scale('+toward.toFixed(4)+')';
