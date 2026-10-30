@@ -19,15 +19,20 @@ assert.equal((src.match(/addEventListener\('scroll'/g)||[]).length,1);
 console.log('PASS: 2002 finite wave states, reverse determinism, full coverage endpoints, one scroll listener, no timed burst');
 
 
+
 const node=()=>({style:{setProperty(k,v){this[k]=v}},attrs:{},setAttribute(k,v){this.attrs[k]=v}});
-const peachTeam=node(),grapeTeam=node(),collision=node(),collisionMask=node(),ice=Array.from({length:5},node);
+const root={classList:{toggle(){}}},collision=node();
+const introSlots=JSON.parse(src.match(/const introSlots=(\[.*\]);/)[1]).map(s=>({...s,node:node()}));
+const depthSlots=Array.from({length:3},node);
+const depthGeometry=new Function('return '+src.match(/const depthGeometry=(\[.*\]);/)[1])();
 const block2=src.slice(src.indexOf('  function updateCollision'),src.indexOf('  // Nonperiodic'));
-const update=new Function('clamp','smooth','reduce','horizontalWave','peachTeam','grapeTeam','collision','collisionMask','ice',block2+';return updateCollision;')(clamp,smooth,{matches:false},wave,peachTeam,grapeTeam,collision,collisionMask,ice);
-const snap=()=>JSON.stringify([peachTeam,grapeTeam,collisionMask,ice]);
+const update=new Function('clamp','smooth','reduce','root','collision','introSlots','depthSlots','depthGeometry',block2+';return updateCollision;')(clamp,smooth,{matches:false},root,collision,introSlots,depthSlots,depthGeometry);
+const snap=()=>JSON.stringify([collision,introSlots,depthSlots]);
 const states=[];
 for(let i=0;i<=1000;i++){update(i/1000);assert(!/NaN|Infinity/.test(snap()));states.push(snap());}
 for(let i=1000;i>=0;i--){update(i/1000);assert.equal(snap(),states[i]);}
-update(.27);assert(peachTeam.style.transform.includes('translate3d('));assert.equal(peachTeam.style.transform.split(',')[0],grapeTeam.style.transform.split(',')[0]);
-update(.46);assert(ice.every(n=>Number(n.style.opacity)>.6));
-assert(!src.includes('rich-impact-fluid'),'water stream renderer removed');
-console.log('PASS: rightward entry shared by both bottles, reverse determinism, five settled ice objects, no streams');
+update(.20);assert(parseFloat(introSlots[1].node.style.left)<introSlots[1].pre[0]);assert(parseFloat(introSlots[4].node.style.left)>introSlots[4].pre[0]);
+update(.285);assert.equal(Number(collision.style['--r11-ink']),0);assert(depthSlots.every(n=>Number(n.style.opacity)===0));
+update(.48);assert.equal(Number(collision.style['--r11-ink']),1);assert(depthSlots.every(n=>Number(n.style.opacity)>.4));
+assert(!src.includes('v5-ice-cube')&&!src.includes('rich-impact-fluid'));
+console.log('PASS: opposed entry, meet precedes color/foreground bloom, Figma settled states, exact reverse replay, finite depth transforms');
