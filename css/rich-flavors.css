@@ -345,14 +345,11 @@
 /* Match the collision-only bottle adjustment in the non-WebGL fallback. */
 .r11-slot[data-r11="peach"] img,.r11-slot[data-r11="grape"] img{transform:scale(.9)}
 
-/* Pale, full-height solid flavor fields; keep the existing caption layout. */
-.rich-fg--peach{--fg-top:#fff0f3;--fg-bottom:#fff0f3;--flavor-accent:#f92a66}
-.rich-fg--grape{--fg-top:#f0f8eb;--fg-bottom:#f0f8eb;--flavor-accent:#058836}
-.rich-fg__caption{color:var(--flavor-accent)}
+/* Figma reference: pale product area and full-width accent caption band. */
+.rich-fg--peach{--fg-top:#fff3f4;--fg-bottom:#f92a66;--flavor-accent:#f92a66}
+.rich-fg--grape{--fg-top:#fbfff0;--fg-bottom:#058836;--flavor-accent:#058836}
+.rich-fg__caption{color:#f7faf8}
 .rich-fg__caption-line .rich-fg__nav{color:inherit}
-.rich-fg__nav img{opacity:0;filter:none}
-.rich-fg__nav::before{content:"";position:absolute;left:15px;top:15px;width:62px;height:30px;background:currentColor;mask-size:contain;mask-repeat:no-repeat;mask-position:center}
-.rich-fg__nav--prev::before{mask-image:url('../img/flavors/figma-arrow-left.svg')}
-.rich-fg__nav--next::before{mask-image:url('../img/flavors/figma-arrow-right.svg')}
-.rich-fg__nav:hover{background:rgba(23,107,68,.07)}
+.rich-fg__nav img{opacity:1;filter:none}
+.rich-fg__nav:hover{background:rgba(255,255,255,.15)}
 .rich-fg__nav:focus-visible{outline-color:currentColor}
