@@ -244,6 +244,7 @@
     root.dataset.richScene=progress>=.94?'grape':progress>=.66?'peach':progress>=.455?'duo':progress>.235?'burst':'copy';
     root.dataset.richProgress=progress.toFixed(5);
     panels.forEach(panel=>updateFlavor(panel,progress));
+    window.richPet3D?.update(progress);
   }
   function queue(){if(!raf)raf=requestAnimationFrame(render);}
   function resize(){geometry();queue();}

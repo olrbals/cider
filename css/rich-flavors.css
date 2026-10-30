@@ -328,3 +328,7 @@
 .r11-depth{position:absolute;inset:0;z-index:5;pointer-events:none}
 @keyframes r11-waterborne{0%,100%{translate:0 3px;rotate:-.65deg}50%{translate:0 -4px;rotate:.65deg}}
 @media(prefers-reduced-motion:reduce){.r11-bob{animation:none}.r11-depth-slot{filter:none!important}}
+
+/* V12: a single transparent PET/fruit 3D layer; DOM artwork remains as fallback. */
+.rich-pet-canvas{position:absolute;inset:0;z-index:4;width:100%;height:100%;pointer-events:none}
+.rich-pet-ready .r11-slot img,.rich-pet-ready .rich-fg__photo-area img{opacity:0!important}
