@@ -13,3 +13,7 @@ Checks: JS parse, existing forward/reverse wave and intro tests, new rich-pet-mo
 Limits: the label is the supplied wrap image, including its existing imagery/highlights; no new actual rear-label photography or five-lobed bottle base was supplied. Fruit remains planar artwork in 3D depth. Camera and trajectories are art-directed to the reference; this is not a claim of pixel-exact reconstruction of the Slosh model or its camera. Existing body min-width and unrelated global effects are retained.
 
 Main and Production are unchanged. Branch codex/rich-v12-pet-3d-motion, based on V11 2bd5abd.
+
+
+## Performance correction after Preview feedback
+Browser evidence: the original 1280×720 viewport was being filtered with site-liquid-gel-filter over a 1728×972 WebGL buffer. Full-frame SVG displacement of live WebGL was removed for the RICH stage; glow/particles/type feedback remains. Resolution is capped by 1920×1080 and DPR 1.2, resulting in 1536×864 for that verification viewport (1,679,616 → 1,327,104 pixels). Repeated ancestor style/angle reads are cached per frame. Scroll updates now render on the same progress tick as the DOM/background rather than waiting for the 30fps idle loop; idle floating remains capped. Actual device FPS still requires user-device observation.

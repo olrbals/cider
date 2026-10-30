@@ -332,3 +332,6 @@
 /* V12: a single transparent PET/fruit 3D layer; DOM artwork remains as fallback. */
 .rich-pet-canvas{position:absolute;inset:0;z-index:4;width:100%;height:100%;pointer-events:none}
 .rich-pet-ready .r11-slot img,.rich-pet-ready .rich-fg__photo-area img{opacity:0!important}
+
+/* No full-frame SVG readback/compositing of the live WebGL layer. */
+.rich-pet-ready .rich-flavors__viewport.site-liquid-target{filter:none!important;-webkit-filter:none!important}

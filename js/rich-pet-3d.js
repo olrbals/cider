@@ -4,7 +4,7 @@ const root=document.querySelector('#rich-flavors'),viewport=root?.querySelector(
 if(root&&viewport) boot().catch(error=>console.warn('RICH 3D fallback:',error));
 async function boot(){
  const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'default'});
- renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.setPixelRatio(1);renderer.outputColorSpace=THREE.SRGBColorSpace;
  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
  renderer.domElement.className='rich-pet-canvas';renderer.domElement.setAttribute('aria-hidden','true');
  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,1,.1,100);camera.position.z=10;
@@ -26,8 +26,9 @@ async function boot(){
  let W=0,H=0,frame=0,last=0,p=Number(root.dataset.richProgress||0);
  const clamp=t=>Math.max(0,Math.min(1,t));
  const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
- function resize(){W=viewport.clientWidth;H=viewport.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);}
- function angle(node){let total=0;for(let e=node;e&&e!==viewport;e=e.parentElement){const c=getComputedStyle(e);if(c.transform!=='none'){const m=new DOMMatrixReadOnly(c.transform);total+=Math.atan2(m.b,m.a);}if(c.rotate!=='none')total+=parseFloat(c.rotate)*Math.PI/180;}return total;}
+ function resize(){W=viewport.clientWidth;H=viewport.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,1.2,1920/W,1080/H));renderer.setSize(W,H);}
+ const angleCache=new Map();
+ function angle(node){if(!node||node===viewport)return 0;if(angleCache.has(node))return angleCache.get(node);const c=getComputedStyle(node);let a=0;if(c.transform!=='none'){const m=new DOMMatrixReadOnly(c.transform);a=Math.atan2(m.b,m.a);}if(c.rotate!=='none')a+=parseFloat(c.rotate)*Math.PI/180;const result=a+angle(node.parentElement);angleCache.set(node,result);return result;}
  function slotSize(node,rect,a){
   // Recover the unrotated CSS height from the transformed rectangle.
   const ratio=node.offsetWidth/Math.max(1,node.offsetHeight);
@@ -40,6 +41,7 @@ async function boot(){
   mesh.scale.setScalar(height*units/4.305);return r;
  }
  function render(){
+  angleCache.clear();
   if(W!==viewport.clientWidth||H!==viewport.clientHeight)resize();
   scene.children.forEach(o=>{if(o.isGroup||o.isMesh)o.visible=false;});
   const introExit=smooth(.51,.66,p);
@@ -76,7 +78,7 @@ async function boot(){
  }
  function active(){return !document.hidden&&p>.18&&p<1&&root.getBoundingClientRect().bottom>0&&root.getBoundingClientRect().top<innerHeight;}
  function loop(now){frame=0;if(!active())return;if(now-last>32){render();last=now;}if(!reduce.matches)frame=requestAnimationFrame(loop);}
- function update(progress){p=progress;if(!active()){renderer.clear();return;}if(!frame){render();if(!reduce.matches)frame=requestAnimationFrame(loop);}}
+ function update(progress){const moved=progress!==p;p=progress;if(!active()){renderer.clear();return;}if(moved||!frame){render();last=performance.now();}if(!frame&&!reduce.matches)frame=requestAnimationFrame(loop);}
  window.richPet3D={update};
  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0;}else update(p);});
  window.addEventListener('resize',()=>{resize();update(p);},{passive:true});
