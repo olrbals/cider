@@ -52,7 +52,7 @@ async function boot(){
    if(!node||!active)return;
    const r=node.getBoundingClientRect(),a=angle(node);const height=slotSize(node,r,a);
    const u=clamp((p-(i?.77:.51))/(i?.115:.15)),entry=smooth(0,.88,u),exit=i?smooth(.965,1,p):smooth(.795,.89,p);
-   place(pet,node,height);
+   place(pet,node,height*(intro?.88:1));
    if(intro||i===1)pet.position.x-=(intro?introExit:exit)*W*1.3*(2*10*Math.tan(38*Math.PI/360)/H);
    pet.rotation.order='YXZ';
    pet.rotation.x=intro?.07-.55*introExit:(.38*(1-entry)-.60*exit);

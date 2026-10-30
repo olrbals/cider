@@ -173,7 +173,7 @@
     const hit = document.elementFromPoint(x, y);
     if (!(hit instanceof Element) || panel.contains(hit)) return null;
     // Avoid filtering the live 3D framebuffer. Cursor glow/type/particles stay active.
-    if (hit.closest('.rich-pet-ready')) return null;
+    if (hit.closest('.rich-pet-ready')) return hit.closest('#rich-flavors').querySelector('.rich-flavors__viewport');
     // The 3D stage ignores pointer events so the page can scroll. Route
     // hits on its visible track back to the sticky stage for refraction.
     const history = hit.closest('.history-3d');

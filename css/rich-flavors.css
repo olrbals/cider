@@ -334,4 +334,4 @@
 .rich-pet-ready .r11-slot img,.rich-pet-ready .rich-fg__photo-area img{opacity:0!important}
 
 /* No full-frame SVG readback/compositing of the live WebGL layer. */
-.rich-pet-ready .rich-flavors__viewport.site-liquid-target{filter:none!important;-webkit-filter:none!important}
+
