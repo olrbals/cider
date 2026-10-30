@@ -42,6 +42,7 @@ async function boot(){
  }
  function render(){
   angleCache.clear();
+  const tide=reduce.matches?0:performance.now()*.001;
   if(W!==viewport.clientWidth||H!==viewport.clientHeight)resize();
   scene.children.forEach(o=>{if(o.isGroup||o.isMesh)o.visible=false;});
   const introExit=smooth(.51,.66,p);
@@ -58,9 +59,15 @@ async function boot(){
    pet.rotation.x=intro?.07-.55*introExit:(.38*(1-entry)-.60*exit);
    pet.rotation.y=intro?(i?-.10:.10)+1.75*introExit:(.32*(1-entry)+1.85*exit);
    pet.rotation.z=-a+(intro?.60*introExit:(i?-.48*(1-entry)+.62*exit:.40*(1-entry)+.62*exit));
+   if(!reduce.matches){
+    const phase=tide*.82+index*1.7;
+    pet.position.y+=Math.sin(phase)*.045;
+    pet.rotation.z+=Math.sin(phase*.83)*.018;
+    pet.rotation.y+=Math.sin(phase*.63)*.025;
+   }
    pet.visible=true;
   });
-  fruits.forEach(({node,img,mesh})=>{
+  fruits.forEach(({node,img,mesh},index)=>{
    const parent=node.closest('.rich-fg');
    const intro=!parent;
    if(intro?p<=.18||p>=.66:p<.51)return;
@@ -71,6 +78,7 @@ async function boot(){
    place(mesh,node,height,z);if(intro||parent?.classList.contains('rich-fg--grape'))mesh.position.x-=(intro?introExit:smooth(.965,1,p))*W*1.3*(2*(10-z)*Math.tan(38*Math.PI/360)/H);const units=2*(10-z)*Math.tan(38*Math.PI/360)/H;
    mesh.scale.set(node.offsetWidth/node.offsetHeight*height*units,height*units,1);mesh.rotation.z=-a;
    const c=getComputedStyle(img);if(c.transform!=='none'){const m=new DOMMatrixReadOnly(c.transform);mesh.scale.x*=m.a<0?-1:1;mesh.scale.y*=m.d<0?-1:1;}
+   if(!reduce.matches){const phase=tide*.75+index*1.43;mesh.position.y+=Math.sin(phase)*.065;mesh.position.x+=Math.cos(phase*.71)*.025;mesh.rotation.z+=Math.sin(phase*.87)*.025;}
    mesh.material.side=THREE.DoubleSide;mesh.material.opacity=intro?Number(node.style.opacity||1):1;mesh.visible=true;mesh.renderOrder=front?2:0;
   });
   renderer.render(scene,camera);
