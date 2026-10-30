@@ -69,14 +69,25 @@ async function boot(){
      pet.position.lerp(end,introExit);pet.scale.setScalar(pet.scale.x+(endScale-pet.scale.x)*introExit);
      pet.rotation.z=-sa*(1-introExit)-a*introExit;
     }
-    pet.rotation.x=-.16*exit;pet.rotation.y=.65*exit;pet.rotation.z+=.16*exit;
+    const incoming=reduce.matches?0:Math.sin(Math.PI*introExit);
+    pet.position.x+=incoming*W*.10*units;
+    pet.position.y+=incoming*.12;
+    pet.rotation.x=-.10*incoming-.10*exit;
+    pet.rotation.y=reduce.matches?0:-Math.PI*incoming+Math.PI*exit;
+    pet.rotation.z+=-.065*incoming+.07*Math.sin(Math.PI*exit);
    }else if(intro){
     pet.position.x-=introExit*W*1.1*units;
     pet.rotation.y=.40*introExit;pet.rotation.z+=.12*introExit;
    }else{
-    pet.position.y+=Math.sin(Math.PI*entry)*.12;
-    pet.rotation.x=.12*(1-entry);pet.rotation.y=-.22*(1-entry);
-    pet.rotation.z+=-.16*(1-entry);
+    const swell=reduce.matches?0:Math.sin(Math.PI*entry);
+    pet.position.y+=swell*.18;
+    pet.rotation.x=.10*swell;
+    pet.rotation.y=reduce.matches?0:-Math.PI*(1-entry);
+    pet.rotation.z+=-.065*swell;
+    const leave=reduce.matches?0:smooth(.965,1,p);
+    pet.rotation.y+=Math.PI*leave;
+    pet.rotation.x-=.10*Math.sin(Math.PI*leave);
+    pet.rotation.z+=.06*Math.sin(Math.PI*leave);
    }
    if(!reduce.matches){
     const phase=tide*.82+i*1.7;

@@ -38,4 +38,5 @@ assert(!src.includes('v5-ice-cube')&&!src.includes('rich-impact-fluid'));
 console.log('PASS: opposed entry, meet precedes color/foreground bloom, Figma settled states, exact reverse replay, finite depth transforms');
 
 assert.equal((wave(.45,0).mask.match(/ Q/g)||[]).length,7,"seven separately led rounded tongues");
-assert(!fs.readFileSync("js/rich-pet-3d.js","utf8").includes("smooth(.965,1,p)"),"grape remains until section wave covers it");
+const petSource=fs.readFileSync("js/rich-pet-3d.js","utf8");
+assert(!/pet\.position\.x.*(?:leave|smooth\(\.965)/.test(petSource),"final grape turns in place while the next wave covers it");

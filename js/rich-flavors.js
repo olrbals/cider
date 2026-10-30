@@ -32,7 +32,6 @@
     panel.fluidMask=panel.element.querySelector('.rich-fg__fluid-mask');
     panel.sceneMask=panel.element.querySelector('.rich-fg__scene-mask');
     panel.fluidRim=panel.element.querySelector('.rich-fg__fluid-rim');
-    panel.fluidBand=panel.element.querySelector('.rich-fg__fluid-band');
     panel.foam=panel.element.querySelector('.rich-fg__foam');
     panel.nameLabel=panel.element.querySelector('.rich-fg__caption-line h2');
     const nameWindow=document.createElement('div');
@@ -79,14 +78,9 @@
     height=window.innerHeight;
     const scale=Math.min(width/(width<750?960:1440),height/900);
     const bandTop=(height-900*scale)/2+648*scale;
-    const bandY=bandTop/Math.max(1,height)*1000;
     root.style.setProperty('--rich-design-scale',scale.toFixed(5));
     root.style.setProperty('--rich-intro-scale',Math.min(width/(width<750?760:1440),height/900).toFixed(5));
     root.style.setProperty('--rich-band-top',bandTop.toFixed(2)+'px');
-    panels.forEach(panel=>{
-      panel.fluidBand.setAttribute('y',bandY.toFixed(2));
-      panel.fluidBand.setAttribute('height',Math.max(0,1000-bandY).toFixed(2));
-    });
   }
 
   function riseWave(u){
