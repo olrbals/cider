@@ -248,7 +248,14 @@
     panels.forEach(panel=>updateFlavor(panel,progress));
     window.richPet3D?.update(progress);
   }
-  function queue(){if(!raf)raf=requestAnimationFrame(render);}
+  function queue(){
+    if(!raf){
+      // The scroll frame will render the latest pose; do not also paint an
+      // already queued idle pose immediately before it in the same frame.
+      window.richPet3D?.defer();
+      raf=requestAnimationFrame(render);
+    }
+  }
   function resize(){geometry();queue();}
   window.addEventListener('scroll',queue,{passive:true});
   window.addEventListener('resize',resize,{passive:true});

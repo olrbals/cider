@@ -116,6 +116,7 @@
   let mapStamp = 0;
   let motionEnergy = 0;
   let interacting = false;
+  let richDistorted = false;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   function setAmount() {
@@ -162,7 +163,7 @@
     pending.length = 0;
     if (active) {
       initializeField();
-      active.classList.add('site-liquid-target');
+      active.classList.toggle('site-liquid-target', !richTarget() || richDistorted);
       setAmount();
       schedule();
     }
@@ -323,6 +324,7 @@
     // V4 originally takes the height gradient in a WebGL shader.
     // Encode that same gradient into feDisplacementMap's RG channels.
     let changed = force;
+    let distorted = false;
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const i = y * cols + x;
@@ -336,9 +338,17 @@
         const red = Math.round(clamp(127.5 + dx * 200, 0, 255));
         const green = Math.round(clamp(127.5 + dy * 200, 0, 255));
         if (pixelData.data[j] !== red || pixelData.data[j+1] !== green) changed = true;
+        if (red !== 128 || green !== 128) distorted = true;
         pixelData.data[j] = red;
         pixelData.data[j+1] = green;
       }
+    }
+    if (richTarget()) {
+      // A fully neutral 8-bit field has no ripple left. Bypass only this
+      // state; any non-neutral pixel immediately restores the full filter.
+      richDistorted = distorted;
+      active.classList.toggle('site-liquid-target', distorted);
+      if (!distorted) { if (force) setAmount(); return; }
     }
     if (richTarget() && !changed) return;
     if (!richTarget()) ctx.putImageData(pixelData, 0, 0);

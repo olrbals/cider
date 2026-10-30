@@ -1,0 +1,38 @@
+{
+  "neutral": {
+    "filter": "none",
+    "scale": "65.00",
+    "progress": "0.82006",
+    "pet": "ready"
+  },
+  "active": {
+    "filter": "url(\"#site-liquid-gel-filter\")",
+    "scale": "65.00",
+    "progress": "0.82006",
+    "pet": "ready"
+  },
+  "tail": {
+    "filter": "url(\"#site-liquid-gel-filter\")",
+    "scale": "65.00",
+    "progress": "0.82006",
+    "pet": "ready"
+  },
+  "reset": {
+    "filter": "none",
+    "scale": "65.00",
+    "progress": "0.82006",
+    "pet": "ready"
+  },
+  "resized": {
+    "filter": "url(\"#site-liquid-gel-filter\")",
+    "scale": "65.00",
+    "progress": "0.82006",
+    "pet": "ready",
+    "debug": {
+      "hit": "<div class=\"rich-flavors__viewport site-liquid-target\">\n        <!-- Figma 1340:96: the 2026 message rises on a scroll-shaped wave. -->\n        <section class=\"rich-copy\" aria-labe",
+      "view": "{\"x\":0,\"y\":0,\"width\":1920,\"height\":1080,\"top\":0,\"right\":1920,\"bottom\":1080,\"left\":0}",
+      "root": "{\"x\":0,\"y\":-5314,\"width\":1920,\"height\":7560,\"top\":-5314,\"right\":1920,\"bottom\":2246,\"left\":0}"
+    }
+  },
+  "errors": []
+}

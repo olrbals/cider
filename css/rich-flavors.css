@@ -334,3 +334,10 @@
 .rich-pet-ready .r11-slot img,.rich-pet-ready .rich-fg__photo-area img{opacity:0!important}
 
 /* No full-frame SVG readback/compositing of the live WebGL layer. */
+
+/* Keep the live RICH composite local; hidden DOM anchors still provide geometry. */
+.rich-pet-ready .rich-flavors__viewport{
+ will-change:filter;transform:translateZ(0);backface-visibility:hidden;
+ contain:layout paint style;
+}
+.rich-pet-ready .rich-fg__photo-area,.rich-pet-ready .r11-slot{visibility:hidden}

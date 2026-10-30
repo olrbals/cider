@@ -1,0 +1,142 @@
+[
+  {
+    "mapUpdates": 1,
+    "mapTime": 3.099999964237213,
+    "mode": "baseline",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "dpr": 1,
+    "buffer": [
+      1920,
+      1080
+    ],
+    "frames": 193,
+    "fps": 32.135602251157216,
+    "frameP50": 16.700000000000728,
+    "frameP95": 100.10000000000036,
+    "over33": 40,
+    "over50": 35,
+    "longTasks": 0,
+    "longTotal": 0,
+    "petRenders": 0,
+    "petMean": 0,
+    "petP95": 0,
+    "submitMean": 0,
+    "drawCalls": 0,
+    "triangles": 0,
+    "rectReads": 12567,
+    "rectTotal": 85.2000008225441,
+    "styleReads": 7376,
+    "styleTotal": 3.299999713897705,
+    "pngUploads": 0,
+    "pngTotal": 0,
+    "filter": "url(\"#site-liquid-gel-filter\")"
+  },
+  {
+    "mapUpdates": 0,
+    "mapTime": 0,
+    "mode": "idle",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "dpr": 1,
+    "buffer": [
+      1920,
+      1080
+    ],
+    "frames": 272,
+    "fps": 45.289553431682705,
+    "frameP50": 16.699999999999818,
+    "frameP95": 50.100000000000364,
+    "over33": 27,
+    "over50": 16,
+    "longTasks": 0,
+    "longTotal": 0,
+    "petRenders": 0,
+    "petMean": 0,
+    "petP95": 0,
+    "submitMean": 0,
+    "drawCalls": 0,
+    "triangles": 0,
+    "rectReads": 17254,
+    "rectTotal": 119.3999999165535,
+    "styleReads": 9734,
+    "styleTotal": 4.799999713897705,
+    "pngUploads": 0,
+    "pngTotal": 0,
+    "filter": "none"
+  },
+  {
+    "mapUpdates": 0,
+    "mapTime": 0,
+    "mode": "idle",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "dpr": 1,
+    "buffer": [
+      1920,
+      1080
+    ],
+    "frames": 254,
+    "fps": 42.29174644932483,
+    "frameP50": 16.699999999999818,
+    "frameP95": 66.69999999999982,
+    "over33": 33,
+    "over50": 20,
+    "longTasks": 0,
+    "longTotal": 0,
+    "petRenders": 0,
+    "petMean": 0,
+    "petP95": 0,
+    "submitMean": 0,
+    "drawCalls": 0,
+    "triangles": 0,
+    "rectReads": 16262,
+    "rectTotal": 108.3999999165535,
+    "styleReads": 9280,
+    "styleTotal": 3.7999996542930603,
+    "pngUploads": 0,
+    "pngTotal": 0,
+    "filter": "none"
+  },
+  {
+    "mapUpdates": 1,
+    "mapTime": 2.699999988079071,
+    "mode": "baseline",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "dpr": 1,
+    "buffer": [
+      1920,
+      1080
+    ],
+    "frames": 241,
+    "fps": 40.127208245225525,
+    "frameP50": 16.699999999999818,
+    "frameP95": 66.69999999999982,
+    "over33": 36,
+    "over50": 26,
+    "longTasks": 0,
+    "longTotal": 0,
+    "petRenders": 0,
+    "petMean": 0,
+    "petP95": 0,
+    "submitMean": 0,
+    "drawCalls": 0,
+    "triangles": 0,
+    "rectReads": 15513,
+    "rectTotal": 121.39999967813492,
+    "styleReads": 8926,
+    "styleTotal": 5.199999928474426,
+    "pngUploads": 0,
+    "pngTotal": 0,
+    "filter": "url(\"#site-liquid-gel-filter\")"
+  }
+]

@@ -105,7 +105,8 @@ async function boot(){
  function active(){return !document.hidden&&p>.18&&p<=1&&root.getBoundingClientRect().bottom>0&&root.getBoundingClientRect().top<innerHeight;}
  function loop(now){frame=0;if(!active())return;if(now-last>32){render();last=now;}if(!reduce.matches)frame=requestAnimationFrame(loop);}
  function update(progress){const moved=progress!==p;p=progress;if(!active()){renderer.clear();return;}if(moved||!frame){render();last=performance.now();}if(!frame&&!reduce.matches)frame=requestAnimationFrame(loop);}
- window.richPet3D={update};
+ function defer(){if(frame)cancelAnimationFrame(frame);frame=0;}
+ window.richPet3D={update,defer};
  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0;}else update(p);});
  window.addEventListener('resize',()=>{resize();update(p);},{passive:true});
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();cancelAnimationFrame(frame);frame=0;root.classList.remove('rich-pet-ready');});
