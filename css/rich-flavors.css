@@ -312,3 +312,19 @@
  75%{translate:-1px 0;rotate:0deg}
 }
 @media(prefers-reduced-motion:reduce){.rich-flavors .rich-fg--grape .rich-fg__bob{animation:none!important}}
+
+/* V11: Figma before/after slots. Full-size gradients live outside the fit artwork. */
+.rich-motion-ready .r11-intro{clip-path:none;background:#f7faf8}
+.r11-intro::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 12% 55%,rgba(255,204,211,.42),transparent 68%),radial-gradient(ellipse at 94% 55%,rgba(233,229,140,.45),transparent 70%);opacity:var(--r11-ink,0)}
+.r11-art{position:absolute;left:50%;top:50%;width:1440px;height:900px;transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));pointer-events:none}
+.r11-bg{position:absolute;max-width:none;z-index:0;pointer-events:none}
+.r11-bg--before{opacity:calc(1 - var(--r11-ink,0))}
+.r11-bg--after{opacity:var(--r11-ink,0)}
+.r11-slot,.r11-depth-slot{position:absolute;display:block;transform-origin:center}
+.r11-slot img,.r11-depth-slot img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}
+.r11-slot[data-r11="whole"] img,.r11-depth-slot[data-depth-index="0"] img{transform:scaleY(-1)}
+.r11-bob{display:block;width:100%;height:100%;animation:r11-waterborne var(--r11-duration,8s) ease-in-out infinite;animation-delay:var(--r11-delay,0s);animation-play-state:paused;transform-origin:50% 64%}
+.r11-live.is-visible .r11-bob{animation-play-state:running}
+.r11-depth{position:absolute;inset:0;z-index:5;pointer-events:none}
+@keyframes r11-waterborne{0%,100%{translate:0 3px;rotate:-.65deg}50%{translate:0 -4px;rotate:.65deg}}
+@media(prefers-reduced-motion:reduce){.r11-bob{animation:none}.r11-depth-slot{filter:none!important}}

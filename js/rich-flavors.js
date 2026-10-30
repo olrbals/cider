@@ -7,15 +7,11 @@
   const copyWave = copy?.querySelector('.rich-copy__wave-path');
   const copyGlint = copy?.querySelector('.rich-copy__wave-glint');
   const collision = root.querySelector('.rich-new-flavor');
-  const peachTeam = collision?.querySelector('.rich-collision__team--peach');
-  const grapeTeam = collision?.querySelector('.rich-collision__team--grape');
-  const particlesLayer = collision?.querySelector('.rich-collision__droplets');
-  const ice=[...root.querySelectorAll('.rich-collision__ice')];
   const panels = [
     {name:'peach',element:root.querySelector('.rich-fg--peach'),start:.51,end:.66,seed:0},
     {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.835,end:.92,seed:1}
   ];
-  if (![copy,copyWave,copyGlint,collision,peachTeam,grapeTeam,particlesLayer].every(Boolean)
+  if (![copy,copyWave,copyGlint,collision].every(Boolean)
       || panels.some(p=>!p.element)) return;
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -70,14 +66,14 @@
     });
   });
 
-  const NS='http://www.w3.org/2000/svg';
-  const defs=document.createElementNS(NS,'svg');
-  defs.setAttribute('width','0');defs.setAttribute('height','0');defs.setAttribute('aria-hidden','true');
-  defs.innerHTML='<defs><clipPath id="rich-intro-surge" clipPathUnits="objectBoundingBox"><path/></clipPath></defs>';
-  root.prepend(defs);
-  const collisionMask=defs.querySelector('path');
-  while(ice.length<5){const node=ice[0].cloneNode();node.className='rich-collision__ice';collision.querySelector('.rich-new-flavor__art').append(node);ice.push(node);}
-  ice.forEach((node,i)=>{node.style.left='0';node.style.top='0';node.style.width=(i%2?102:76)+'px';node.style.height=node.style.width;node.style.zIndex=i%2?'4':'1';node.style.setProperty('--ice-delay',(-i*1.3)+'s');});
+  const introSlots=[{"key":"slice","side":0,"pre":[246.695,388.8275,180,143.59,29.53,0.88],"post":[465.426,394.34,238.152,189.979,29.53,0.88]},{"key":"peach","side":0,"pre":[376.854,438.017,212,530.134,12,1],"post":[591.7145,417.862,247.651,619.284,-8,1]},{"key":"whole","side":0,"pre":[258.122,704.122,140,140,-162.11,0.88],"post":[478.2995,713.2995,180,180,-162.11,0.88]},{"key":"bunch","side":1,"pre":[1107.835,404.835,240,240,-55.55,0.88],"post":[924.447,418.447,320,320,-55.55,0.88]},{"key":"grape","side":1,"pre":[952.233,450.0195,222.965,557.554,-24,1],"post":[823.994,522.649,252.033,630.242,16,1]},{"key":"single","side":1,"pre":[1259.3015,634.3015,100,100,-30,0.88],"post":[987.3015,742.3015,100,100,-30,0.88]}];
+  introSlots.forEach((slot,i)=>{
+    slot.node=collision.querySelector('[data-r11="'+slot.key+'"]');
+    slot.node.style.setProperty('--r11-delay',(-i*1.13)+'s');
+    slot.node.style.setProperty('--r11-duration',(slot.key==='peach'||slot.key==='grape'?8:6.5+i*.37)+'s');
+  });
+  const depthSlots=[...collision.querySelectorAll('.r11-depth-slot')];
+  const depthGeometry=[[16.759,626.49,600,478.632,160,.48],[1327.41,1027.41,800,800,-30,.52],[1361.8075,-53.1925,600,600,-30,.56]];
   function geometry(){
     width=window.innerWidth;
     height=window.innerHeight;
@@ -118,27 +114,36 @@
   }
 
   function updateCollision(p){
-    const wave=reduce.matches?Number(p>=.28):clamp((p-.23)/.12);
-    const shape=horizontalWave(wave,0);
-    collisionMask.setAttribute('d',shape.mask.replace(/-?\d+(?:\.\d+)?/g,n=>(Number(n)/1000).toFixed(5)));
-    const entry=reduce.matches?Number(p>=.30):smooth(.245,.365,p);
-    // One stream carries both products from the right. No collision impulse.
-    [peachTeam,grapeTeam].forEach((node,i)=>{
-      const travel=1180*(1-entry);
-      const lean=reduce.matches?0:(1-entry)*(i?7:5);
-      node.style.transform=`translate3d(${travel.toFixed(2)}px,${(-14*Math.sin(Math.PI*entry)).toFixed(2)}px,0) rotate(${lean.toFixed(2)}deg)`;
+    const entry=reduce.matches?Number(p>=.25):smooth(.19,.275,p);
+    const meet=reduce.matches?Number(p>=.35):smooth(.29,.375,p);
+    const ink=reduce.matches?meet:smooth(.335,.44,p);
+    const depth=reduce.matches?meet:smooth(.36,.465,p);
+    collision.style.visibility=p>.18?'visible':'hidden';
+    collision.style.opacity=smooth(.18,.205,p).toFixed(3);
+    collision.style.setProperty('--r11-ink',ink.toFixed(4));
+    root.classList.toggle('r11-live',p>.18&&p<.515);
+    introSlots.forEach(({node,side,pre,post},i)=>{
+      const mix=(a,b)=>a+(b-a)*meet;
+      const drift=(side?1:-1)*900*(1-entry);
+      const swell=reduce.matches?0:Math.sin(entry*Math.PI)*-10*(1-meet);
+      const tilt=reduce.matches?0:Math.sin(entry*Math.PI*2)*1.1*(1-meet);
+      node.style.left=(mix(pre[0],post[0])+drift).toFixed(3)+'px';
+      node.style.top=(mix(pre[1],post[1])+swell).toFixed(3)+'px';
+      node.style.width=mix(pre[2],post[2]).toFixed(3)+'px';
+      node.style.height=mix(pre[3],post[3]).toFixed(3)+'px';
+      node.style.transform='translate(-50%,-50%) rotate('+(mix(pre[4],post[4])+tilt).toFixed(3)+'deg)';
+      node.style.opacity=mix(pre[5],post[5]).toFixed(3);
     });
-    collision.style.visibility=p>.23?'visible':'hidden';
-    collision.style.opacity='1';
-    collision.style.setProperty('--collision-ellipse-alpha',smooth(.23,.34,p).toFixed(3));
-    const spots=[[345,150],[1080,210],[285,615],[1125,650],[890,70]];
-    ice.forEach((node,i)=>{
-      const q=reduce.matches?entry:smooth(.25+i*.002,.38+i*.002,p);
-      const [x,y]=spots[i];
-      node.style.opacity=(smooth(0,.25,q)*(i%2?.84:.65)).toFixed(3);
-      node.style.transform=`translate3d(${x+1180*(1-q)}px,${y-36*(1-q)}px,0) rotate(${(i-2)*17+(1-q)*35}deg)`;
+    depthSlots.forEach((node,i)=>{
+      const [x,y,w,h,angle,alpha]=depthGeometry[i];
+      const toward=.68+.32*depth;
+      node.style.left=(x+(i===0?-130:130)*(1-depth)).toFixed(2)+'px';
+      node.style.top=y+'px';node.style.width=w+'px';node.style.height=h+'px';
+      node.style.transform='translate(-50%,-50%) rotate('+angle+'deg) scale('+toward.toFixed(4)+')';
+      node.style.opacity=(depth*alpha).toFixed(4);
+      node.style.filter='blur('+((i===0?6:9)*depth).toFixed(2)+'px)';
     });
-    collision.inert=p<.38||p>=.51;
+    collision.inert=p<.465||p>=.51;
     collision.setAttribute('aria-hidden',String(collision.inert));
   }
 
