@@ -28,7 +28,7 @@
 .history-3d-odometer{
   position:relative;flex:0 0 auto;
   display:flex;align-items:flex-end;justify-content:center;overflow:hidden;
-  font:400 clamp(60px,calc(7.223vw + 4px),108px)/1.3 "Archivo Black",Arial,sans-serif;
+  font:400 clamp(52px,calc(7.223vw - 4px),100px)/1.3 "Archivo Black",Arial,sans-serif;
   font-variant-numeric:tabular-nums;letter-spacing:-2.08px;
   color:#149f5c;white-space:nowrap;
 }
@@ -48,7 +48,7 @@
 }
 .history-3d-caption-window{
   position:relative;width:100%;height:1.3em;overflow:hidden;
-  font-size:clamp(20px,calc(1.945vw + 4px),32px);
+  font-size:24px;
   font-weight:700;line-height:1.3;letter-spacing:-.56px;
 }
 .history-3d-caption-copy{
@@ -88,3 +88,5 @@
   .history-3d-digit-reel{transition:none!important;transform:none!important}
   .history-3d-caption-copy{transition:none!important}
 }
+
+@media(min-width:761px){.history-3d-info{translate:20px 0}}
