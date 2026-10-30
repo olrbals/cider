@@ -33,6 +33,9 @@ for(let i=0;i<=1000;i++){update(i/1000);assert(!/NaN|Infinity/.test(snap()));sta
 for(let i=1000;i>=0;i--){update(i/1000);assert.equal(snap(),states[i]);}
 update(.20);assert(parseFloat(introSlots[1].node.style.left)<introSlots[1].pre[0]);assert(parseFloat(introSlots[4].node.style.left)>introSlots[4].pre[0]);
 update(.285);assert.equal(Number(collision.style['--r11-ink']),0);assert(depthSlots.every(n=>Number(n.style.opacity)===0));
-update(.48);assert.equal(Number(collision.style['--r11-ink']),1);assert(depthSlots.every(n=>Number(n.style.opacity)>.4));
+update(.48);assert.equal(Number(collision.style['--r11-ink']),1);assert(depthSlots.every(n=>Number(n.style.opacity)>.25 && Number(n.style.opacity)<.4));
 assert(!src.includes('v5-ice-cube')&&!src.includes('rich-impact-fluid'));
 console.log('PASS: opposed entry, meet precedes color/foreground bloom, Figma settled states, exact reverse replay, finite depth transforms');
+
+assert.equal((wave(.45,0).mask.match(/ Q/g)||[]).length,7,"seven separately led rounded tongues");
+assert(!fs.readFileSync("js/rich-pet-3d.js","utf8").includes("smooth(.965,1,p)"),"grape remains until section wave covers it");

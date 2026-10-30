@@ -45,46 +45,64 @@ async function boot(){
   const tide=reduce.matches?0:performance.now()*.001;
   if(W!==viewport.clientWidth||H!==viewport.clientHeight)resize();
   scene.children.forEach(o=>{if(o.isGroup||o.isMesh)o.visible=false;});
-  const introExit=smooth(.51,.66,p);
+  const introExit=reduce.matches?Number(p>=.555):smooth(.46,.65,p);
+  const units=2*10*Math.tan(38*Math.PI/360)/H;
   pets.forEach((pet,index)=>{
-   const intro=index<2,i=index%2,name=i?'grape':'peach';
-   const node=intro?root.querySelector('[data-r11="'+name+'"]'):root.querySelector('.rich-fg--'+name+' [data-role="bottle"]');
-   const active=intro?p>.19&&p<.66:(i?p>.77:p>.51&&p<.93);
-   if(!node||!active)return;
-   const r=node.getBoundingClientRect(),a=angle(node);const height=slotSize(node,r,a);
-   const u=clamp((p-(i?.77:.51))/(i?.115:.15)),entry=smooth(0,.88,u),exit=i?smooth(.965,1,p):smooth(.795,.89,p);
-   place(pet,node,height*(intro?.88:1));
-   if(intro||i===1)pet.position.x-=(intro?introExit:exit)*W*1.3*(2*10*Math.tan(38*Math.PI/360)/H);
+   // One peach instance persists from the duo into its detail scene.
+   if(index===2)return;
+   const i=index%2,name=i?'grape':'peach',intro=index===1;
+   if(p<=.19 || (intro&&p>=.65) || (!i&&p>=.93) || (index===3&&p<=.745))return;
+   const source=root.querySelector('[data-r11="'+name+'"]');
+   const target=root.querySelector('.rich-fg--'+name+' [data-role="bottle"]');
+   const node=intro||(!i&&p<.46)?source:target;
+   const r=node.getBoundingClientRect(),a=angle(node),height=slotSize(node,r,a);
+   const entry=reduce.matches?Number(p>=.82):smooth(.745,.895,p),exit=reduce.matches?Number(p>=.82):smooth(.755,.91,p);
+   place(pet,node,height*(intro||(!i&&p<.46)?.88:1));
    pet.rotation.order='YXZ';
-   pet.rotation.x=intro?.07-.55*introExit:(.38*(1-entry)-.60*exit);
-   pet.rotation.y=intro?(i?-.10:.10)+1.75*introExit:(.32*(1-entry)+1.85*exit);
-   pet.rotation.z=-a+(intro?.60*introExit:(i?-.48*(1-entry)+.62*exit:.40*(1-entry)+.62*exit));
+   pet.rotation.x=0;pet.rotation.y=0;pet.rotation.z=-a;
+   if(!i){
+    if(p<.65){
+     const end=pet.position.clone(),endScale=pet.scale.x;
+     const sr=source.getBoundingClientRect(),sa=angle(source);
+     place(pet,source,slotSize(source,sr,sa)*.88);
+     pet.position.lerp(end,introExit);pet.scale.setScalar(pet.scale.x+(endScale-pet.scale.x)*introExit);
+     pet.rotation.z=-sa*(1-introExit)-a*introExit;
+    }
+    pet.rotation.x=-.16*exit;pet.rotation.y=.65*exit;pet.rotation.z+=.16*exit;
+   }else if(intro){
+    pet.position.x-=introExit*W*1.1*units;
+    pet.rotation.y=.40*introExit;pet.rotation.z+=.12*introExit;
+   }else{
+    pet.position.y+=Math.sin(Math.PI*entry)*.12;
+    pet.rotation.x=.12*(1-entry);pet.rotation.y=-.22*(1-entry);
+    pet.rotation.z+=-.16*(1-entry);
+   }
    if(!reduce.matches){
-    const phase=tide*.82+index*1.7;
-    pet.position.y+=Math.sin(phase)*.045;
-    pet.rotation.z+=Math.sin(phase*.83)*.018;
-    pet.rotation.y+=Math.sin(phase*.63)*.025;
+    const phase=tide*.82+i*1.7;
+    pet.position.y+=Math.sin(phase)*.035;
+    pet.rotation.z+=Math.sin(phase*.83)*.014;
+    pet.rotation.y+=Math.sin(phase*.63)*.020;
    }
    pet.visible=true;
   });
   fruits.forEach(({node,img,mesh},index)=>{
    const parent=node.closest('.rich-fg');
    const intro=!parent;
-   if(intro?p<=.18||p>=.66:p<.51)return;
+   if(intro?p<=.18||p>=.66:p<.46)return;
    if(parent&&(getComputedStyle(parent).visibility==='hidden'||(parent.classList.contains('rich-fg--peach')&&p>=.93)))return;
    const r=node.getBoundingClientRect();if(r.right<0||r.left>W)return;
    const front=node.dataset.depth==='front'||node.dataset.r11==='whole'||node.dataset.r11==='single';
    const z=front?.9:-.65,a=angle(node),height=slotSize(node,r,a);
-   place(mesh,node,height,z);if(intro||parent?.classList.contains('rich-fg--grape'))mesh.position.x-=(intro?introExit:smooth(.965,1,p))*W*1.3*(2*(10-z)*Math.tan(38*Math.PI/360)/H);const units=2*(10-z)*Math.tan(38*Math.PI/360)/H;
+   place(mesh,node,height,z);if(intro)mesh.position.x-=introExit*W*1.1*(2*(10-z)*Math.tan(38*Math.PI/360)/H);const units=2*(10-z)*Math.tan(38*Math.PI/360)/H;
    mesh.scale.set(node.offsetWidth/node.offsetHeight*height*units,height*units,1);mesh.rotation.z=-a;
    const c=getComputedStyle(img);if(c.transform!=='none'){const m=new DOMMatrixReadOnly(c.transform);mesh.scale.x*=m.a<0?-1:1;mesh.scale.y*=m.d<0?-1:1;}
    if(!reduce.matches){const phase=tide*.75+index*1.43;mesh.position.y+=Math.sin(phase)*.065;mesh.position.x+=Math.cos(phase*.71)*.025;mesh.rotation.z+=Math.sin(phase*.87)*.025;}
-   mesh.material.side=THREE.DoubleSide;mesh.material.opacity=intro?Number(node.style.opacity||1):1;mesh.visible=true;mesh.renderOrder=front?2:0;
+   mesh.material.side=THREE.DoubleSide;mesh.material.opacity=intro?Number(node.style.opacity||1)*(1-introExit):smooth(.49,.64,p);mesh.visible=true;mesh.renderOrder=front?2:0;
   });
   renderer.render(scene,camera);
   root.dataset.pet3d='ready';
  }
- function active(){return !document.hidden&&p>.18&&p<1&&root.getBoundingClientRect().bottom>0&&root.getBoundingClientRect().top<innerHeight;}
+ function active(){return !document.hidden&&p>.18&&p<=1&&root.getBoundingClientRect().bottom>0&&root.getBoundingClientRect().top<innerHeight;}
  function loop(now){frame=0;if(!active())return;if(now-last>32){render();last=now;}if(!reduce.matches)frame=requestAnimationFrame(loop);}
  function update(progress){const moved=progress!==p;p=progress;if(!active()){renderer.clear();return;}if(moved||!frame){render();last=performance.now();}if(!frame&&!reduce.matches)frame=requestAnimationFrame(loop);}
  window.richPet3D={update};

@@ -8,8 +8,8 @@
   const copyGlint = copy?.querySelector('.rich-copy__wave-glint');
   const collision = root.querySelector('.rich-new-flavor');
   const panels = [
-    {name:'peach',element:root.querySelector('.rich-fg--peach'),start:.51,end:.66,seed:0},
-    {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.835,end:.92,seed:1}
+    {name:'peach',element:root.querySelector('.rich-fg--peach'),start:.46,end:.65,seed:0},
+    {name:'grape',element:root.querySelector('.rich-fg--grape'),start:.735,end:.91,seed:1}
   ];
   if (![copy,copyWave,copyGlint,collision].every(Boolean)
       || panels.some(p=>!p.element)) return;
@@ -121,7 +121,7 @@
     const depth=reduce.matches?meet:smooth(.335,.405,p);
     const burst=reduce.matches?meet:burstEase(smooth(.325,.385,p));
     collision.style.visibility=p>.18?'visible':'hidden';
-    collision.style.opacity=smooth(.18,.205,p).toFixed(3);
+    collision.style.opacity=(smooth(.18,.205,p)*(1-smooth(.46,.65,p))).toFixed(3);
     collision.style.setProperty('--r11-ink',ink.toFixed(4));
     root.classList.toggle('r11-live',p>.18&&p<.515);
     introSlots.forEach(({node,side,pre,post},i)=>{
@@ -140,12 +140,12 @@
     });
     depthSlots.forEach((node,i)=>{
       const [x,y,w,h,angle,alpha]=depthGeometry[i];
-      const toward=.18+.82*burstEase(depth);
+      const toward=.18+.62*burstEase(depth);
       node.style.left=(720+(x-720)*depth).toFixed(2)+'px';
       node.style.top=(460+(y-460)*depth)+'px';node.style.width=w+'px';node.style.height=h+'px';
       node.style.transform='translate(-50%,-50%) rotate('+angle+'deg) scale('+toward.toFixed(4)+')';
-      node.style.opacity=(smooth(0,.18,depth)*(1-(1-alpha)*smooth(.25,1,depth))).toFixed(4);
-      node.style.filter='blur('+((i===0?6:9)*depth).toFixed(2)+'px)';
+      node.style.opacity=(smooth(0,.18,depth)*(1-(1-alpha*.65)*smooth(.25,1,depth))).toFixed(4);
+      node.style.filter='blur('+((i===0?3:5)*depth).toFixed(2)+'px)';
     });
     collision.inert=p<.465||p>=.51;
     collision.setAttribute('aria-hidden',String(collision.inert));
@@ -156,34 +156,32 @@
   function horizontalWave(u,seed){
     if(u<=0)return {mask:'M1040 -40H1100V1040H1040Z',rim:'M1040 -40V1040',x:1040};
     if(u>=1)return {mask:'M-40 -40H1040V1040H-40Z',rim:'M-40 -40V1040',x:-40};
-    const ys=[-100,0,110,230,365,490,620,740,865,1000,1100];
-    const delays=[.02,.025,.04,.065,.10,.12,.09,.045,.015,.02,.02];
-    const xs=ys.map((y,i)=>{
-      const v=smooth(delays[(i+seed*2)%delays.length],.94,u);
-      const pulse=smooth(.08,.35,u)*(1-smooth(.62,.96,u));
-      return 1120-1480*v + [10,-25,-110,-155,15,90,30,-100,-175,-55,10][i]*pulse;
+    // A connected advancing body plus seven stretched tongues. Each tongue
+    // has its own lead, bend and thickness; the body closes the gaps at the end.
+    const front=1100-1180*smooth(.30,1,u);
+    const rows=[[-40,88,.00,530,-44],[112,55,.035,840,62],[272,94,.07,650,-72],
+      [454,66,.015,1040,48],[619,104,.09,770,-56],[813,64,.045,960,65],[1004,90,.025,610,-40]];
+    const bend=50*Math.sin(Math.PI*u);
+    let mask=`M1600 -40H${front} C${front-bend} 130 ${front+bend} 245 ${front} 360 S${front-bend} 600 ${front} 740 S${front+bend} 940 ${front} 1040 H1600Z`,rim='';
+    rows.forEach(([y,r,delay,length,bend],i)=>{
+      const v=smooth(delay,.91,u), swell=Math.sin(Math.PI*v);
+      const tip=1120-(1200+length)*v;
+      const neck=Math.max(tip+80,front+100);
+      const cy=y+bend*swell,thick=r*(.20+.80*smooth(.10,.92,v));
+      const tongue=`M1600 ${y-r} C${neck} ${y-r} ${tip+180} ${cy-thick} ${tip+28} ${cy-thick*.45} Q${tip-24} ${cy} ${tip+28} ${cy+thick*.45} C${tip+170} ${cy+thick} ${neck} ${y+r} 1600 ${y+r}Z`;
+      mask+=' '+tongue;
+      rim+=` M${tip+28} ${cy-thick*.45} Q${tip-24} ${cy} ${tip+28} ${cy+thick*.45}`;
     });
-    let rim=`M${xs[0]} ${ys[0]}`;
-    for(let i=0;i<ys.length-1;i++){
-      const prev=Math.max(0,i-1),next=Math.min(ys.length-1,i+2);
-      rim+=` C${xs[i]+(xs[i+1]-xs[prev])/6} ${ys[i]+(ys[i+1]-ys[prev])/6} ${xs[i+1]-(xs[next]-xs[i])/6} ${ys[i+1]-(ys[next]-ys[i])/6} ${xs[i+1]} ${ys[i+1]}`;
-    }
-    let mask=rim+' L1600 1100L1600 -100Z';
-    const lead=smooth(.04,.28,u)*(1-smooth(.48,.72,u));
-    [2,8].forEach((i,j)=>{
-      const x=xs[i]-80*lead, y=ys[i],rx=(28+j*8)*lead,ry=(14+j*5)*lead;
-      mask+=` M${x-rx} ${y} a${rx} ${ry} 0 1 0 ${rx*2} 0 a${rx} ${ry} 0 1 0 ${-rx*2} 0Z`;
-    });
-    return {mask,rim,x:xs[5]};
+    return {mask,rim,x:front};
   }
 
   function updateFlavor(panel,p){
     const u=reduce.matches?Number(p>=(panel.start+panel.end)/2):
       clamp((p-panel.start)/(panel.end-panel.start));
-    const productU=panel.name==='grape'?(reduce.matches?Number(p>=.85):clamp((p-.77)/.115)):u;
+    const productU=panel.name==='grape'?(reduce.matches?Number(p>=.82):clamp((p-.745)/.15)):u;
     panel.element.style.visibility=productU>0?'visible':'hidden';
     panel.element.style.transform='none';
-    const next=panel.name==='peach'?smooth(.795,.89,p):0;
+    const next=panel.name==='peach'?(reduce.matches?Number(p>=.82):smooth(.755,.91,p)):0;
     panel.element.inert=u<.99 || next>.01;
     panel.element.setAttribute('aria-hidden',String(u<.99 || next>.01));
     const shape=horizontalWave(u,panel.seed);
@@ -198,7 +196,7 @@
     }
     const caption=panel.element.querySelector('.rich-fg__caption');
     // Product first, then a shared opposing title slide, then background.
-    const titleSwap=reduce.matches?Number(p>=.82):smooth(.795,.835,p);
+    const titleSwap=reduce.matches?Number(p>=.82):smooth(.775,.855,p);
     const titleX=panel.name==='grape'?440*(1-titleSwap):-440*titleSwap;
     caption.style.transform='none';
     panel.nameLabel.style.transform='translate3d('+titleX.toFixed(2)+'px,0,0)';
@@ -210,7 +208,7 @@
       const enter=reduce.matches?0:(1-productU);
       const orbit=reduce.matches?0:active;
       const roll=reduce.matches?1:smooth(0,.88,productU);
-      const travel=(1-roll)*760-next*960;
+      const travel=(panel.name==='peach'?0:(1-roll)*1000)-next*1120;
       const dx=bottle?travel:travel+Math.cos(angle)*18*Math.sin(Math.PI*productU)+Math.cos(angle)*8*orbit;
       const settle=Math.sin(clamp((productU-.75)/.25)*Math.PI*2)*Math.pow(1-clamp((productU-.75)/.25),2);
       // A broad crest lifts the incoming group; a smaller trough settles it.
