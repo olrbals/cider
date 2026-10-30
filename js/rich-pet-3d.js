@@ -24,6 +24,7 @@ async function boot(){
  viewport.append(renderer.domElement);root.classList.add('rich-pet-ready');
  const reduce=matchMedia('(prefers-reduced-motion:reduce)');
  let W=0,H=0,frame=0,last=0,p=Number(root.dataset.richProgress||0);
+ const introBottleScale=.88*.9;
  const clamp=t=>Math.max(0,Math.min(1,t));
  const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
  function resize(){W=viewport.clientWidth;H=viewport.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,1.2,1920/W,1080/H));renderer.setSize(W,H);}
@@ -57,14 +58,14 @@ async function boot(){
    const node=intro||(!i&&p<.46)?source:target;
    const r=node.getBoundingClientRect(),a=angle(node),height=slotSize(node,r,a);
    const entry=reduce.matches?Number(p>=.82):smooth(.745,.895,p),exit=reduce.matches?Number(p>=.82):smooth(.755,.91,p);
-   place(pet,node,height*(intro||(!i&&p<.46)?.88:1));
+   place(pet,node,height*(intro||(!i&&p<.46)?introBottleScale:1));
    pet.rotation.order='YXZ';
    pet.rotation.x=0;pet.rotation.y=0;pet.rotation.z=-a;
    if(!i){
     if(p<.65){
      const end=pet.position.clone(),endScale=pet.scale.x;
      const sr=source.getBoundingClientRect(),sa=angle(source);
-     place(pet,source,slotSize(source,sr,sa)*.88);
+     place(pet,source,slotSize(source,sr,sa)*introBottleScale);
      pet.position.lerp(end,introExit);pet.scale.setScalar(pet.scale.x+(endScale-pet.scale.x)*introExit);
      pet.rotation.z=-sa*(1-introExit)-a*introExit;
     }

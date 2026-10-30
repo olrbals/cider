@@ -139,7 +139,7 @@ function makeCan(stage, track, images) {
   const carrier = new THREE.Group();
   // At 1440px and above, the can is 84% of its previous model scale.
   // Compact desktop sizes adapt slightly further to keep the side gutters clear.
-  const baseCanScale = 0.7056;
+  const baseCanScale = 0.7056 * 0.8;
   carrier.scale.setScalar(baseCanScale);
   // The CylinderGeometry is built along local Y. Leave that axis upright:
   // rolling.rotation.y now spins the standing can side-to-side on scroll.

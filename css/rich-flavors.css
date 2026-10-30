@@ -341,3 +341,6 @@
  contain:layout paint style;
 }
 .rich-pet-ready .rich-fg__photo-area,.rich-pet-ready .r11-slot{visibility:hidden}
+
+/* Match the collision-only bottle adjustment in the non-WebGL fallback. */
+.r11-slot[data-r11="peach"] img,.r11-slot[data-r11="grape"] img{transform:scale(.9)}
