@@ -170,8 +170,18 @@
 
   function nearestTarget(x, y) {
     if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return null;
+    // Sticky history can sit above the next section's hit-testing surface.
+    // Resolve its visible rectangle before relying on elementFromPoint.
+    const historyStage = document.querySelector('.history-3d-stage');
+    const historySection = historyStage?.closest('.history-3d');
+    const hr = historyStage?.getBoundingClientRect();
+    const sectionRect = historySection?.getBoundingClientRect();
+    if (hr && sectionRect && sectionRect.top <= 0 && sectionRect.bottom > innerHeight * .5
+        && x >= hr.left && x < hr.right && y >= hr.top && y < hr.bottom) return historyStage;
     const hit = document.elementFromPoint(x, y);
     if (!(hit instanceof Element) || panel.contains(hit)) return null;
+    // Route the RICH scene to its full-frame refraction surface.
+    if (hit.closest('.rich-pet-ready')) return hit.closest('#rich-flavors').querySelector('.rich-flavors__viewport');
     // The 3D stage ignores pointer events so the page can scroll. Route
     // hits on its visible track back to the sticky stage for refraction.
     const history = hit.closest('.history-3d');

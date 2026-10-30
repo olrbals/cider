@@ -169,7 +169,13 @@
   // Show ambient carbonation after HERO has fully left the viewport.
   function syncHeroBoundary() {
     const beyondHero = !hero || hero.getBoundingClientRect().bottom <= 0;
-    const show = beyondHero && !document.hidden && !reducedMotion.matches;
+    const rich = document.querySelector('#rich-flavors');
+    const rect = rich?.getBoundingClientRect();
+    const progress = rect ? Math.max(0, -rect.top / Math.max(1, rich.offsetHeight - innerHeight)) : 0;
+    const t = Math.max(0, Math.min(1, progress / .16));
+    const fade = t * t * (3 - 2 * t);
+    canvas.style.opacity = String(.84 * (1 - fade));
+    const show = beyondHero && fade < 1 && !document.hidden && !reducedMotion.matches;
     canvas.classList.toggle('is-active', show);
     if (show) resume();
     else suspend();
