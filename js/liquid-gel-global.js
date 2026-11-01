@@ -117,7 +117,39 @@
   let motionEnergy = 0;
   let interacting = false;
   let richDistorted = false;
+  let richPaused = false;
+  const richRefractionEnd = .29;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const richTarget = () => active?.classList.contains('rich-flavors__viewport');
+
+  function richProgress() {
+    const root = active?.closest('#rich-flavors');
+    if (!root) return 0;
+    const rect = root.getBoundingClientRect();
+    return clamp(-rect.top / Math.max(1, root.offsetHeight - innerHeight), 0, 1);
+  }
+
+  function setRichPaused(paused) {
+    if (!richTarget() || richPaused === paused) return;
+    richPaused = paused;
+    if (paused) {
+      if (animation) cancelAnimationFrame(animation);
+      animation = 0;
+      pending.length = 0;
+      last = null;
+      motionEnergy = 0;
+      active.classList.remove('site-liquid-target');
+      return;
+    }
+    initializeField();
+    active.classList.toggle('site-liquid-target', richDistorted);
+    setAmount();
+    schedule();
+  }
+
+  function syncRichPaused() {
+    if (richTarget()) setRichPaused(richProgress() >= richRefractionEnd);
+  }
 
   function setAmount() {
     // V4 used uAmount = refraction / 8 and displacement proportional
@@ -159,9 +191,14 @@
     if (active === next) return;
     if (active) active.classList.remove('site-liquid-target');
     active = next;
+    richPaused = false;
     last = null;
     pending.length = 0;
     if (active) {
+      if (richTarget() && richProgress() >= richRefractionEnd) {
+        richPaused = true;
+        return;
+      }
       initializeField();
       active.classList.toggle('site-liquid-target', !richTarget() || richDistorted);
       setAmount();
@@ -197,7 +234,7 @@
   // V4's normalized, connected mouse strokes, now relative to the
   // affected real DOM section rather than a fullscreen demo canvas.
   function pushPointer(x, y, injectStroke = true) {
-    if (!active) return;
+    if (!active || richPaused) return;
     const rect = active.getBoundingClientRect();
     const current = {
       x: clamp((x - rect.left) / Math.max(1, rect.width), 0, 1),
@@ -318,9 +355,8 @@
   }
 
   // Optimize only RICH; preserve the established effects in every other section.
-  const richTarget = () => active?.classList.contains('rich-flavors__viewport');
   function writeTexture(force = false) {
-    if (!active || !pixelData) return;
+    if (!active || !pixelData || (richTarget() && richPaused)) return;
     // V4 originally takes the height gradient in a WebGL shader.
     // Encode that same gradient into feDisplacementMap's RG channels.
     let changed = force;
@@ -363,7 +399,7 @@
 
   function draw(time) {
     animation = 0;
-    if (document.hidden || !active || motion.matches) return;
+    if (document.hidden || !active || motion.matches || richPaused) return;
     const elapsed = lastTime ? time - lastTime : 16.667;
     lastTime = time;
     const dt = clamp(elapsed / 16.667, .35, 1.4);
@@ -379,7 +415,7 @@
   }
 
   function schedule() {
-    if (!animation && !document.hidden && !motion.matches && active) {
+    if (!animation && !document.hidden && !motion.matches && active && !richPaused) {
       animation = requestAnimationFrame(draw);
     }
   }
@@ -392,7 +428,9 @@
       speeds.fill(0);
       nextHeights.fill(0);
       nextSpeeds.fill(0);
-      writeTexture(true);
+      richDistorted = false;
+      if (richTarget()) active.classList.remove('site-liquid-target');
+      if (!richPaused) writeTexture(true);
     }
   }
 
@@ -418,13 +456,14 @@
     if (next !== active) {
       setTarget(next);
     } else if (active) {
+      syncRichPaused();
       const rect = active.getBoundingClientRect();
-      if (Math.abs(rect.width-width) > 2 || Math.abs(rect.height-height) > 2) {
+      if (!richPaused && (Math.abs(rect.width-width) > 2 || Math.abs(rect.height-height) > 2)) {
         initializeField();
       }
     }
     // Scrolling moves page under the cursor; don't inject false strokes.
-    if (active) pushPointer(pointerX, pointerY, false);
+    if (active && !richPaused) pushPointer(pointerX, pointerY, false);
   }
   function requestSync() {
     if (!resizeFrame) resizeFrame = requestAnimationFrame(syncPosition);

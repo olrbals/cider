@@ -245,8 +245,10 @@
     updateCollision(progress);
     root.dataset.richScene=progress>=.94?'grape':progress>=.66?'peach':progress>=.455?'duo':progress>.235?'burst':'copy';
     root.dataset.richProgress=progress.toFixed(5);
+    root.classList.toggle('rich-refraction-disabled',progress>=.29);
     panels.forEach(panel=>updateFlavor(panel,progress));
     window.richPet3D?.update(progress);
+    window.richCarbonation?.update(progress);
   }
   function queue(){
     if(!raf){

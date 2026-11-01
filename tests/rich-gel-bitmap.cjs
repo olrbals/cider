@@ -13,7 +13,7 @@ let uploads=0,reads=0;const filterStates=[];
 const w=3,h=3,pixels={data:new Uint8ClampedArray(w*h*4)},heights=new Float32Array(w*h);
 for(let i=0;i<w*h;i++){pixels.data[i*4]=128;pixels.data[i*4+1]=128;pixels.data[i*4+2]=128;pixels.data[i*4+3]=255;}
 const writeBlock=src.slice(src.indexOf('  function writeTexture'),src.indexOf('  function draw('));
-const write=new Function('active','pixelData','heights','cols','rows','richTarget','ctx','surface','mapCanvas','encodeGelBitmap','setAmount','clamp','let richDistorted=false;'+writeBlock+';return writeTexture;')({classList:{toggle(name,value){filterStates.push(value);}}},pixels,heights,w,h,()=>true,{putImageData(){reads++;}},{setAttribute(){uploads++;}},{toDataURL(){throw Error('RICH must not read back canvas');}},encode,()=>{},(v,a,b)=>Math.max(a,Math.min(b,v)));
+const write=new Function('active','pixelData','heights','cols','rows','richTarget','ctx','surface','mapCanvas','encodeGelBitmap','setAmount','clamp','let richDistorted=false,richPaused=false;'+writeBlock+';return writeTexture;')({classList:{toggle(name,value){filterStates.push(value);}}},pixels,heights,w,h,()=>true,{putImageData(){reads++;}},{setAttribute(){uploads++;}},{toDataURL(){throw Error('RICH must not read back canvas');}},encode,()=>{},(v,a,b)=>Math.max(a,Math.min(b,v)));
 write(true);assert.equal(uploads,0,'neutral field bypasses filter/upload');write();assert.equal(uploads,0);heights[4]=.1;write();assert.equal(uploads,1,'ripple restores field upload');write();assert.equal(uploads,1,'unchanged ripple not uploaded');heights.fill(0);write();assert.equal(uploads,1,'neutral again bypasses upload');assert.equal(reads,0);
 console.log('PASS RICH skips duplicate fields and never reads canvas for PNG');
 

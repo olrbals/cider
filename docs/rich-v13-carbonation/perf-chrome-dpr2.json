@@ -1,0 +1,57 @@
+{
+  "scenario": "Chrome 1680x938 DPR2, 6s RICH progress 0.70 -> 0.935 -> 0.70 with an active pointer stroke",
+  "baselineCommit": "7d1539050311d649dcfd34825c1f22b5e00a176e",
+  "baseline": [
+    {
+      "fps": 19.166666666666668,
+      "frameP50": 50,
+      "frameP95": 66.80000000000018,
+      "framesOver33ms": 102,
+      "longTasks": 3,
+      "longTaskTotalMs": 230,
+      "refractionMapUpdates": 112,
+      "filter": "url(\"#site-liquid-gel-filter\")"
+    },
+    {
+      "fps": 20.5,
+      "frameP50": 50,
+      "frameP95": 66.69999999999891,
+      "framesOver33ms": 106,
+      "longTasks": 0,
+      "longTaskTotalMs": 0,
+      "refractionMapUpdates": 123,
+      "filter": "url(\"#site-liquid-gel-filter\")"
+    }
+  ],
+  "candidate": [
+    {
+      "fps": 46,
+      "frameP50": 16.699999999999818,
+      "frameP95": 33.400000000000546,
+      "framesOver33ms": 21,
+      "longTasks": 1,
+      "longTaskTotalMs": 90,
+      "refractionMapUpdates": 0,
+      "filter": "none",
+      "richCanvasCount": 1,
+      "richCanvasDprCap": 1.25
+    },
+    {
+      "fps": 41.333333333333336,
+      "frameP50": 16.700000000000728,
+      "frameP95": 50,
+      "framesOver33ms": 31,
+      "longTasks": 7,
+      "longTaskTotalMs": 496,
+      "refractionMapUpdates": 0,
+      "filter": "none",
+      "richCanvasCount": 1,
+      "richCanvasDprCap": 1.25
+    }
+  ],
+  "notes": [
+    "The two-run RAF mean improved from 19.83fps to 43.67fps in this measured scenario.",
+    "Long Task counts varied between runs, so no Long Task reduction claim is made.",
+    "RAF cadence is not GPU-presented FPS."
+  ]
+}
