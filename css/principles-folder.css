@@ -1,11 +1,11 @@
-/* Three brand principle cards. Only this section is affected.
-   Arrival: right / left / below -> center stack -> fan on scroll. */
+/* Three overlapping translucent water-glass layers, scoped to the principle scene.
+   No panels/cards or GPU-heavy backdrop filters. Scroll progress is JS-owned. */
 .principles-folder {
-  --pf-ink: #087c4c;
+  --pf-ink: #0a8450;
   position: relative;
-  height: 330svh;
-  min-height: 2200px;
   isolation: isolate;
+  height: 268svh;
+  min-height: 1680px;
   background: #f8fff9;
   color: var(--pf-ink);
 }
@@ -13,18 +13,17 @@
   position: sticky;
   top: 0;
   height: 100svh;
-  min-height: 700px;
+  min-height: 680px;
   overflow: hidden;
-  background: #f8fff9;
+  background: radial-gradient(ellipse at 50% 59%, #f0fff6 0%, #f8fff9 55%, #fbfffc 100%);
 }
-/* Keep the fixed Korean message prominent, distinct from the animated cards. */
 .principles-folder__message {
   position: absolute;
   z-index: 10;
-  top: 9%;
+  top: 10%;
   left: 50%;
-  width: min(1050px, calc(100% - 80px));
   transform: translateX(-50%);
+  width: min(1040px, calc(100% - 88px));
   text-align: center;
   pointer-events: none;
 }
@@ -32,100 +31,163 @@
   margin: 0;
   color: #087c4c;
   font-family: "Pretendard", sans-serif;
-  letter-spacing: -.045em;
+  letter-spacing: -.043em;
   line-height: 1.32;
   text-wrap: balance;
 }
 .principles-folder__copy--top {
-  font-size: clamp(17px, 1.42vw, 22px);
+  font-size: clamp(17px, 1.4vw, 21px);
   font-weight: 600;
 }
 .principles-folder__copy--bottom {
-  margin-top: 12px;
-  font-size: clamp(26px, 2.45vw, 38px);
+  margin-top: 11px;
+  font-size: clamp(27px, 2.35vw, 37px);
   font-weight: 700;
 }
 .principles-folder__copy--bottom strong { font-weight: 800; }
 .pf-scene {
   position: absolute;
-  top: 57%;
+  z-index: 2;
   left: 50%;
-  width: min(1100px, 100%);
-  height: 480px;
+  top: 56%;
+  width: min(1040px, 95vw);
+  height: min(460px, 55svh);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
-.pf-card {
+.pf-scene::before,
+.pf-scene::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border-radius: 50%;
+}
+.pf-scene::before {
+  width: 88%;
+  height: 100%;
+  background: radial-gradient(ellipse, rgba(120, 212, 165, .16), transparent 70%);
+}
+.pf-scene::after {
+  width: 84%;
+  height: 88%;
+  border: 1px solid rgba(84, 191, 132, .095);
+}
+.pf-glass {
   --pf-x: 0px;
   --pf-y: 0px;
-  --pf-rot: 0deg;
   --pf-scale: 1;
-  --pf-opacity: 1;
+  --pf-rotation: 0deg;
+  --pf-word-opacity: 1;
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 254px;
-  height: 318px;
-  padding: 24px 25px 27px;
+  width: min(750px, 75vw);
+  height: min(338px, 43svh);
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: #fff;
-  border: 1px solid #d4e8db;
-  border-radius: 10px;
-  color: var(--pf-ink);
-  box-shadow: 0 16px 36px rgba(6, 89, 49, .14);
-  transform-origin: 50% 50%;
-  transform: translate(-50%, -50%) translate3d(var(--pf-x), var(--pf-y), 0) rotate(var(--pf-rot)) scale(var(--pf-scale));
-  opacity: var(--pf-opacity);
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(128, 207, 168, .51);
+  border-radius: 48% 52% 47% 53% / 40% 43% 57% 60%;
+  background:
+    radial-gradient(ellipse at 18% 15%, rgba(255,255,255,.93), transparent 36%),
+    radial-gradient(ellipse at 82% 82%, rgba(95, 203, 147, .16), transparent 52%),
+    linear-gradient(123deg, rgba(219, 248, 231, .65), rgba(241, 255, 247, .50) 47%, rgba(183, 229, 204, .50));
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.95),
+    inset 0 -14px 40px rgba(111, 194, 151, .095),
+    0 24px 65px rgba(24, 133, 74, .09);
+  transform: translate(-50%, -50%) translate3d(var(--pf-x),var(--pf-y),0) rotate(var(--pf-rotation)) scale(var(--pf-scale));
+  transform-origin: center;
+  will-change: transform;
   backface-visibility: hidden;
-  will-change: transform, opacity;
 }
-.pf-card:nth-of-type(1) {
-  --pf-x: -303px;
-  --pf-rot: -8deg;
+.pf-glass--pure { z-index: 3; }
+.pf-glass--clear { z-index: 2; --pf-x: 38px; --pf-y: 30px; --pf-scale: .94; --pf-word-opacity: 0; }
+.pf-glass--caffeine { z-index: 1; --pf-x: -34px; --pf-y: 54px; --pf-scale: .88; --pf-word-opacity: 0; }
+.pf-glass__shine {
+  position: absolute;
+  inset: 7px;
+  border-radius: inherit;
+  border-top: 1.5px solid rgba(255,255,255,.9);
+  border-left: 1px solid rgba(255,255,255,.7);
+  border-bottom: 1px solid rgba(126, 210, 168, .14);
+  pointer-events: none;
+}
+.pf-glass__shine::after {
+  content: "";
+  position: absolute;
+  top: 12%;
+  left: 8%;
+  width: 19%;
+  height: 12%;
+  border-top: 2px solid rgba(255,255,255,.92);
+  border-radius: 50%;
+  transform: rotate(-14deg);
+}
+.pf-glass__word {
+  position: relative;
   z-index: 1;
-}
-.pf-card:nth-of-type(2) {
-  --pf-x: 0px;
-  --pf-y: -15px;
-  z-index: 2;
-}
-.pf-card:nth-of-type(3) {
-  --pf-x: 303px;
-  --pf-rot: 8deg;
-  z-index: 3;
-}
-.pf-card__number {
-  font: 700 13px/1 "Archivo", sans-serif;
-  letter-spacing: .06em;
-}
-.pf-card__word {
-  display: block;
-  margin: auto -5px;
-  font: 800 46px/.98 "Archivo", "Archivo Black", sans-serif;
+  margin: 0;
+  font: 400 clamp(72px, 8.2vw, 128px)/1 "Archivo Black", Impact, sans-serif;
   letter-spacing: -.07em;
-  text-align: center;
+  white-space: nowrap;
+  color: #0b985a;
+  opacity: var(--pf-word-opacity);
+  text-shadow: 0 2px 0 rgba(255,255,255,.36);
 }
-.pf-card__word--long { font-size: 30px; line-height: 1.02; }
-.pf-card__star {
-  align-self: flex-end;
-  font-size: 20px;
-  line-height: 1;
+.pf-glass__word--long { font-size: clamp(41px, 5.25vw, 80px); }
+.pf-progress {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  bottom: 9%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #19985f;
+  pointer-events: none;
+}
+.pf-progress__count {
+  font: 600 12px/1 "Archivo", Arial, sans-serif;
+  letter-spacing: .13em;
+  white-space: nowrap;
+}
+.pf-progress__track {
+  display: block;
+  width: 90px;
+  height: 2px;
+  background: rgba(16, 146, 81, .2);
+}
+.pf-progress__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #149f5c;
+  transform-origin: left;
+  transform: scaleX(var(--pf-progress, .333));
 }
 @media (max-height: 760px) {
-  .principles-folder__message { top: 6.5%; }
-  .pf-scene { top: 59%; transform: translate(-50%, -50%) scale(.84); }
+  .principles-folder__message { top: 7%; }
+  .pf-scene { top: 56%; }
+  .pf-progress { bottom: 7%; }
 }
 @media (max-width: 800px) {
-  .principles-folder { height: 320svh; min-height: 2000px; }
-  .principles-folder__stage { min-height: 580px; }
-  .principles-folder__message { top: 7%; width: calc(100% - 48px); }
-  .principles-folder__copy--top { font-size: 17px; }
-  .principles-folder__copy--bottom { font-size: clamp(24px, 5vw, 32px); }
-  .pf-scene { top: 58%; transform: translate(-50%, -50%) scale(.77); }
+  .principles-folder { height: 255svh; min-height: 1450px; }
+  .principles-folder__stage { min-height: 550px; }
+  .principles-folder__message { top: 9%; width: calc(100% - 48px); }
+  .principles-folder__copy--top { font-size: 16px; }
+  .principles-folder__copy--bottom { font-size: clamp(23px, 4.8vw, 32px); }
+  .pf-scene { top: 55%; width: 100%; height: min(390px, 49svh); }
+  .pf-glass { width: 76%; height: 70%; }
+  .pf-glass__word { font-size: clamp(47px, 10vw, 83px); }
+  .pf-glass__word--long { font-size: clamp(29px, 5.8vw, 47px); }
+  .pf-progress { bottom: 8%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .principles-folder { height: 100svh; min-height: 700px; }
-  .pf-card { will-change: auto; }
+  .principles-folder { height: 100svh; min-height: 680px; }
+  .pf-glass { will-change: auto; }
 }
