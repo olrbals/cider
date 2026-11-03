@@ -63,17 +63,17 @@
   left: 50%;
   top: 50%;
   z-index: 6;
-  width: min(440px, calc(var(--pf-panel-width) * 1.65));
-  max-height: 63%;
+  width: min(610px, calc(var(--pf-panel-width) * 2.2));
+  max-height: 80%;
   transform: translate(-50%, -50%);
   opacity: var(--pf-logo-opacity, 1);
   pointer-events: none;
-  filter: drop-shadow(0 4px 16px rgba(2,79,47,.20));
+  filter: drop-shadow(0 3px 7px rgba(0,64,36,.11));
 }
 .pf-panorama-logo img {
   display: block;
   width: 100%;
-  max-height: 200px;
+  max-height: 270px;
   height: auto;
   object-fit: contain;
   filter: brightness(0) invert(1);
@@ -120,11 +120,8 @@
 .pf-panel__face--visual {
   padding: 0;
   border-radius: var(--pf-corner);
-  background-image:
-    radial-gradient(ellipse 38% 57% at 49% 77%, rgba(255,255,255,.65), transparent 65%),
-    radial-gradient(ellipse 33% 46% at 73% 34%, rgba(183,251,213,.52), transparent 68%),
-    radial-gradient(ellipse 15% 28% at 23% 42%, rgba(255,255,255,.36), transparent 70%),
-    linear-gradient(116deg, #067a4b 0%, #14aa67 23%, #48c992 45%, #8ee7ba 55%, #19b271 76%, #087e4f 100%);
+  background-image: linear-gradient(115deg,
+    #087b4e 0%, #15925a 26%, #2cae73 49%, #1ca368 72%, #087a4c 100%);
   background-size: 300% 100%;
   background-position: var(--pf-image-position, 50%) center;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
@@ -132,24 +129,6 @@
 .pf-panel--pure .pf-panel__face--visual { --pf-image-position: 0%; border-top-left-radius: 14px; border-bottom-left-radius: 14px; }
 .pf-panel--clear .pf-panel__face--visual { --pf-image-position: 50%; }
 .pf-panel--caffeine .pf-panel__face--visual { --pf-image-position: 100%; border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
-.pf-panel__image-star {
-  display: block;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-51%);
-  font-size: clamp(160px, 18vw, 245px);
-  line-height: 1;
-  color: rgba(238,255,243,.28);
-  text-shadow: 0 6px 40px rgba(246,255,248,.16);
-}
-.pf-panel__face--visual::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(122deg, transparent 19%, rgba(255,255,255,.15) 42%, transparent 72%);
-  pointer-events: none;
-}
 .pf-panel__face--principle {
   transform: rotateY(180deg);
   border: 1px solid rgba(29,153,92,.19);
