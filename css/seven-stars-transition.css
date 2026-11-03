@@ -1,0 +1,57 @@
+/* Seven-star branded meteor sweep: FIZZ -> Principles only.
+   Scroll-driven overlay, not a generic page-wide effect. */
+.seven-stars-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 32;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  contain: layout style paint;
+}
+.seven-stars-transition.is-active {
+  visibility: visible;
+  opacity: 1;
+}
+.seven-stars-transition svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.seven-stars-transition__wash {
+  fill: #f5fff9;
+  opacity: .82;
+}
+.seven-stars-transition__edge {
+  fill: none;
+  stroke: #c6f6d9;
+  stroke-width: 17px;
+  opacity: .35;
+}
+.seven-stars-transition__halo {
+  fill: rgba(198, 250, 220, .30);
+}
+.seven-stars-transition__star {
+  fill: url(#seven-meteor-star-fill);
+  stroke: rgba(255, 255, 255, .85);
+  stroke-width: 2.1px;
+  stroke-linejoin: round;
+}
+.seven-stars-transition__trail {
+  fill: none;
+  stroke: url(#seven-meteor-trail);
+  stroke-width: 6px;
+  stroke-linecap: round;
+}
+.seven-stars-transition__trail--fine {
+  stroke-width: 2px;
+  opacity: .5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .seven-stars-transition { display: none !important; }
+}
