@@ -125,7 +125,7 @@
 }
 .pf-panel__logo-slice {
   display: block;
-  width: min(610px, calc(var(--pf-panel-width) + var(--pf-panel-width) * 1.2));
+  width: min(610px, 74%);
   height: auto;
   max-height: 270px;
   object-fit: contain;
