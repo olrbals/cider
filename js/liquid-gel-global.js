@@ -16,7 +16,7 @@
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (!precision.matches || motion.matches) return;
 
-  const targets = '.hero, .identity-stage, .korea-stage, .history-3d-stage, .era, .product-explorer, .pop-stage, .outro, .site-header';
+  const targets = '.hero, .identity-stage, .korea-stage, .history-3d-stage, .era, .product-explorer, .pop-stage, .outro, .site-header, .rich-flavors__viewport';
   const svgNS = 'http://www.w3.org/2000/svg';
   const makeSVG = name => document.createElementNS(svgNS, name);
   const svg = makeSVG('svg');
@@ -116,6 +116,7 @@
   let mapStamp = 0;
   let motionEnergy = 0;
   let interacting = false;
+  let richDistorted = false;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   function setAmount() {
@@ -162,7 +163,7 @@
     pending.length = 0;
     if (active) {
       initializeField();
-      active.classList.add('site-liquid-target');
+      active.classList.toggle('site-liquid-target', !richTarget() || richDistorted);
       setAmount();
       schedule();
     }
@@ -170,8 +171,21 @@
 
   function nearestTarget(x, y) {
     if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return null;
+    // A RICH overlay must not inherit the outgoing sticky history filter.
+    const richHit = document.elementFromPoint(x, y);
+    if (richHit instanceof Element && richHit.closest('#rich-flavors')) return null;
+    // Sticky history can sit above the next section's hit-testing surface.
+    // Resolve its visible rectangle before relying on elementFromPoint.
+    const historyStage = document.querySelector('.history-3d-stage');
+    const historySection = historyStage?.closest('.history-3d');
+    const hr = historyStage?.getBoundingClientRect();
+    const sectionRect = historySection?.getBoundingClientRect();
+    if (hr && sectionRect && sectionRect.top <= 0 && sectionRect.bottom > innerHeight * .5
+        && x >= hr.left && x < hr.right && y >= hr.top && y < hr.bottom) return historyStage;
     const hit = document.elementFromPoint(x, y);
     if (!(hit instanceof Element) || panel.contains(hit)) return null;
+    // Route the RICH scene to its full-frame refraction surface.
+    if (hit.closest('#rich-flavors')) return null;
     // The 3D stage ignores pointer events so the page can scroll. Route
     // hits on its visible track back to the sticky stage for refraction.
     const history = hit.closest('.history-3d');
@@ -288,10 +302,32 @@
     [speeds, nextSpeeds] = [nextSpeeds, speeds];
   }
 
+  function encodeGelBitmap(rgba, width, height) {
+    const stride = (width * 3 + 3) & ~3;
+    const bytes = new Uint8Array(54 + stride * height);
+    const header = new DataView(bytes.buffer);
+    bytes[0]=66; bytes[1]=77;
+    header.setUint32(2,bytes.length,true); header.setUint32(10,54,true);
+    header.setUint32(14,40,true); header.setInt32(18,width,true);
+    header.setInt32(22,-height,true); header.setUint16(26,1,true);
+    header.setUint16(28,24,true); header.setUint32(34,stride*height,true);
+    for(let y=0;y<height;y++) for(let x=0;x<width;x++) {
+      const src=(y*width+x)*4,dst=54+y*stride+x*3;
+      bytes[dst]=rgba[src+2]; bytes[dst+1]=rgba[src+1]; bytes[dst+2]=rgba[src];
+    }
+    let binary='';
+    for(let i=0;i<bytes.length;i+=8192) binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+    return 'data:image/bmp;base64,'+btoa(binary);
+  }
+
+  // Optimize only RICH; preserve the established effects in every other section.
+  const richTarget = () => active?.classList.contains('rich-flavors__viewport');
   function writeTexture(force = false) {
     if (!active || !pixelData) return;
     // V4 originally takes the height gradient in a WebGL shader.
     // Encode that same gradient into feDisplacementMap's RG channels.
+    let changed = force;
+    let distorted = false;
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const i = y * cols + x;
@@ -302,14 +338,29 @@
         const dx = heights[r] - heights[l];
         const dy = heights[d] - heights[u];
         const j = i * 4;
-        pixelData.data[j] = Math.round(clamp(127.5 + dx * 200, 0, 255));
-        pixelData.data[j+1] = Math.round(clamp(127.5 + dy * 200, 0, 255));
+        const red = Math.round(clamp(127.5 + dx * 200, 0, 255));
+        const green = Math.round(clamp(127.5 + dy * 200, 0, 255));
+        if (pixelData.data[j] !== red || pixelData.data[j+1] !== green) changed = true;
+        if (red !== 128 || green !== 128) distorted = true;
+        pixelData.data[j] = red;
+        pixelData.data[j+1] = green;
       }
     }
-    ctx.putImageData(pixelData, 0, 0);
-    // Tiny texture only (180x66..170). Browser resolves this data URL
-    // in the SVG filter; no screenshot or frozen poster is involved.
-    surface.setAttribute('href', mapCanvas.toDataURL('image/png'));
+    if (richTarget()) {
+      // A fully neutral 8-bit field has no ripple left. Bypass only this
+      // state; any non-neutral pixel immediately restores the full filter.
+      richDistorted = distorted;
+      active.classList.toggle('site-liquid-target', distorted);
+      if (!distorted) { if (force) setAmount(); return; }
+    }
+    if (richTarget() && !changed) return;
+    if (!richTarget()) ctx.putImageData(pixelData, 0, 0);
+    // RICH uses the exact opaque RGB field as a lossless top-down bitmap.
+    // This avoids canvas readback + PNG encoding; feImage still displaces
+    // the actual live DOM/WebGL scene. Other sections keep their PNG path.
+    surface.setAttribute('href', richTarget()
+      ? encodeGelBitmap(pixelData.data, cols, rows)
+      : mapCanvas.toDataURL('image/png'));
     if (force) setAmount();
   }
 
@@ -323,11 +374,11 @@
     for (const stroke of strokes) pushGel(stroke);
     simulate(dt);
     // 30Hz image uploads keep text, 3D and scrolling responsive.
-    if (time - mapStamp >= 33 || strokes.length > 0) {
+    if (time - mapStamp >= 33 || (!richTarget() && strokes.length > 0)) {
       writeTexture();
       mapStamp = time;
     }
-    if (interacting || pending.length || motionEnergy > .00025) schedule();
+    if ((!richTarget() && interacting) || pending.length || motionEnergy > .00025) schedule();
   }
 
   function schedule() {

@@ -27,6 +27,7 @@
   let width = 0, height = 0, dpr = 1;
   let targetCount = 0, spawnCredit = 0, frame = 0, lastTime = 0;
   let active = false;
+  let richProductsActive = false;
 
   // Cache two sizes of the same clear bubble. A green outer rim reads on white
   // sections, while the white inner rim and glint read on green sections.
@@ -122,7 +123,7 @@
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.age += dt;
-      p.y -= p.rise * dt;
+      p.y -= p.rise * dt * (richProductsActive ? .25 : 1);
       p.x += p.side * dt;
       if (p.y < -p.radius * 4 || p.x < -60 || p.x > width + 60) {
         particles.splice(i, 1);
@@ -133,8 +134,9 @@
       const sway = Math.sin(p.age * p.wobble + p.phase) * p.amp;
       const topFade = clamp((p.y + p.radius * 3) / 80, 0, 1);
       const bottomFade = clamp((height + p.radius - p.y) / 75, 0, 1);
+      if (richProductsActive && i % 3 !== 0) continue;
       ctx.globalAlpha = p.alpha * topFade * bottomFade;
-      const drawSize = p.radius * 3.05;
+      const drawSize = p.radius * 3.05 * (richProductsActive ? .7 : 1);
       ctx.drawImage(sprites[p.kind], p.x + sway - drawSize / 2,
         p.y - drawSize / 2, drawSize, drawSize);
     }
@@ -169,7 +171,15 @@
   // Show ambient carbonation after HERO has fully left the viewport.
   function syncHeroBoundary() {
     const beyondHero = !hero || hero.getBoundingClientRect().bottom <= 0;
-    const show = beyondHero && !document.hidden && !reducedMotion.matches;
+    const rich = document.querySelector('#rich-flavors');
+    const rect = rich?.getBoundingClientRect();
+    const progress = rect ? clamp(-rect.top / Math.max(1, rich.offsetHeight - innerHeight), 0, 1) : 0;
+    const story = rect ? -rect.top / innerHeight : 0;
+    const t = Math.max(0, Math.min(1, story / .38));
+    const fade = t * t * (3 - 2 * t);
+    richProductsActive = story >= 2.65 && story < 4.70 && rect.bottom > innerHeight;
+    canvas.style.opacity = String(richProductsActive ? .40 : .84 * (1 - fade));
+    const show = beyondHero && (fade < 1 || richProductsActive) && !document.hidden && !reducedMotion.matches;
     canvas.classList.toggle('is-active', show);
     if (show) resume();
     else suspend();
