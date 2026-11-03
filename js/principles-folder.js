@@ -16,17 +16,20 @@
   const phase = (p, a, b) => smooth((p - a) / (b - a));
   const lerp = (a, b, t) => a + (b - a) * t;
   const stages = [
-    [{x:0,y:0,s:1,r:0}, {x:38,y:30,s:.94,r:1.1}, {x:-34,y:54,s:.88,r:-1.6}],
-    [{x:-145,y:-18,s:.87,r:-3}, {x:0,y:0,s:1,r:0}, {x:48,y:34,s:.94,r:1.5}],
-    [{x:-95,y:25,s:.91,r:-1.5}, {x:145,y:-16,s:.87,r:3}, {x:0,y:0,s:1,r:0}],
-    [{x:-12,y:7,s:.98,r:-.5}, {x:15,y:-6,s:.98,r:.5}, {x:0,y:0,s:1,r:0}]
+    [{x:0,y:0,s:1,r:0}, {x:22,y:20,s:.94,r:1}, {x:-20,y:29,s:.89,r:-1.3}],
+    [{x:-65,y:10,s:.92,r:-2}, {x:0,y:0,s:1,r:0}, {x:27,y:23,s:.91,r:1.3}],
+    [{x:-42,y:16,s:.91,r:-1.5}, {x:67,y:-8,s:.92,r:2.1}, {x:0,y:0,s:1,r:0}],
+    [{x:-10,y:9,s:.97,r:-.5}, {x:12,y:-6,s:.97,r:.55}, {x:0,y:0,s:1,r:0}]
   ];
   let requested = false;
 
   function render() {
     requested = false;
     const rect = section.getBoundingClientRect();
-    if (rect.top >= innerHeight || rect.bottom <= 0) return;
+    const viewport = Math.max(1, window.innerHeight);
+    document.body.classList.toggle('is-principles-focus',
+      rect.top < viewport * .44 && rect.bottom > viewport * .46);
+    if (rect.top >= viewport || rect.bottom <= 0) return;
     const view = Math.max(1, innerHeight);
     const p = reduced.matches ? 1 : clamp(-rect.top / Math.max(1, rect.height - view));
     const a = phase(p, .16, .37);
