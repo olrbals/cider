@@ -20,12 +20,14 @@
   background: radial-gradient(ellipse at 50% 65%, #edfbf2, #f8fff9 68%);
 }
 .principles-folder__message {
+  --pf-message-opacity: 0;
   position: absolute;
   z-index: 10;
   top: 10%;
   left: 50%;
   width: min(1040px, calc(100% - 80px));
-  transform: translateX(-50%);
+  opacity: var(--pf-message-opacity);
+  transform: translate(-50%, calc((1 - var(--pf-message-opacity)) * 15px));
   text-align: center;
   pointer-events: none;
 }
@@ -37,16 +39,10 @@
   letter-spacing: -.042em;
   text-wrap: balance;
 }
-.principles-folder__copy--top {
-  font-weight: 550;
-  font-size: clamp(17px, 1.4vw, 21px);
-}
-.principles-folder__copy--bottom {
-  margin-top: 12px;
-  font-size: clamp(28px, 2.45vw, 39px);
+.principles-folder__copy--headline {
+  font-size: clamp(24px, 2.25vw, 36px);
   font-weight: 700;
 }
-.principles-folder__copy--bottom strong { font-weight: 850; }
 .pf-scene {
   --pf-panel-width: clamp(220px, 21vw, 300px);
   --pf-panel-height: clamp(298px, 43svh, 382px);
@@ -59,6 +55,28 @@
   transform: translate(-50%, -50%);
   perspective: 1500px;
   pointer-events: none;
+}
+/* The white brandmark belongs to the JOINED three-panel panorama.
+   Fade it away before the separate panels rotate to their back sides. */
+.pf-panorama-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  width: min(440px, calc(var(--pf-panel-width) * 1.65));
+  max-height: 63%;
+  transform: translate(-50%, -50%);
+  opacity: var(--pf-logo-opacity, 1);
+  pointer-events: none;
+  filter: drop-shadow(0 4px 16px rgba(2,79,47,.20));
+}
+.pf-panorama-logo img {
+  display: block;
+  width: 100%;
+  max-height: 200px;
+  height: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 .pf-panel {
   --pf-x: 0px;
@@ -177,8 +195,7 @@ body.is-principles-focus .site-ambient-carbonation.is-active { opacity: .12 !imp
   .principles-folder { height: 280svh; min-height: 1580px; }
   .principles-folder__stage { min-height: 550px; }
   .principles-folder__message { top: 7%; width: calc(100% - 40px); }
-  .principles-folder__copy--top { font-size: 16px; }
-  .principles-folder__copy--bottom { font-size: clamp(23px, 4.5vw, 32px); }
+  .principles-folder__copy--headline { font-size: clamp(21px, 4.4vw, 30px); }
   .pf-scene {
     --pf-panel-width: clamp(174px, 25vw, 238px);
     --pf-panel-height: clamp(270px, 41svh, 330px);
