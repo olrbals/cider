@@ -27,7 +27,7 @@
   left: 50%;
   width: min(1040px, calc(100% - 80px));
   opacity: var(--pf-message-opacity);
-  transform: translate(-50%, calc((1 - var(--pf-message-opacity)) * 15px));
+  transform: translate(-50%, var(--pf-message-offset, 15px));
   text-align: center;
   pointer-events: none;
 }

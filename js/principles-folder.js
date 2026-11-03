@@ -27,6 +27,7 @@
     const waveProgress = clamp((viewport*1.02 - rect.top) / (viewport*1.02));
     const messageReveal = reduced.matches ? 1 : phase(waveProgress,.73,.95);
     message.style.setProperty('--pf-message-opacity',messageReveal.toFixed(3));
+    message.style.setProperty('--pf-message-offset',((1-messageReveal)*15).toFixed(1)+'px');
 
     const p = reduced.matches ? .73 :
       clamp(-rect.top/Math.max(1,rect.height-viewport));
