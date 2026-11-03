@@ -32,17 +32,18 @@
     const p = reduced.matches ? .73 :
       clamp(-rect.top/Math.max(1,rect.height-viewport));
     const split = reduced.matches ? 1 : phase(p,.09,.29);
-    const logoReveal = reduced.matches ? 0 : 1-phase(p,.075,.225);
-    stage.style.setProperty('--pf-logo-opacity',logoReveal.toFixed(3));
     const exit = reduced.matches ? 0 : phase(p,.82,.96);
     stage.style.setProperty('--pf-corner', (split*14).toFixed(2)+'px');
 
     const panelWidth = panels[0].offsetWidth;
     const gap = 27 * split;
+    // 1.4px joined-state overlap conceals subpixel antialias seams.
+    // It reaches zero once the panels are separated.
+    const overlap = 1.4 * (1-split);
     panels.forEach((panel,index) => {
       const flip = reduced.matches ? 1 : phase(p,.36+index*.026,.59+index*.026);
       const rotation = (index-1)*4*phase(p,.51,.70);
-      const x = (index-1)*(panelWidth+gap);
+      const x = (index-1)*(panelWidth+gap-overlap);
       const y = (-135 - Math.abs(index-1)*24)*exit;
       const opacity = 1-phase(p,.88,.99);
       const scale = 1-.05*exit;

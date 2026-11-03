@@ -56,28 +56,6 @@
   perspective: 1500px;
   pointer-events: none;
 }
-/* The white brandmark belongs to the JOINED three-panel panorama.
-   Fade it away before the separate panels rotate to their back sides. */
-.pf-panorama-logo {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 6;
-  width: min(610px, calc(var(--pf-panel-width) * 2.2));
-  max-height: 80%;
-  transform: translate(-50%, -50%);
-  opacity: var(--pf-logo-opacity, 1);
-  pointer-events: none;
-  filter: drop-shadow(0 3px 7px rgba(0,64,36,.11));
-}
-.pf-panorama-logo img {
-  display: block;
-  width: 100%;
-  max-height: 270px;
-  height: auto;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
-}
 .pf-panel {
   --pf-x: 0px;
   --pf-y: 0px;
@@ -117,18 +95,52 @@
   -webkit-backface-visibility: hidden;
   border-radius: 14px;
 }
+/* A single 3-column-wide panorama is repeated in the three clipped faces.
+   The exact same logo and gradient coordinates are used in every slice,
+   so the logo stays physically attached to the cards as they separate. */
 .pf-panel__face--visual {
   padding: 0;
-  border-radius: var(--pf-corner);
-  background-image: linear-gradient(115deg,
-    #087b4e 0%, #15925a 26%, #2cae73 49%, #1ca368 72%, #087a4c 100%);
-  background-size: 300% 100%;
-  background-position: var(--pf-image-position, 50%) center;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+  border-radius: 0;
+  background: #12955f;
+  box-shadow: none;
+  outline: none;
+  overflow: hidden;
 }
-.pf-panel--pure .pf-panel__face--visual { --pf-image-position: 0%; border-top-left-radius: 14px; border-bottom-left-radius: 14px; }
-.pf-panel--clear .pf-panel__face--visual { --pf-image-position: 50%; }
-.pf-panel--caffeine .pf-panel__face--visual { --pf-image-position: 100%; border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
+.pf-panel__panorama {
+  position: absolute;
+  top: 0;
+  width: calc(var(--pf-panel-width) + var(--pf-panel-width) + var(--pf-panel-width));
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(115deg,
+    #087b4e 0%, #15925a 26%, #2cae73 49%, #1ca368 72%, #087a4c 100%);
+  pointer-events: none;
+}
+.pf-panel--pure .pf-panel__panorama { left: 0; }
+.pf-panel--clear .pf-panel__panorama { left: calc(0px - var(--pf-panel-width)); }
+.pf-panel--caffeine .pf-panel__panorama {
+  left: calc(0px - var(--pf-panel-width) - var(--pf-panel-width));
+}
+.pf-panel__logo-slice {
+  display: block;
+  width: min(610px, calc(var(--pf-panel-width) + var(--pf-panel-width) * 1.2));
+  height: auto;
+  max-height: 270px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1) drop-shadow(0 3px 7px rgba(0,64,36,.11));
+}
+.pf-panel--pure .pf-panel__face--visual {
+  border-radius: 14px var(--pf-corner) var(--pf-corner) 14px;
+}
+.pf-panel--clear .pf-panel__face--visual {
+  border-radius: var(--pf-corner);
+}
+.pf-panel--caffeine .pf-panel__face--visual {
+  border-radius: var(--pf-corner) 14px 14px var(--pf-corner);
+}
 .pf-panel__face--principle {
   transform: rotateY(180deg);
   border: 1px solid rgba(29,153,92,.19);
