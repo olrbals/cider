@@ -1,134 +1,143 @@
-/* 칠성사이다 / seven-star meteor sweep.
- * Only the FIZZ -> PRINCIPLES transition. Exact seven stars, each independently
- * delayed along a diagonal from top-right to bottom-left.
- * Reversible scroll-scrub; other section waves are untouched. */
+/* CHILSUNG: seven actual star-shaped apertures tear the yellow FIZZ
+ * scene open to reveal the REAL principles stage behind them.
+ * No colored curtain or translucent wash. Scroll/reverse-scroll reversible. */
 (() => {
   'use strict';
-  const next = document.getElementById('principles-folder');
   const fizz = document.getElementById('korea');
+  const incoming = document.getElementById('principles-folder');
+  const stage = incoming?.querySelector('.principles-folder__stage');
+  if (!fizz || !incoming || !stage) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (!next || !fizz || reduced.matches) return;
   const ns = 'http://www.w3.org/2000/svg';
-  const clamp = x => Math.max(0, Math.min(1, x));
-  const smooth = x => { const t = clamp(x); return t*t*(3-2*t); };
-  const phase = (p, a, b) => smooth((p-a)/(b-a));
-  const mix = (a, b, t) => a+(b-a)*t;
-  const element = (name, cls) => {
-    const node = document.createElementNS(ns, name);
-    if(cls) node.setAttribute('class',cls);
+  const clamp = n => Math.max(0, Math.min(1, n));
+  const smooth = n => { const t = clamp(n); return t * t * (3 - 2 * t); };
+  const phase = (n,a,b) => smooth((n-a)/(b-a));
+  const mix = (a,b,t) => a+(b-a)*t;
+  const make = (tag, className) => {
+    const node = document.createElementNS(ns,tag);
+    if(className)node.setAttribute('class',className);
     return node;
   };
+  // Original seven-star arrangement: 2 + 2 + 2 + 1. Only these
+  // seven stars are cut into the current screen.
+  const formation = [
+    {x:-99,y:-142,r:81}, {x:74,y:-155,r:75},
+    {x:-124,y:-20,r:88}, {x:49,y:-16,r:80},
+    {x:-162,y:122,r:98}, {x:11,y:111,r:91},
+    {x:-210,y:262,r:111}
+  ];
   const overlay = document.createElement('div');
   overlay.className = 'seven-stars-transition';
   overlay.setAttribute('aria-hidden','true');
-  const svg = element('svg');
-  svg.setAttribute('preserveAspectRatio','none');
-  svg.setAttribute('focusable','false');
-  const defs = element('defs');
-  const starGradient=element('linearGradient');
-  starGradient.id='seven-meteor-star-fill';
-  starGradient.setAttribute('x1','0');starGradient.setAttribute('y1','0');
-  starGradient.setAttribute('x2','1');starGradient.setAttribute('y2','1');
-  [[0,'#eafff1'],[.5,'#adebc9'],[1,'#65d89f']].forEach(([offset,color])=>{
-    const stop=element('stop');stop.setAttribute('offset',String(offset));
-    stop.setAttribute('stop-color',color);starGradient.append(stop);
+  const defsSvg = make('svg','seven-stars-transition__defs');
+  const defs = make('defs');
+  const clip = make('clipPath');
+  clip.id = 'seven-stars-actual-scene-cut';
+  clip.setAttribute('clipPathUnits','userSpaceOnUse');
+  const cutStars = formation.map(() => {
+    const path = make('path');
+    clip.append(path);
+    return path;
   });
-  const trailGradient=element('linearGradient');
-  trailGradient.id='seven-meteor-trail';
-  trailGradient.setAttribute('x1','0%');trailGradient.setAttribute('y1','100%');
-  trailGradient.setAttribute('x2','100%');trailGradient.setAttribute('y2','0%');
-  [[0,'#eafff2',.62],[.45,'#b7f2d2',.24],[1,'#b7f2d2',0]].forEach(([off,color,alpha])=>{
-    const stop=element('stop');stop.setAttribute('offset',String(off));
-    stop.setAttribute('stop-color',color);stop.setAttribute('stop-opacity',String(alpha));
-    trailGradient.append(stop);
+  const fusedCut = make('path');
+  clip.append(fusedCut);
+  defs.append(clip);
+  defsSvg.append(defs);
+
+  // Clone the actual next stage so words, glass and its background become
+  // visible through the holes BEFORE the real section reaches the viewport.
+  // No IDs, controls or event handlers are duplicated.
+  const reveal = document.createElement('div');
+  reveal.className = 'seven-stars-transition__reveal';
+  const replica = stage.cloneNode(true);
+  replica.removeAttribute('id');
+  replica.setAttribute('aria-hidden','true');
+  reveal.append(replica);
+
+  const rims = make('svg','seven-stars-transition__rims');
+  rims.setAttribute('aria-hidden','true');
+  rims.setAttribute('preserveAspectRatio','none');
+  const rimStars = formation.map(() => {
+    const path = make('path','seven-stars-transition__rim');
+    rims.append(path);
+    return path;
   });
-  defs.append(starGradient,trailGradient);
-  svg.append(defs);
-  const wash = element('path','seven-stars-transition__wash');
-  const edge = element('path','seven-stars-transition__edge');
-  svg.append(wash,edge);
-  // A subtle constellation: 2 + 2 + 2 + 1 stars, referencing the supplied logo.
-  const formation = [
-    {x:-96,y:-144,size:71}, {x:72,y:-161,size:64},
-    {x:-121,y:-18,size:83}, {x:51,y:-26,size:72},
-    {x:-170,y:126,size:93}, {x:0,y:119,size:84},
-    {x:-208,y:265,size:107}
-  ];
-  const pathData='M50 6 L61.7 36 H93 L68 55.3 L77.5 86.5 L50 68.2 L22.5 86.5 L32 55.3 L7 36 H38.3 Z';
-  const stars=formation.map((shape,i)=>{
-    const group=element('g');
-    const trail=element('path','seven-stars-transition__trail');
-    trail.setAttribute('d','M 74 28 Q 135 -28 216 -112');
-    const fine=element('path','seven-stars-transition__trail seven-stars-transition__trail--fine');
-    fine.setAttribute('d','M 86 44 Q 155 -7 240 -90');
-    const halo=element('path','seven-stars-transition__halo');
-    halo.setAttribute('d',pathData);
-    halo.setAttribute('transform','translate(-2 -2) scale(1.04)');
-    const main=element('path','seven-stars-transition__star');
-    main.setAttribute('d',pathData);
-    group.append(trail,fine,halo,main);
-    svg.append(group);
-    return {node:group,...shape,index:i};
-  });
-  overlay.append(svg);
+  const fusedRim = make('path','seven-stars-transition__rim seven-stars-transition__rim--fused');
+  rims.append(fusedRim);
+  overlay.append(defsSvg,reveal,rims);
   document.body.append(overlay);
-  let w=0,h=0,queued=false;
+
+  let width = 1, height = 1, scheduled = false;
   function resize() {
-    w=Math.max(1,window.innerWidth);
-    h=Math.max(1,window.innerHeight);
-    svg.setAttribute('viewBox','0 0 '+w+' '+h);
+    width = Math.max(1,window.innerWidth);
+    height = Math.max(1,window.innerHeight);
+    rims.setAttribute('viewBox','0 0 '+width+' '+height);
+  }
+  const point = (x,y) => x.toFixed(1)+' '+y.toFixed(1);
+  // A star with seven different elastic deformations, rather than rigid
+  // stars flying like stickers. Pointed slits pull and knead the old scene.
+  function starPath(cx,cy,r,index,p,rotation=0) {
+    if(r <= .2) return '';
+    const points = [];
+    const stretch = Math.sin(p*Math.PI);
+    for(let k=0;k<10;k++){
+      const tip = k%2===0;
+      const a = -Math.PI/2 + k*Math.PI/5 + rotation;
+      const tension = 1 + (tip?.067:.042)*Math.sin(k*1.83+index*1.91+p*7.8);
+      const radial = r * (tip?1:.48) * tension;
+      const sx = 1+.14*stretch;
+      const sy = 1-.055*stretch;
+      const shear = (tip? .10 : .04) * r * Math.sin(p*5.8+index*.8);
+      points.push([cx+Math.cos(a)*radial*sx-shear*.16,
+                   cy+Math.sin(a)*radial*sy+shear*.06]);
+    }
+    return 'M '+point(...points[0])+' '+points.slice(1).map(v=>'L '+point(...v)).join(' ')+' Z';
   }
   function render() {
-    queued=false;
-    if (reduced.matches || document.hidden) { overlay.classList.remove('is-active'); return; }
-    const top=next.getBoundingClientRect().top;
-    // One viewport of natural scrolling, ending as the new scene locks in.
-    const p=clamp((h*1.04-top)/(h*1.04));
-    const active=p>.015&&p<.998;
+    scheduled = false;
+    const top = incoming.getBoundingClientRect().top;
+    const active = !reduced.matches && !document.hidden && top > 0 && top < height;
     overlay.classList.toggle('is-active',active);
+    fizz.classList.toggle('is-seven-star-tearing',active);
     if(!active) return;
 
-    // x-y threshold: the mint wash reaches the upper-right first, then
-    // progressively sweeps towards the lower-left. Curve adds a liquid shoulder.
-    const advance=smooth(p);
-    const threshold=mix(w+h*.50,-h-w*.30,advance);
-    const samples=[];
-    for(let i=0;i<=28;i++){
-      const x=(i/28)*w;
-      const curl=Math.sin(i/28*Math.PI*1.45+advance*2.3)*h*.042*Math.sin(advance*Math.PI);
-      samples.push([x,x-threshold+curl]);
-    }
-    const down=samples.slice().reverse();
-    const boundary=down.map(v=>v[0].toFixed(1)+','+v[1].toFixed(1)).join(' L ');
-    wash.setAttribute('d','M0,-40 L'+w+',-40 L'+boundary+' Z');
-    edge.setAttribute('d','M'+samples[0][0].toFixed(1)+','+samples[0][1].toFixed(1)+' L '+
-      samples.slice(1).map(v=>v[0].toFixed(1)+','+v[1].toFixed(1)).join(' L '));
-    const endFade=1-phase(p,.81,.98);
-    const washAlpha=(.80*endFade).toFixed(3);
-    wash.style.opacity=washAlpha;
-    edge.style.opacity=(.40*endFade).toFixed(3);
-
-    const unit=Math.min(1.18,Math.max(.47,Math.min(w/1440,h/900)));
-    stars.forEach(({node,x,y,size,index})=>{
-      const delay=index*.024;
-      const travel=phase(p,.045+delay,.73+delay);
-      const cx=mix(w*1.20,-w*.21,travel)+x*unit;
-      const cy=mix(-h*.28,h*1.20,travel)+y*unit;
-      const fadeIn=phase(p,.045+delay,.17+delay);
-      const fadeOut=1-phase(p,.75+delay*.35,.94+delay*.2);
-      const scale=unit*(size/100)*( .80+.20*travel );
-      node.setAttribute('transform','translate('+(cx-50*scale).toFixed(1)+' '+(cy-50*scale).toFixed(1)+') scale('+scale.toFixed(4)+')');
-      node.style.opacity=(fadeIn*fadeOut*.92).toFixed(3);
+    const p = clamp((height-top)/height);
+    const unit = Math.max(.60,Math.min(1.2,Math.min(width/1440,height/900)));
+    formation.forEach((star,i) => {
+      const delay = i*.024;
+      const motion = phase(p,.03+delay,.76+delay);
+      const appear = phase(p,.035+delay,.18+delay);
+      const x = mix(width*1.13,-width*.28,motion) + star.x*unit;
+      const y = mix(-height*.18,height*1.25,motion) + star.y*unit;
+      const radius = star.r*unit*appear*(.55+2.35*Math.pow(motion,1.36));
+      const rotation = (-.085+i*.013)+.12*Math.sin(p*6+i*.8);
+      const d = starPath(x,y,radius,i,p,rotation);
+      cutStars[i].setAttribute('d',d);
+      rimStars[i].setAttribute('d',d);
+      rimStars[i].style.opacity = (1-phase(p,.70,.94)).toFixed(3);
     });
+
+    // The seven slits join into one stretchy star-shaped tear.
+    // Its inner valleys grow past the screen corners just as the real
+    // incoming stage reaches the top, for a seamless handoff.
+    const merge = phase(p,.47,.96);
+    const centerX = mix(width*.78,width*.51,merge);
+    const centerY = mix(height*.22,height*.53,merge);
+    const radius = Math.max(width,height)*5.6*Math.pow(merge,2.7);
+    const joint = starPath(centerX,centerY,radius,8,p,.07);
+    fusedCut.setAttribute('d',joint);
+    fusedRim.setAttribute('d',joint);
+    fusedRim.style.opacity = (Math.sin(merge*Math.PI)*.55).toFixed(3);
   }
-  function update() {
-    if(queued) return;
-    queued=true;
-    window.requestAnimationFrame(render);
+  function requestRender() {
+    if(scheduled)return;
+    scheduled = true;
+    requestAnimationFrame(render);
   }
-  window.addEventListener('scroll',update,{passive:true});
-  window.addEventListener('resize',()=>{resize();update();},{passive:true});
-  reduced.addEventListener?.('change',update);
-  document.addEventListener('visibilitychange',update);
-  resize();render();
+  window.addEventListener('scroll',requestRender,{passive:true});
+  window.addEventListener('resize',()=>{resize();requestRender();},{passive:true});
+  reduced.addEventListener?.('change',requestRender);
+  document.addEventListener('visibilitychange',requestRender);
+  resize();
+  render();
 })();
