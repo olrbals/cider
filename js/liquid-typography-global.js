@@ -10,11 +10,11 @@
 
   const SCENES = [
     '.hero', '.identity-stage', '.korea-stage', '.history-3d-stage',
-    '.era', '.product-explorer', '.pop-stage', '.rich-scene', '.outro'
+    '.era', '.product-explorer', '.pop-stage', '.rich-scene', '.rich-flavors__viewport', '.outro'
   ].join(', ');
   const HEADLINES = [
     '.hero-type', '.identity-display', '.korea-type',
-    '.era-year', '.product-backtype', '.rich-giant'
+    '.era-year', '.product-backtype', '.rich-giant', '.rich-copy__content h2', '.rich-fg__caption-line h2'
   ].join(', ');
   const svgNS = 'http://www.w3.org/2000/svg';
   const makeSVG = name => document.createElementNS(svgNS, name);
@@ -151,6 +151,7 @@
   function sceneAt(clientX, clientY) {
     const hit = document.elementFromPoint(clientX, clientY);
     if (!(hit instanceof Element)) return null;
+    if (hit.closest('.rich-copy, .rich-duo, .rich-signoff')) return null;
 
     // The history 3D stage has pointer-events:none so the browser hit-test
     // lands on its underlying scroll panel. Route that hit to the visible
