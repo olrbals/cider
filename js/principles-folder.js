@@ -25,9 +25,9 @@
       clamp(-rect.top/Math.max(1,rect.height-viewport));
     const split = reduced.matches ? 1 : phase(p,.09,.29);
     const exit = reduced.matches ? 0 : phase(p,.82,.96);
-    stage.style.setProperty('--pf-split', split.toFixed(3));
+    stage.style.setProperty('--pf-corner', (split*14).toFixed(2)+'px');
 
-    const panelWidth = panels[0].getBoundingClientRect().width;
+    const panelWidth = panels[0].offsetWidth;
     const gap = 27 * split;
     panels.forEach((panel,index) => {
       const flip = reduced.matches ? 1 : phase(p,.36+index*.026,.59+index*.026);

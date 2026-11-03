@@ -50,7 +50,7 @@
 .pf-scene {
   --pf-panel-width: clamp(220px, 21vw, 300px);
   --pf-panel-height: clamp(298px, 43svh, 382px);
-  --pf-split: 0;
+  --pf-corner: 0px;
   position: absolute;
   top: 55%;
   left: 50%;
@@ -101,7 +101,7 @@
 }
 .pf-panel__face--visual {
   padding: 0;
-  border-radius: calc(var(--pf-split) * 14px);
+  border-radius: var(--pf-corner);
   background-image:
     radial-gradient(ellipse 38% 57% at 49% 77%, rgba(255,255,255,.65), transparent 65%),
     radial-gradient(ellipse 33% 46% at 73% 34%, rgba(183,251,213,.52), transparent 68%),
