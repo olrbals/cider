@@ -71,12 +71,12 @@
     const rect = identity.getBoundingClientRect();
     const available = Math.max(1, rect.height - height);
     const p = reduce.matches ? 1 : clamp(-rect.top / available);
-    identity.classList.toggle('is-seven-complete', p >= .77 && rect.bottom > 0 && rect.top < height);
+    identity.classList.toggle('is-seven-complete', p >= .57 && rect.bottom > 0 && rect.top < height);
     // First a tiny outlined star is born between T and R, then the
     // growing slot pushes them apart rather than overlapping the letters.
-    const growth = smooth((p - .075) / .46);
-    const reveal = smooth((p - .055) / .18);
-    const fill = smooth((p - .53) / .28);
+    const growth = smooth((p - .025) / .31);
+    const reveal = smooth((p - .02) / .12);
+    const fill = smooth((p - .30) / .26);
     identity.style.setProperty('--identity-star-slot', (.055 + .86 * growth).toFixed(4) + 'em');
     identity.style.setProperty('--identity-star-scale', (.18 + .82 * growth).toFixed(4));
     identity.style.setProperty('--identity-star-opacity', (.12 + .88 * reveal).toFixed(4));
@@ -84,7 +84,7 @@
     // All seven companions remain outline-only, fade in successively and
     // hold their position. Unlike the main star, none receive a fill.
     sevenStars.forEach((star, index) => {
-      const fade = smooth((p - (.20 + index * .065)) / .22);
+      const fade = smooth((p - (.11 + index * .045)) / .15);
       star.style.opacity = (fade * .58).toFixed(3);
       star.style.transform = 'scale(' + (.74 + .26 * fade).toFixed(3) + ')';
     });

@@ -2,12 +2,19 @@
  * Intentionally scoped away from Hero, liquid wave and 3D history. */
 
 .identity.experience-02 {
-  height: 225svh;
-  min-height: 1350px;
+  height: 205svh;
+  min-height: 1250px;
   --identity-star-slot: .055em;
   --identity-star-scale: .18;
   --identity-star-opacity: .12;
   --identity-star-fill: 0%;
+}
+
+/* All typographic layers share the requested 110% line-height. */
+.identity.experience-02 .identity-display,
+.identity.experience-02 .identity-liquid-type,
+.korea-scene .korea-type {
+  line-height: 1.1;
 }
 
 /* Both cursor-mask clones and the glossy liquid lettering inherit these
@@ -60,20 +67,20 @@
   clip-path: inset(calc(100% - var(--identity-star-fill)) 0 0 0);
 }
 .identity.is-seven-complete .identity-sway-line--seven {
-  animation: identity-reed-seven 7.4s ease-in-out infinite alternate;
+  animation: identity-reed-seven 6.8s ease-in-out infinite alternate;
 }
 .identity.is-seven-complete .identity-sway-line--stars {
-  animation: identity-reed-stars 8.2s ease-in-out -2.4s infinite alternate;
+  animation: identity-reed-stars 7.5s ease-in-out -2.4s infinite alternate;
 }
 @keyframes identity-reed-seven {
-  0%   { transform: translate3d(-8px,0,0) rotate(-.5deg) skewX(-.45deg); }
-  50%  { transform: translate3d(8px,0,0) rotate(.5deg) skewX(.48deg); }
-  100% { transform: translate3d(-6px,0,0) rotate(-.36deg) skewX(-.4deg); }
+  0%   { transform: translate3d(-15px,-9px,0) rotate(-.8deg) skewX(-.52deg); }
+  50%  { transform: translate3d(16px,10px,0) rotate(.85deg) skewX(.55deg); }
+  100% { transform: translate3d(-12px,-7px,0) rotate(-.62deg) skewX(-.44deg); }
 }
 @keyframes identity-reed-stars {
-  0%   { transform: translate3d(8px,0,0) rotate(.55deg) skewX(.45deg); }
-  50%  { transform: translate3d(-9px,0,0) rotate(-.55deg) skewX(-.48deg); }
-  100% { transform: translate3d(7px,0,0) rotate(.42deg) skewX(.34deg); }
+  0%   { transform: translate3d(14px,8px,0) rotate(.82deg) skewX(.52deg); }
+  50%  { transform: translate3d(-16px,-11px,0) rotate(-.9deg) skewX(-.56deg); }
+  100% { transform: translate3d(13px,7px,0) rotate(.66deg) skewX(.42deg); }
 }
 
 /* Seven small five-point outlines, deliberately quieter than the filled
@@ -174,7 +181,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label {
 /* Keep the section pinned through the reveal, viewing pause,
    autonomous letter dance, and final rest before the wave.
    The wave and fruit/cursor systems are deliberately left intact. */
-.korea-scene { height: 340svh; min-height: 1700px; }
+.korea-scene { height: 285svh; min-height: 1600px; }
 @media (max-width: 900px) {
   .korea-scene { min-height: 1400px; }
 }

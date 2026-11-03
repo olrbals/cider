@@ -4,6 +4,7 @@
    Nothing transforms or clips an existing sticky scene or its interactions. */
 #identity.identity.experience-02,
 #korea.korea-scene,
+#principles-folder.principles-folder,
 #history.history,
 #products.products,
 #pop.pop-scene,
@@ -14,6 +15,7 @@
 }
 #identity.identity.experience-02 { z-index: 2; }
 #korea.korea-scene { z-index: 3; }
+#principles-folder.principles-folder { z-index: 4; }
 #history.history { z-index: 4; }
 #products.products { z-index: 5; background: #f9f4e7; }
 #pop.pop-scene { z-index: 6; }
