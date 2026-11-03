@@ -1,13 +1,10 @@
-/* Self-contained three-principles scene.
- * Minimal flat folder silhouette inspired by the supplied reference.
- * All other page sections are unchanged. */
+/* Three brand principle cards. Only this section is affected.
+   Arrival: right / left / below -> center stack -> fan on scroll. */
 .principles-folder {
-  --pf-green: #149f5c;
-  --pf-deep: #0b8c51;
   --pf-ink: #087c4c;
   position: relative;
-  height: 350svh;
-  min-height: 2300px;
+  height: 330svh;
+  min-height: 2200px;
   isolation: isolate;
   background: #f8fff9;
   color: var(--pf-ink);
@@ -20,8 +17,7 @@
   overflow: hidden;
   background: #f8fff9;
 }
-/* The two fixed Korean lines are one intentional, readable headline,
-   not tiny notes in opposite corners. */
+/* Keep the fixed Korean message prominent, distinct from the animated cards. */
 .principles-folder__message {
   position: absolute;
   z-index: 10;
@@ -49,76 +45,57 @@
   font-size: clamp(26px, 2.45vw, 38px);
   font-weight: 700;
 }
-.principles-folder__copy--bottom strong {
-  font-weight: 800;
-}
+.principles-folder__copy--bottom strong { font-weight: 800; }
 .pf-scene {
   position: absolute;
-  top: 56%;
+  top: 57%;
   left: 50%;
-  width: min(960px, 92vw);
-  height: 540px;
+  width: min(1100px, 100%);
+  height: 480px;
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
-.pf-folder { position: absolute; inset: 0; }
-.pf-folder__back {
-  position: absolute;
-  left: 50%;
-  bottom: 38px;
-  width: 490px;
-  height: 220px;
-  transform: translateX(-50%);
-  background: #0c8650;
-  border-radius: 38px;
-  box-shadow: 0 18px 36px rgba(0, 95, 51, .08);
-  z-index: 1;
-}
-.pf-folder__back::before {
-  content: "";
-  position: absolute;
-  top: -53px;
-  left: 0;
-  width: 207px;
-  height: 91px;
-  background: #0c8650;
-  border-radius: 38px 25px 0 0;
-}
-.pf-folder__back::after {
-  content: "";
-  position: absolute;
-  top: -53px;
-  left: 175px;
-  width: 141px;
-  height: 72px;
-  background: #0c8650;
-  clip-path: polygon(0 0, 35% 0, 100% 100%, 0 100%);
-}
 .pf-card {
+  --pf-x: 0px;
+  --pf-y: 0px;
+  --pf-rot: 0deg;
+  --pf-scale: 1;
+  --pf-opacity: 1;
   position: absolute;
-  z-index: 2;
+  top: 50%;
   left: 50%;
-  bottom: 118px;
-  width: 236px;
-  height: 292px;
-  padding: 23px 23px 25px;
+  width: 254px;
+  height: 318px;
+  padding: 24px 25px 27px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: #fff;
-  border: 1px solid #d2e9d9;
-  border-radius: 8px;
-  box-shadow: 0 13px 32px rgba(0, 76, 42, .13);
+  border: 1px solid #d4e8db;
+  border-radius: 10px;
   color: var(--pf-ink);
-  transform-origin: 50% 100%;
-  transform: translateX(-50%) translate3d(var(--pf-x, 0px), var(--pf-y, -93px), 0) rotate(var(--pf-rot, 0deg)) scale(var(--pf-scale, 1));
-  opacity: var(--pf-opacity, 1);
-  will-change: transform, opacity;
+  box-shadow: 0 16px 36px rgba(6, 89, 49, .14);
+  transform-origin: 50% 50%;
+  transform: translate(-50%, -50%) translate3d(var(--pf-x), var(--pf-y), 0) rotate(var(--pf-rot)) scale(var(--pf-scale));
+  opacity: var(--pf-opacity);
   backface-visibility: hidden;
+  will-change: transform, opacity;
 }
-.pf-card:nth-of-type(1) { --pf-x: -286px; --pf-rot: -6deg; }
-.pf-card:nth-of-type(2) { --pf-x: 0px; --pf-rot: 0deg; }
-.pf-card:nth-of-type(3) { --pf-x: 286px; --pf-rot: 6deg; }
+.pf-card:nth-of-type(1) {
+  --pf-x: -303px;
+  --pf-rot: -8deg;
+  z-index: 1;
+}
+.pf-card:nth-of-type(2) {
+  --pf-x: 0px;
+  --pf-y: -15px;
+  z-index: 2;
+}
+.pf-card:nth-of-type(3) {
+  --pf-x: 303px;
+  --pf-rot: 8deg;
+  z-index: 3;
+}
 .pf-card__number {
   font: 700 13px/1 "Archivo", sans-serif;
   letter-spacing: .06em;
@@ -126,85 +103,27 @@
 .pf-card__word {
   display: block;
   margin: auto -5px;
-  font: 800 43px/.98 "Archivo", "Archivo Black", sans-serif;
+  font: 800 46px/.98 "Archivo", "Archivo Black", sans-serif;
   letter-spacing: -.07em;
   text-align: center;
 }
-.pf-card__word--long { font-size: 29px; line-height: 1.02; }
-.pf-card__star { align-self: flex-end; font-size: 18px; line-height: 1; }
-.pf-folder__lid {
-  position: absolute;
-  z-index: 4;
-  left: 50%;
-  bottom: 42px;
-  width: 490px;
-  height: 178px;
-  transform: translateX(-50%) perspective(600px) rotateX(var(--pf-angle, -72deg));
-  transform-origin: center bottom;
-  border-radius: 24px 24px 38px 38px;
-  background: #29b674;
-  opacity: .9;
-  backface-visibility: hidden;
-}
-/* One clean rounded body + left tab and diagonal shoulder.
-   No protruding side flaps or additional ornamental labels. */
-.pf-folder__front {
-  position: absolute;
-  z-index: 5;
-  left: 50%;
-  bottom: 38px;
-  width: 490px;
-  height: 205px;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--pf-green);
-  border-radius: 38px;
-  box-shadow: 0 16px 34px rgba(0, 104, 58, .085);
-}
-.pf-folder__front::before {
-  content: "";
-  position: absolute;
-  top: -53px;
-  left: 0;
-  width: 207px;
-  height: 94px;
-  background: var(--pf-green);
-  border-radius: 38px 24px 0 0;
-}
-.pf-folder__front::after {
-  content: "";
-  position: absolute;
-  top: -53px;
-  left: 178px;
-  width: 145px;
-  height: 72px;
-  background: var(--pf-green);
-  clip-path: polygon(0 0, 34% 0, 100% 100%, 0 100%);
-}
-.pf-folder__brand {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 63%;
-  height: auto;
-  max-height: 135px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
-  transform: translateY(-5px);
+.pf-card__word--long { font-size: 30px; line-height: 1.02; }
+.pf-card__star {
+  align-self: flex-end;
+  font-size: 20px;
+  line-height: 1;
 }
 @media (max-height: 760px) {
   .principles-folder__message { top: 6.5%; }
-  .pf-scene { top: 57%; transform: translate(-50%, -50%) scale(.83); }
+  .pf-scene { top: 59%; transform: translate(-50%, -50%) scale(.84); }
 }
 @media (max-width: 800px) {
-  .principles-folder { height: 325svh; min-height: 2000px; }
+  .principles-folder { height: 320svh; min-height: 2000px; }
   .principles-folder__stage { min-height: 580px; }
-  .principles-folder__message { top: 8%; width: calc(100% - 48px); }
+  .principles-folder__message { top: 7%; width: calc(100% - 48px); }
   .principles-folder__copy--top { font-size: 17px; }
   .principles-folder__copy--bottom { font-size: clamp(24px, 5vw, 32px); }
-  .pf-scene { top: 57%; transform: translate(-50%, -50%) scale(.74); }
+  .pf-scene { top: 58%; transform: translate(-50%, -50%) scale(.77); }
 }
 @media (prefers-reduced-motion: reduce) {
   .principles-folder { height: 100svh; min-height: 700px; }
