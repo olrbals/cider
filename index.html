@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="css/scene-polish.css">
   <link rel="stylesheet" href="css/rich-flavors.css">
   <link rel="stylesheet" href="css/principles-folder.css">
+  <link rel="stylesheet" href="css/brand-flow-preview.css?v=1">
   
   <script defer src="js/experience.js"></script>
   <script defer src="js/pop-scroll.js"></script>
@@ -41,13 +42,14 @@
   <script defer src="js/liquid-fill-wave.js"></script>
   <script defer src="js/rich-flavors.js"></script>
   <script defer src="js/principles-folder.js"></script>
+  <script defer src="js/brand-flow-preview.js?v=1"></script>
   <script type="module" src="js/history-3d.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#identity">본문으로 바로가기</a>
   <header class="site-header">
     <a class="header-logo" href="#top" aria-label="칠성사이다, 맨 위로"><img src="img/brand/Chilsung_Cider_2024.webp" alt="칠성사이다" width="232" height="92"></a>
-    <nav aria-label="주 메뉴"><a href="#identity">BRAND</a><a href="#history">HISTORY</a><a href="#rich-flavors">PRODUCTS</a></nav>
+    <nav aria-label="주 메뉴"><a href="#brand-values">BRAND</a><a href="#history">HISTORY</a><a href="#rich-flavors">PRODUCTS</a></nav>
   </header>
 
   <main>
@@ -79,16 +81,21 @@
       </div>
     </section>
 
-    <section class="identity experience-02" id="identity" aria-label="SEVEN STARS">
-      <div class="identity-stage">
-        <h2 class="identity-display" data-node-id="1254:1552">SEVEN<br>STARS</h2>
-        <span class="section-edge-label section-edge-label--top-left" aria-hidden="true">SINCE 1950</span>
-        <span class="section-edge-label section-edge-label--bottom-left" aria-hidden="true">ICONIC</span>
-        <span class="section-edge-label section-edge-label--top-right" aria-hidden="true">REFRESHING</span>
-        <span class="section-edge-label section-edge-label--bottom-right" aria-hidden="true">ORIGINAL</span>
-        <div class="identity-liquid-layer" aria-hidden="true">
-          <div class="identity-liquid-type">SEVEN<br>STARS</div>
-          <div class="identity-liquid-gloss"></div>
+    <!-- 2026 concept preview: sticky scrolling typographic brand principles. -->
+    <section class="brand-values" id="brand-values" aria-label="칠성사이다 브랜드 가치 세 가지">
+      <div class="brand-values__stage">
+        <p class="brand-values__heading">THE THREE PRINCIPLES</p>
+        <span class="brand-values__micro brand-values__micro--left" aria-hidden="true">CHILSUNG CIDER</span>
+        <span class="brand-values__micro brand-values__micro--right" aria-hidden="true">SINCE 1950</span>
+        <div class="brand-values__words">
+          <h2 class="brand-values__word" data-brand-value="0">PURE</h2>
+          <h2 class="brand-values__word" data-brand-value="1" aria-hidden="true">CLEAR</h2>
+          <h2 class="brand-values__word brand-values__word--long" data-brand-value="2" aria-hidden="true">CAFFEINE<br>FREE</h2>
+        </div>
+        <div class="brand-values__footer" aria-hidden="true">
+          <span class="brand-values__line"></span>
+          <span data-brand-count>01 / 03</span>
+          <span class="brand-values__line"></span>
         </div>
       </div>
     </section>
@@ -114,54 +121,21 @@
       </div>
     </section>
 
-    <!-- The brand's three principles: three cards merge, change their message, then turn into one logo panorama. -->
-    <section class="principles-folder" id="principles-folder" aria-label="칠성사이다의 3가지 원칙">
-      <div class="principles-folder__stage">
-        <div class="pf-scene" aria-label="PURE, CLEAR, CAFFEINE FREE">
-          <div class="pf-merge-message">
-            <p>맑고 깨끗한 칠성사이다를 위해 지키는 3가지</p>
-          </div>
-          <div class="pf-panel pf-panel--pure">
-            <div class="pf-panel__face pf-panel__face--visual" aria-hidden="true">
-              <div class="pf-panel__panorama">
-                <img class="pf-panel__logo-slice" src="img/brand/Chilsung_Cider_2024.webp" alt="" decoding="async">
-              </div>
-            </div>
-            <div class="pf-panel__face pf-panel__face--principle">
-              <span class="pf-panel__number">01</span>
-              <h2 class="pf-panel__word">PURE</h2>
-              <span class="pf-panel__symbol" aria-hidden="true">★</span>
-            </div>
-          </div>
-          <div class="pf-panel pf-panel--clear">
-            <div class="pf-panel__face pf-panel__face--visual" aria-hidden="true">
-              <div class="pf-panel__panorama">
-                <img class="pf-panel__logo-slice" src="img/brand/Chilsung_Cider_2024.webp" alt="" decoding="async">
-              </div>
-            </div>
-            <div class="pf-panel__face pf-panel__face--principle">
-              <span class="pf-panel__number">02</span>
-              <h2 class="pf-panel__word">CLEAR</h2>
-              <span class="pf-panel__symbol" aria-hidden="true">★</span>
-            </div>
-          </div>
-          <div class="pf-panel pf-panel--caffeine">
-            <div class="pf-panel__face pf-panel__face--visual" aria-hidden="true">
-              <div class="pf-panel__panorama">
-                <img class="pf-panel__logo-slice" src="img/brand/Chilsung_Cider_2024.webp" alt="" decoding="async">
-              </div>
-            </div>
-            <div class="pf-panel__face pf-panel__face--principle">
-              <span class="pf-panel__number">03</span>
-              <h2 class="pf-panel__word pf-panel__word--long">CAFFEINE<br>FREE</h2>
-              <span class="pf-panel__symbol" aria-hidden="true">★</span>
-            </div>
-          </div>
+    <section class="identity experience-02" id="identity" aria-label="SEVEN STARS">
+      <div class="identity-stage">
+        <h2 class="identity-display" data-node-id="1254:1552">SEVEN<br>STARS</h2>
+        <span class="section-edge-label section-edge-label--top-left" aria-hidden="true">SINCE 1950</span>
+        <span class="section-edge-label section-edge-label--bottom-left" aria-hidden="true">ICONIC</span>
+        <span class="section-edge-label section-edge-label--top-right" aria-hidden="true">REFRESHING</span>
+        <span class="section-edge-label section-edge-label--bottom-right" aria-hidden="true">ORIGINAL</span>
+        <div class="identity-liquid-layer" aria-hidden="true">
+          <div class="identity-liquid-type">SEVEN<br>STARS</div>
+          <div class="identity-liquid-gloss"></div>
         </div>
       </div>
     </section>
 
-        <section class="history" id="history" aria-label="브랜드 히스토리">
+    <section class="history" id="history" aria-label="브랜드 히스토리">
 
       <div class="history-gallery" aria-label="시대별 패키지 디자인 장면">
         <div class="history-route" aria-hidden="true"><span class="history-route-line"></span><img class="history-motion-can" src="img/display/era-1950.png" alt=""></div>
