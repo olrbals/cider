@@ -1,15 +1,16 @@
 /* Latest Figma HERO 1432:109 → burst 1432:119; 1440 × 900 coordinates. */
-#top.hero { height:260svh; background:#fff; --hero-layout-scale:1; --hero-star-opacity:0; --hero-star-scale:.2; --hero-shake:0px; }
+#top.hero { height:280svh; background:#fff; --hero-layout-scale:1; --hero-shake:0px; }
 #top .hero-splash-stage { background:linear-gradient(180deg,#e5fff3 0%,#fff 60.577%); }
 #top .hero-layout { position:absolute; width:1440px; height:900px; left:50%; top:50%; transform:translate(-50%,-50%) scale(var(--hero-layout-scale)); transform-origin:center; isolation:isolate; }
 #top .hero-type-top { position:absolute; z-index:4; left:159px; top:85px; right:auto; bottom:auto; color:#149f5c; font:400 200px/normal var(--font-family-display); letter-spacing:-8px; filter:none; opacity:1; }
-#top .hero-korean-title { position:absolute; z-index:4; left:1045px; top:303px; width:236px; color:#149f5c; font:700 52px/1.3 var(--font-family-base); letter-spacing:-1.04px; text-align:center; }
+#top .hero-korean-title { display:none; }
 #top .hero-product-layer { position:absolute; z-index:5; left:406px; top:303px; width:627px; height:581px; transform:translateX(var(--hero-shake)); filter:none; opacity:1; overflow:hidden; }
 #top .hero-can-body { display:block; position:absolute; inset:0; }
 #top .hero-can-body img { position:absolute; left:-.05%; top:-.05%; width:627px; height:627px; max-width:none; visibility:visible; }
-#top .hero-carbonation-star { position:absolute; z-index:2; left:267px; top:18px; width:905px; height:903px; pointer-events:none; opacity:var(--hero-star-opacity); transform:scale(var(--hero-star-scale)); transform-origin:50% 64%; will-change:transform,opacity; }
+#top .hero-carbonation-star { display:none; }
+#top .hero-carbonation-flow { position:absolute; z-index:2; inset:0; width:1440px; height:900px; pointer-events:none; }
 #top .hero-carbonation-star img { width:905px; height:903px; max-width:none; object-fit:contain; }
 #top .hero-carbonation-bubbles { position:absolute; z-index:3; inset:0; pointer-events:none; }
 #top .hero-carbonation-bubble { position:absolute; left:720px; top:570px; border:1px solid rgba(20,159,92,.22); background:rgba(255,255,255,.5); border-radius:50%; opacity:0; }
 #top .hero-type-bottom,#top .hero-ring,#top .hero-figma-star,#top .hero-splash-effects,#top .hs-refraction,#top .hs-jet-refraction,#top .hero-carbonation-star__aura { display:none; }
-@media(prefers-reduced-motion:reduce) { #top.hero { height:100svh; } #top .hero-carbonation-star,#top .hero-carbonation-bubbles { display:none; } }
+@media(prefers-reduced-motion:reduce) { #top.hero { height:100svh; } #top .hero-carbonation-star,#top .hero-carbonation-bubbles,#top .hero-carbonation-flow { display:none; } }
