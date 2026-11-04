@@ -92,7 +92,7 @@
     if(!source)source={x:innerWidth*.5,y:h*.54,size:Math.min(innerWidth*.14,190)};
     // The 3D history module uses a right-hand can column.
     // End on the approximate upper printed star, then fade to the real label.
-    const target={x:innerWidth*.665,y:h*.36,size:Math.max(26,Math.min(55,innerWidth*.035))};
+    const target={x:innerWidth*.5,y:h*.35,size:Math.max(26,Math.min(55,innerWidth*.035))};
     const move=ease(u), tint=segment(u,.17,.82);
     const x=source.x+(target.x-source.x)*move;
     const y=source.y+(target.y-source.y)*move-36*Math.sin(Math.PI*move);
