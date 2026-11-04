@@ -7,10 +7,7 @@
 #top .hero-product-layer { position:absolute; z-index:5; left:406px; top:303px; width:627px; height:581px; transform:translateX(var(--hero-shake)); filter:none; opacity:1; overflow:hidden; }
 #top .hero-can-body { display:block; position:absolute; inset:0; }
 #top .hero-can-body img { position:absolute; left:-.05%; top:-.05%; width:627px; height:627px; max-width:none; visibility:visible; }
-#top .hero-carbonation-star { display:none; }
-#top .hero-carbonation-flow { position:absolute; z-index:2; inset:0; width:1440px; height:900px; pointer-events:none; }
+#top .hero-carbonation-star { position:absolute; z-index:2; left:267px; top:18px; width:905px; height:903px; pointer-events:none; opacity:var(--hero-star-opacity,0); }
 #top .hero-carbonation-star img { width:905px; height:903px; max-width:none; object-fit:contain; }
-#top .hero-carbonation-bubbles { position:absolute; z-index:3; inset:0; pointer-events:none; }
-#top .hero-carbonation-bubble { position:absolute; left:720px; top:570px; border:1px solid rgba(20,159,92,.22); background:rgba(255,255,255,.5); border-radius:50%; opacity:0; }
 #top .hero-type-bottom,#top .hero-ring,#top .hero-figma-star,#top .hero-splash-effects,#top .hs-refraction,#top .hs-jet-refraction,#top .hero-carbonation-star__aura { display:none; }
 @media(prefers-reduced-motion:reduce) { #top.hero { height:100svh; } #top .hero-carbonation-star,#top .hero-carbonation-bubbles,#top .hero-carbonation-flow { display:none; } }
