@@ -1,12 +1,12 @@
-/* Three pillars: one uninterrupted panorama -> split -> flip.
- * Only the principles section is replaced; no global/history/rich overrides. */
+/* Three pillars: three white cards -> one message -> one logo panorama.
+ * Only the principles scene and its existing global liquid layers are touched. */
 .principles-folder {
   --pf-green: #129f62;
   --pf-deep: #0b7950;
   position: relative;
   isolation: isolate;
-  height: 294svh;
-  min-height: 1860px;
+  height: 326svh;
+  min-height: 2040px;
   background: #f7fcf8;
   color: var(--pf-deep);
 }
@@ -17,48 +17,64 @@
   height: 100svh;
   min-height: 680px;
   overflow: hidden;
+  perspective: 1650px;
   background: radial-gradient(ellipse at 50% 65%, #edfbf2, #f8fff9 68%);
-}
-.principles-folder__message {
-  --pf-message-opacity: 0;
-  position: absolute;
-  z-index: 10;
-  top: 10%;
-  left: 50%;
-  width: min(1040px, calc(100% - 80px));
-  opacity: var(--pf-message-opacity);
-  transform: translate(-50%, var(--pf-message-offset, 15px));
-  text-align: center;
-  pointer-events: none;
-}
-.principles-folder__copy {
-  margin: 0;
-  font-family: "Pretendard", sans-serif;
-  color: #087d4f;
-  line-height: 1.32;
-  letter-spacing: -.042em;
-  text-wrap: balance;
-}
-.principles-folder__copy--headline {
-  font-size: clamp(24px, 2.25vw, 36px);
-  font-weight: 700;
 }
 .pf-scene {
   --pf-panel-width: clamp(220px, 21vw, 300px);
   --pf-panel-height: clamp(298px, 43svh, 382px);
-  --pf-corner: 0px;
+  --pf-corner: 14px;
+  --pf-scene-scale: 1;
+  --pf-scene-flip: 0deg;
   position: absolute;
-  top: 55%;
+  top: 52%;
   left: 50%;
   width: min(1040px, 98vw);
   height: min(495px, 56svh);
-  transform: translate(-50%, -50%);
-  perspective: 1500px;
+  transform: translate(-50%, -50%) rotateY(var(--pf-scene-flip)) scale(var(--pf-scene-scale));
+  transform-origin: 50% 50%;
+  transform-style: preserve-3d;
   pointer-events: none;
+  will-change: transform;
+}
+.pf-merge-message {
+  --pf-merge-opacity: 0;
+  --pf-merge-flip: 0deg;
+  position: absolute;
+  z-index: 8;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: calc(var(--pf-panel-width) + var(--pf-panel-width) + var(--pf-panel-width));
+  height: var(--pf-panel-height);
+  padding: 38px 70px;
+  overflow: hidden;
+  border: 1px solid rgba(29,153,92,.16);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 22px 42px rgba(12,98,55,.11);
+  opacity: var(--pf-merge-opacity);
+  transform: translate(-50%,-50%) rotateY(var(--pf-merge-flip));
+  transform-origin: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.pf-merge-message p {
+  max-width: 690px;
+  margin: 0;
+  color: #078451;
+  text-align: center;
+  text-wrap: balance;
+  font: 700 clamp(27px, 2.55vw, 39px)/1.28 "Pretendard", sans-serif;
+  letter-spacing: -.045em;
 }
 .pf-panel {
   --pf-x: 0px;
   --pf-y: 0px;
+  --pf-z: 0px;
   --pf-flip: 0deg;
   --pf-rotation: 0deg;
   --pf-opacity: 1;
@@ -69,10 +85,21 @@
   width: var(--pf-panel-width);
   height: var(--pf-panel-height);
   transform-style: preserve-3d;
-  transform: translate(-50%,-50%) translate3d(var(--pf-x),var(--pf-y),0) rotateZ(var(--pf-rotation)) rotateY(var(--pf-flip)) scale(var(--pf-scale));
+  transform: translate(-50%,-50%) translate3d(var(--pf-x),var(--pf-y),var(--pf-z)) rotateZ(var(--pf-rotation)) rotateY(var(--pf-flip)) scale(var(--pf-scale));
   transform-origin: center;
   opacity: var(--pf-opacity);
+  translate: 0 0;
+  transition: translate .45s cubic-bezier(.22,1,.36,1);
   will-change: transform, opacity;
+}
+.principles-folder.is-pf-intro .pf-panel {
+  animation: pf-card-float 3.8s ease-in-out infinite;
+}
+.principles-folder.is-pf-intro .pf-panel--clear { animation-delay: -.85s; }
+.principles-folder.is-pf-intro .pf-panel--caffeine { animation-delay: -1.7s; }
+@keyframes pf-card-float {
+  0%,100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
 }
 .pf-panel--pure {
   --pf-x: calc(-1 * var(--pf-panel-width));
@@ -105,6 +132,9 @@
   box-shadow: none;
   outline: none;
   overflow: hidden;
+  transform: rotateY(0deg) translateZ(.5px);
+  -webkit-transform: rotateY(0deg) translateZ(.5px);
+  opacity: var(--pf-front-opacity, 0);
 }
 .pf-panel__panorama {
   position: absolute;
@@ -142,21 +172,35 @@
   border-radius: var(--pf-corner) 14px 14px var(--pf-corner);
 }
 .pf-panel__face--principle {
-  transform: rotateY(180deg);
+  transform: rotateY(0deg) translateZ(.5px);
+  -webkit-transform: rotateY(0deg) translateZ(.5px);
+  opacity: var(--pf-back-opacity, 1);
   border: 1px solid rgba(29,153,92,.19);
-  box-shadow: 0 19px 36px rgba(12,98,55,.12);
+  box-shadow: 0 22px 42px rgba(12,98,55,.14);
   background: #fff;
   color: #0a9458;
 }
 .pf-panel--clear .pf-panel__face--principle {
-  background: #0e9a5d;
-  color: #fff;
-  border-color: #0e9a5d;
+  background: #fff;
+  color: #0a9458;
+  border-color: rgba(29,153,92,.19);
 }
 .pf-panel--caffeine .pf-panel__face--principle {
-  background: #dff5e8;
-  color: #087c4a;
-  border-color: #cde9d7;
+  background: #fff;
+  color: #0a9458;
+  border-color: rgba(29,153,92,.19);
+}
+.pf-panel--pure .pf-panel__face--principle {
+  border-radius: 14px var(--pf-corner) var(--pf-corner) 14px;
+}
+.pf-panel--clear .pf-panel__face--principle { border-radius: var(--pf-corner); }
+.pf-panel--caffeine .pf-panel__face--principle {
+  border-radius: var(--pf-corner) 14px 14px var(--pf-corner);
+}
+.pf-panel__number,
+.pf-panel__word,
+.pf-panel__symbol {
+  opacity: var(--pf-principle-content-opacity, 1);
 }
 .pf-panel__number {
   font: 700 15px/1 "Archivo", Arial, sans-serif;
@@ -177,16 +221,12 @@
   font-size: 20px;
   line-height: 1;
 }
-body.is-principles-focus .site-ambient-carbonation.is-active { opacity: .12 !important; }
 @media (max-height: 750px) {
-  .principles-folder__message { top: 7%; }
-  .pf-scene { top: 56%; }
+  .pf-scene { top: 53%; }
 }
 @media (max-width: 800px) {
-  .principles-folder { height: 280svh; min-height: 1580px; }
+  .principles-folder { height: 306svh; min-height: 1720px; }
   .principles-folder__stage { min-height: 550px; }
-  .principles-folder__message { top: 7%; width: calc(100% - 40px); }
-  .principles-folder__copy--headline { font-size: clamp(21px, 4.4vw, 30px); }
   .pf-scene {
     --pf-panel-width: clamp(174px, 25vw, 238px);
     --pf-panel-height: clamp(270px, 41svh, 330px);
@@ -196,10 +236,14 @@ body.is-principles-focus .site-ambient-carbonation.is-active { opacity: .12 !imp
   }
   .pf-panel__face { padding: 18px 16px; }
   .pf-panel__face--visual { padding: 0; }
+  .pf-merge-message { padding: 26px 42px; }
+  .pf-merge-message p { font-size: clamp(22px, 3.5vw, 30px); }
   .pf-panel__word { font-size: clamp(33px, 5vw, 45px); }
   .pf-panel__word--long { font-size: clamp(24px, 3.7vw, 34px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .principles-folder { height: 100svh; min-height: 680px; }
+  .principles-folder.is-pf-intro .pf-panel { animation: none; }
+  .pf-scene,
   .pf-panel { will-change: auto; }
 }
