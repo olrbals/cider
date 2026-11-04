@@ -9,7 +9,7 @@
   if (!finePointer.matches || reducedMotion.matches) return;
 
   const SCENES = [
-    '.hero', '.identity-stage', '.korea-stage', '.history-3d-stage',
+    '.hero', '.brand-values__stage', '.identity-stage', '.korea-stage', '.history-3d-stage',
     '.era', '.product-explorer', '.pop-stage', '.rich-scene', '.rich-flavors__viewport', '.outro'
   ].join(', ');
   const HEADLINES = [
@@ -167,6 +167,7 @@
   }
 
   function colorFor(scene) {
+    if (scene.matches('.brand-values__stage')) return '120, 207, 159';
     if (scene.matches('.identity-stage')) return '132, 218, 174';
     if (scene.matches('.korea-stage')) return '210, 245, 255';
     if (scene.matches('.history-3d-stage')) return '43, 174, 108';
