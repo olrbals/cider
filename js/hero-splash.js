@@ -135,7 +135,7 @@
     }
     return {draw,canvas};
   }
-  const liquidSurface=createLiquidSurface();
+  const liquidSurface=null; // Blender WebP layers replace the fluid sheet; 3D can remains.
   const aperture=document.createElement('span');
   aperture.className='hs-can-aperture';
   canSlot.prepend(aperture);
@@ -205,7 +205,8 @@
     const opening = canSlot.getBoundingClientRect();
     const mouthX = ((projected?.x ?? opening.left + opening.width * .5) - stageBox.left) / stageBox.width * 1000;
     const mouthY = ((projected?.y ?? opening.top + opening.height * .53) - stageBox.top) / stageBox.height * 1000;
-    liquidSurface?.draw(p, mouthX / 1000, mouthY / 1000);
+    // Share exactly the existing scroll progress and projected can mouth with Blender layers.
+    hero.dispatchEvent(new CustomEvent('hero-splash:progress', {detail:{progress:p,mouthX:mouthX/1000,mouthY:mouthY/1000}}));
 
     // A feathered wet film starts at the opening after the foam pops. It has
     // no visible ring; the retained top curtain takes over as it spreads.
