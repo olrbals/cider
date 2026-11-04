@@ -1,74 +1,46 @@
-/* Blender carbonation star, driven exclusively by the existing hero scroll progress. */
+/* Quiet Figma poster → pressure shake → sharp water-star release.
+   Replaces can opening and downward liquid curtain, using a reversible scroll position. */
 (() => {
   'use strict';
-  const hero = document.querySelector('#top.hero');
-  const field = hero?.querySelector('.hero-carbonation-bubbles');
-  if (!hero || !field) return;
-
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const mobile = matchMedia('(max-width: 700px)');
-  const clamp = value => Math.max(0, Math.min(1, value));
-  const smooth = value => {
-    const t = clamp(value);
-    return t * t * (3 - 2 * t);
-  };
-  const phase = (value, start, end) => smooth((value - start) / (end - start));
-  const mix = (from, to, amount) => from + (to - from) * amount;
-
-  const bubbles = Array.from({ length: 18 }, (_, index) => {
-    const node = document.createElement('i');
-    node.className = 'hero-carbonation-bubble';
-    const angle = (index * 2.3999632297) + .34;
-    const radius = 150 + (index % 6) * 38;
-    const size = 3 + (index % 4) * 2.15;
-    node.style.width = `${size}px`;
-    node.style.height = `${size}px`;
-    field.append(node);
-    return {
-      node,
-      angle,
-      radius,
-      delay: (index % 7) * .014,
-      lift: 22 + (index % 5) * 12
-    };
+  const hero=document.querySelector('#top.hero');
+  const field=hero?.querySelector('.hero-carbonation-bubbles');
+  if(!hero||!field)return;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const clamp=n=>Math.max(0,Math.min(1,n));
+  const phase=(p,a,b)=>{const t=clamp((p-a)/(b-a));return t*t*(3-2*t);};
+  const bubbles=Array.from({length:22},(_,i)=>{
+    const node=document.createElement('i');node.className='hero-carbonation-bubble';
+    const size=3+i%4*2;node.style.width=node.style.height=size+'px';field.append(node);
+    return {node,angle:i*2.39996323,radius:250+i%6*36};
   });
-
-  function render(value) {
-    const p = reduced.matches ? 0 : clamp(value);
-    const enter = phase(p, .20, .43);
-    const settle = phase(p, .43, .57);
-    const leave = phase(p, .69, .82);
-    const visible = enter * (1 - leave);
-    hero.style.setProperty('--hero-star-progress', enter.toFixed(4));
-    hero.style.setProperty('--hero-star-opacity', (visible * mix(.72, .94, settle)).toFixed(4));
-    hero.style.setProperty('--hero-star-scale', mix(.62, 1.035, enter).toFixed(4));
-    hero.style.setProperty('--hero-star-rotation', `${mix(-2.5, .65, enter).toFixed(3)}deg`);
-    hero.style.setProperty('--hero-star-blur', `${mix(10, 0, phase(p, .20, .37)).toFixed(2)}px`);
-    hero.style.setProperty('--hero-intro-opacity', (1 - phase(p, .035, .16)).toFixed(4));
-
-    const burst = phase(p, .24, .50);
-    const bubbleFade = 1 - phase(p, .65, .80);
-    const viewportScale = mobile.matches ? .68 : Math.min(innerWidth / 1440, innerHeight / 900);
-    bubbles.forEach(({ node, angle, radius, delay, lift }, index) => {
-      const local = phase(burst, delay, .72 + delay);
-      const distance = radius * viewportScale * local;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance - lift * viewportScale * local;
-      const wobble = Math.sin(p * 8 + index * 1.7) * 3 * local;
-      const opacity = visible * bubbleFade * phase(local, .04, .32) * (1 - phase(local, .82, 1)) * (.35 + (index % 5) * .1);
-      node.style.transform = `translate3d(${(x + wobble).toFixed(2)}px, ${(y - wobble * .4).toFixed(2)}px, 0) scale(${mix(.45, 1.08, local).toFixed(3)})`;
-      node.style.opacity = opacity.toFixed(3);
+  let frame=0,progress=0,lastScroll=scrollY,lastMove=-Infinity;
+  function draw(now){
+    frame=0;
+    const p=reduced.matches?0:progress;
+    const release=clamp((p-.28)/.105);
+    const burst=1-Math.pow(1-release,3);
+    hero.style.setProperty('--hero-star-opacity',(phase(p,.28,.305)*.4).toFixed(4));
+    hero.style.setProperty('--hero-star-scale',(.2+.8*burst).toFixed(4));
+    const pressure=phase(p,.015,.16)*(1-phase(p,.24,.28));
+    const active=1-phase(now-lastMove,60,190);
+    hero.style.setProperty('--hero-shake',(Math.sin(now*.09)*3.6*pressure*active).toFixed(2)+'px');
+    bubbles.forEach(({node,angle,radius},i)=>{
+      const t=clamp((p-.28-i%4*.004)/.24),spread=1-Math.pow(1-t,2);
+      node.style.transform=`translate(${(Math.cos(angle)*radius*spread).toFixed(2)}px,${(Math.sin(angle)*radius*spread-60*spread).toFixed(2)}px)`;
+      node.style.opacity=(phase(t,0,.08)*(1-phase(t,.30,1))*.65).toFixed(3);
     });
+    hero.dataset.heroScene=p<.015?'static':p<.28?'pressure':p<.40?'burst':'hold';
+    if(pressure*active>.001)frame=requestAnimationFrame(draw);
   }
-
-  hero.addEventListener('hero-splash:progress', event => render(event.detail?.progress ?? 0));
-  const refresh = () => {
-    const trigger = window.ScrollTrigger?.getById('hero-splash-only');
-    const progress = trigger?.progress ?? clamp(-hero.getBoundingClientRect().top / Math.max(1, hero.offsetHeight - innerHeight));
-    render(progress);
-  };
-  addEventListener('resize', refresh, { passive: true });
-  reduced.addEventListener('change', refresh);
-  mobile.addEventListener('change', refresh);
-  refresh();
+  function update(){
+    if(scrollY!==lastScroll){lastMove=performance.now();lastScroll=scrollY;}
+    const box=hero.getBoundingClientRect();
+    progress=clamp(-box.top/Math.max(1,hero.offsetHeight-innerHeight));
+    if(!frame)frame=requestAnimationFrame(draw);
+  }
+  function resize(){
+    hero.style.setProperty('--hero-layout-scale',Math.min(innerWidth/1440,innerHeight/900).toFixed(6));update();
+  }
+  addEventListener('scroll',update,{passive:true});addEventListener('resize',resize,{passive:true});
+  reduced.addEventListener('change',resize);resize();
 })();
