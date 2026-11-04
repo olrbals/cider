@@ -1,0 +1,165 @@
+/* 2026-11-04: isolated concept preview. Original Hero WebP, can and 3D archive remain unchanged. */
+.brand-values {
+  position: relative;
+  height: 330svh;
+  min-height: 1920px;
+  isolation: isolate;
+  background: #effaf3;
+  color: #149f5c;
+}
+.brand-values__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 650px;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background: #effaf3;
+}
+.brand-values__stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,.58), transparent 64%);
+  z-index: 0;
+}
+.brand-values__heading {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: clamp(55px,11svh,106px);
+  transform: translateX(-50%);
+  width: max-content;
+  color: #149f5c;
+  font: 500 clamp(11px,1vw,15px)/1.2 "Archivo",sans-serif;
+  letter-spacing: .21em;
+  text-align: center;
+}
+.brand-values__words {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 48svh;
+  display: grid;
+  place-items: center;
+}
+.brand-values__word {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font: 400 clamp(86px,17vw,270px)/.95 var(--font-family-display);
+  letter-spacing: -.07em;
+  color: #129f62;
+  opacity: 0;
+  transform: translate3d(0,22px,0) scale(.96);
+  pointer-events: none;
+  will-change: opacity,transform;
+}
+.brand-values__word:first-child { opacity: 1; transform: none; }
+.brand-values__word--long { font-size: clamp(70px,10.7vw,178px); line-height: 1.02; letter-spacing: -.065em; }
+.brand-values__footer {
+  position: absolute;
+  z-index: 2;
+  bottom: clamp(45px,10svh,104px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #138d58;
+  font: 500 13px/1 "Archivo",sans-serif;
+  letter-spacing: .16em;
+}
+.brand-values__line { display: block; width: 54px; height: 1px; background: #149f5c; opacity: .55; }
+.brand-values__micro {
+  position: absolute;
+  z-index: 2;
+  color: #13975b;
+  font: 500 clamp(11px,1vw,14px)/1 "Archivo",sans-serif;
+  letter-spacing: .13em;
+  writing-mode: vertical-rl;
+}
+.brand-values__micro--left { left: 4.2vw; top: 47%; }
+.brand-values__micro--right { right: 4.2vw; top: 47%; transform: rotate(180deg); }
+.brand-values__bubble {
+  position: absolute;
+  z-index: 1;
+  width: var(--size);
+  height: var(--size);
+  border: 1.5px solid rgba(20,159,92,.28);
+  border-radius: 50%;
+  left: var(--x);
+  bottom: -25%;
+  opacity: .7;
+  animation: brand-bubble-rise var(--speed) linear infinite;
+  animation-delay: var(--delay);
+  pointer-events: none;
+}
+.brand-values__bubble::after { content:""; position:absolute; inset:22% 22% auto auto; width:25%; height:18%; border-radius:100%; background:rgba(255,255,255,.94); }
+@keyframes brand-bubble-rise {
+  from { transform: translate3d(0,8svh,0); }
+  to { transform: translate3d(22px,-150svh,0); }
+}
+/* Original corner texts remain in their correct sections.
+   The old shared overlay assumed Seven Stars came BEFORE Feel the Fizz. */
+.scene-edge-overlay { display: none !important; }
+html.has-scene-edge-overlay .identity-stage > .section-edge-label,
+html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block; }
+
+/* Keep original SEVEN STARS interaction, but let its words dissolve to a single star. */
+.identity.experience-02 .identity-sway-line--seven,
+.identity.experience-02 .identity-star-letters,
+.identity.experience-02 .identity-outline-stars,
+.identity.experience-02 .section-edge-label {
+  opacity: var(--bf-letter-alpha,1);
+}
+.identity.experience-02 .identity-star-slot {
+  opacity: var(--bf-origin-alpha,1);
+}
+/* A fixed handoff star bridges the sticky scene to the existing 3D history canvas. */
+.brand-star-flight {
+  position: fixed;
+  inset: 0;
+  z-index: 28;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout style;
+}
+.brand-star-flight.is-visible { visibility: visible; }
+.brand-star-flight svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100px;
+  height: 100px;
+  overflow: visible;
+  transform-origin: center center;
+  color: #149f5c;
+  filter: drop-shadow(0 5px 12px rgba(79,35,30,.08));
+  will-change: transform,color;
+}
+.brand-star-flight path { fill: currentColor; }
+#history > .section-wave { display: none; }
+@media (max-width: 900px) {
+  .brand-values__word { font-size: clamp(72px,17vw,160px); }
+  .brand-values__word--long { font-size: clamp(59px,11vw,112px); }
+  .brand-values__heading { top: 14svh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-values { height: auto; min-height: 0; }
+  .brand-values__stage { position: relative; min-height: 780px; height: auto; padding: 150px 20px 105px; }
+  .brand-values__words { height: auto; display: flex; flex-direction: column; gap: 28px; }
+  .brand-values__word, .brand-values__word:first-child { position: static; display: block; opacity: 1 !important; transform: none !important; font-size: clamp(50px,8vw,104px); will-change: auto; }
+  .brand-values__bubble, .brand-star-flight { display: none !important; }
+  .identity.experience-02 .identity-sway-line--seven, .identity.experience-02 .identity-star-letters, .identity.experience-02 .identity-outline-stars { opacity: 1 !important; }
+}
