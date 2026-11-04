@@ -78,11 +78,10 @@
     return { y: lerp('y'), sx: lerp('sx'), sy: lerp('sy'), rotate: lerp('rotate'), opacity: lerp('opacity') };
   }
   // The last Z finishes entering at progress ~.56.
-  // After a short resting moment, start a subtle, autonomous two-way dance.
+  // After a short rest, dance until the whole section leaves the viewport.
   // Unlike the entrance, this animation keeps playing even when scroll stops.
   const DANCE_START = .565;
-  const DANCE_END = .985;
-  const DANCE_HOLD_MS = 480;
+    const DANCE_HOLD_MS = 220;
   const DANCE_PERIOD_MS = 2400;
   let danceElapsed = 0;
   let danceLastFrame = 0;
@@ -128,15 +127,14 @@
     const koreaRect = korea.getBoundingClientRect();
     const available = Math.max(1, koreaRect.height - viewport);
     // Preserve the original scroll-scrubbed FEEL → THE → FIZZ entrance.
-    const entryOffset = viewport * .12;
-    const textProgress = clamp((entryOffset - koreaRect.top) / (entryOffset + available));
+    const entryOffset = viewport * .16;
+    const textProgress = clamp(1.38 * (entryOffset - koreaRect.top) / (entryOffset + available));
 
-    // Only animate autonomously once every word has settled and while the
-    // pinned yellow scene is on screen. Ease back to rest before the exit.
+    // Once the words settle, keep their autonomous dance active for as long
+    // as any portion of this yellow section remains in the viewport.
     const danceActive = textProgress >= DANCE_START &&
-      textProgress < DANCE_END &&
-      koreaRect.top < 0 &&
-      koreaRect.bottom >= viewport;
+      koreaRect.top < viewport &&
+      koreaRect.bottom > 0;
     if (danceActive) {
       if (danceLastFrame) danceElapsed += Math.min(50, now - danceLastFrame);
       danceLastFrame = now;
@@ -146,14 +144,14 @@
     }
     const danceTime = Math.max(0, danceElapsed - DANCE_HOLD_MS);
     const danceStrength = danceActive
-      ? ease(danceTime / 420) * ease((DANCE_END - textProgress) / .06)
+      ? ease(danceTime / 360)
       : 0;
     const beat = danceStrength * Math.sin((danceTime / DANCE_PERIOD_MS) * Math.PI * 2);
     scrubType(textProgress, beat, danceTime, danceStrength);
 
     // Preserve the original independent cream-to-green fill timeline.
     const progress = clamp(-koreaRect.top / available);
-    korea.style.setProperty('--korea-fill', (ease(progress) * 100).toFixed(2) + '%');
+    korea.style.setProperty('--korea-fill', (ease(progress / .68) * 100).toFixed(2) + '%');
     korea.style.setProperty('--korea-shift', (progress * 55).toFixed(2) + 'px');
 
     // Only keep a frame loop alive while the text is actually dancing.

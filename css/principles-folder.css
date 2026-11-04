@@ -1,0 +1,205 @@
+/* Three pillars: one uninterrupted panorama -> split -> flip.
+ * Only the principles section is replaced; no global/history/rich overrides. */
+.principles-folder {
+  --pf-green: #129f62;
+  --pf-deep: #0b7950;
+  position: relative;
+  isolation: isolate;
+  height: 294svh;
+  min-height: 1860px;
+  background: #f7fcf8;
+  color: var(--pf-deep);
+}
+.principles-folder__stage {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  min-height: 680px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 65%, #edfbf2, #f8fff9 68%);
+}
+.principles-folder__message {
+  --pf-message-opacity: 0;
+  position: absolute;
+  z-index: 10;
+  top: 10%;
+  left: 50%;
+  width: min(1040px, calc(100% - 80px));
+  opacity: var(--pf-message-opacity);
+  transform: translate(-50%, var(--pf-message-offset, 15px));
+  text-align: center;
+  pointer-events: none;
+}
+.principles-folder__copy {
+  margin: 0;
+  font-family: "Pretendard", sans-serif;
+  color: #087d4f;
+  line-height: 1.32;
+  letter-spacing: -.042em;
+  text-wrap: balance;
+}
+.principles-folder__copy--headline {
+  font-size: clamp(24px, 2.25vw, 36px);
+  font-weight: 700;
+}
+.pf-scene {
+  --pf-panel-width: clamp(220px, 21vw, 300px);
+  --pf-panel-height: clamp(298px, 43svh, 382px);
+  --pf-corner: 0px;
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  width: min(1040px, 98vw);
+  height: min(495px, 56svh);
+  transform: translate(-50%, -50%);
+  perspective: 1500px;
+  pointer-events: none;
+}
+.pf-panel {
+  --pf-x: 0px;
+  --pf-y: 0px;
+  --pf-flip: 0deg;
+  --pf-rotation: 0deg;
+  --pf-opacity: 1;
+  --pf-scale: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--pf-panel-width);
+  height: var(--pf-panel-height);
+  transform-style: preserve-3d;
+  transform: translate(-50%,-50%) translate3d(var(--pf-x),var(--pf-y),0) rotateZ(var(--pf-rotation)) rotateY(var(--pf-flip)) scale(var(--pf-scale));
+  transform-origin: center;
+  opacity: var(--pf-opacity);
+  will-change: transform, opacity;
+}
+.pf-panel--pure {
+  --pf-x: calc(-1 * var(--pf-panel-width));
+  z-index: 1;
+}
+.pf-panel--clear { z-index: 2; }
+.pf-panel--caffeine {
+  --pf-x: var(--pf-panel-width);
+  z-index: 3;
+}
+.pf-panel__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 25px 24px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 14px;
+}
+/* A single 3-column-wide panorama is repeated in the three clipped faces.
+   The exact same logo and gradient coordinates are used in every slice,
+   so the logo stays physically attached to the cards as they separate. */
+.pf-panel__face--visual {
+  padding: 0;
+  border-radius: 0;
+  background: #12955f;
+  box-shadow: none;
+  outline: none;
+  overflow: hidden;
+}
+.pf-panel__panorama {
+  position: absolute;
+  top: 0;
+  width: calc(var(--pf-panel-width) + var(--pf-panel-width) + var(--pf-panel-width));
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(115deg,
+    #087b4e 0%, #15925a 26%, #2cae73 49%, #1ca368 72%, #087a4c 100%);
+  pointer-events: none;
+}
+.pf-panel--pure .pf-panel__panorama { left: 0; }
+.pf-panel--clear .pf-panel__panorama { left: calc(0px - var(--pf-panel-width)); }
+.pf-panel--caffeine .pf-panel__panorama {
+  left: calc(0px - var(--pf-panel-width) - var(--pf-panel-width));
+}
+.pf-panel__logo-slice {
+  display: block;
+  width: min(610px, 74%);
+  height: auto;
+  max-height: 270px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1) drop-shadow(0 3px 7px rgba(0,64,36,.11));
+}
+.pf-panel--pure .pf-panel__face--visual {
+  border-radius: 14px var(--pf-corner) var(--pf-corner) 14px;
+}
+.pf-panel--clear .pf-panel__face--visual {
+  border-radius: var(--pf-corner);
+}
+.pf-panel--caffeine .pf-panel__face--visual {
+  border-radius: var(--pf-corner) 14px 14px var(--pf-corner);
+}
+.pf-panel__face--principle {
+  transform: rotateY(180deg);
+  border: 1px solid rgba(29,153,92,.19);
+  box-shadow: 0 19px 36px rgba(12,98,55,.12);
+  background: #fff;
+  color: #0a9458;
+}
+.pf-panel--clear .pf-panel__face--principle {
+  background: #0e9a5d;
+  color: #fff;
+  border-color: #0e9a5d;
+}
+.pf-panel--caffeine .pf-panel__face--principle {
+  background: #dff5e8;
+  color: #087c4a;
+  border-color: #cde9d7;
+}
+.pf-panel__number {
+  font: 700 15px/1 "Archivo", Arial, sans-serif;
+  letter-spacing: .06em;
+}
+.pf-panel__word {
+  margin: auto -8px;
+  text-align: center;
+  font: 400 clamp(35px, 4.1vw, 57px)/.99 "Archivo Black", Impact, sans-serif;
+  letter-spacing: -.075em;
+}
+.pf-panel__word--long {
+  font-size: clamp(30px, 3.1vw, 42px);
+  line-height: 1.07;
+}
+.pf-panel__symbol {
+  align-self: flex-end;
+  font-size: 20px;
+  line-height: 1;
+}
+body.is-principles-focus .site-ambient-carbonation.is-active { opacity: .12 !important; }
+@media (max-height: 750px) {
+  .principles-folder__message { top: 7%; }
+  .pf-scene { top: 56%; }
+}
+@media (max-width: 800px) {
+  .principles-folder { height: 280svh; min-height: 1580px; }
+  .principles-folder__stage { min-height: 550px; }
+  .principles-folder__message { top: 7%; width: calc(100% - 40px); }
+  .principles-folder__copy--headline { font-size: clamp(21px, 4.4vw, 30px); }
+  .pf-scene {
+    --pf-panel-width: clamp(174px, 25vw, 238px);
+    --pf-panel-height: clamp(270px, 41svh, 330px);
+    top: 58%;
+    width: 100%;
+    height: 50svh;
+  }
+  .pf-panel__face { padding: 18px 16px; }
+  .pf-panel__face--visual { padding: 0; }
+  .pf-panel__word { font-size: clamp(33px, 5vw, 45px); }
+  .pf-panel__word--long { font-size: clamp(24px, 3.7vw, 34px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .principles-folder { height: 100svh; min-height: 680px; }
+  .pf-panel { will-change: auto; }
+}
