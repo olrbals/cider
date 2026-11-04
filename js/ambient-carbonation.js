@@ -71,7 +71,7 @@
   const sprites = [makeBubbleSprite(0), makeBubbleSprite(1)];
 
   function desiredCount() {
-    return clamp(Math.round((width * height / 14230) * densityFactor), 46, lowPower ? 85 : 143);
+    return clamp(Math.round((width * height / 20200) * densityFactor), 30, lowPower ? 60 : 90);
   }
 
   function makeParticle(distribute = false, around = null) {
