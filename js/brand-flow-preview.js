@@ -25,6 +25,10 @@
   flight.innerHTML='<svg viewBox="0 0 100 100" focusable="false"><path d="M50 6 L61.7 36 H93 L68 55.3 L77.5 86.5 L50 68.2 L22.5 86.5 L32 55.3 L7 36 H38.3 Z"/></svg>';
   document.body.append(flight);
   const graphic=flight.querySelector('svg');
+  const trail=document.createElement('div');
+  trail.className='brand-star-trail';
+  trail.innerHTML='<i></i><i></i><i></i>';
+  flight.prepend(trail);
   let frame=0;
   let source=null;
 
@@ -56,9 +60,7 @@
         (1-.025*(1-opacity)).toFixed(4)+')';
       word.setAttribute('aria-hidden',opacity<.2?'true':'false');
     });
-    const change=between(progress,.86,1);
-    const base=[239,250,243],next=[255,248,213];
-    stage.style.backgroundColor='rgb('+base.map((v,i)=>Math.round(v+(next[i]-v)*change)).join(',')+')';
+    stage.style.backgroundColor='#ffffff';
   }
   function drawStar() {
     const r=identity.getBoundingClientRect();
@@ -66,22 +68,25 @@
     const available=Math.max(1,r.height-h);
     const progress=clamp(-r.top/available);
     // The typography eases away while the star retains its exact position.
-    const textAlpha=1-between(progress,.65,.81);
-    const originalAlpha=1-between(progress,.77,.85);
+    const textAlpha=1-between(progress,.58,.74);
+    const originalAlpha=1-between(progress,.77,.83);
     identity.style.setProperty('--bf-letter-alpha',textAlpha.toFixed(3));
     identity.style.setProperty('--bf-origin-alpha',originalAlpha.toFixed(3));
 
-    if(progress>.44&&progress<.79)captureSource();
+    identity.classList.toggle('is-star-isolated',progress>.56);
+    if(progress<.55)source=null;
+    if(progress>.56&&progress<.79)captureSource();
     const historyRect=history.getBoundingClientRect();
     const arrival=clamp((h-historyRect.top)/h);
-    const takeover=between(progress,.77,.85);
+    const takeover=between(progress,.77,.83);
     const landing=between(arrival,.52,.68);
-    const visible=takeover>0 && arrival<.7 && !document.hidden;
+    const visible=takeover>0 && arrival<.7 && r.top<h && !document.hidden;
     flight.classList.toggle('is-visible',visible);
     if(!visible)return;
 
     if(!source)source={x:innerWidth*.5,y:h*.52,size:Math.min(190,innerWidth*.135)};
-    const move=between(arrival,0,.65);
+    const fall=clamp(arrival/.65);
+    const move=fall*fall;
     // Ask the 3D history renderer for the landmark on the actual can,
     // projected using its current camera/scale/section position.
     const projected=window.__chilsungHistoryStarAnchor?.();
@@ -93,13 +98,24 @@
     const x=source.x+(target.x-source.x)*move;
     const y=source.y+(target.y-source.y)*move;
     const size=source.size+(target.size-source.size)*move;
-    const tint=between(progress,.86,.94);
-    const color=[20,159,92].map((value,i)=>
+    const tint=between(fall,.06,.72);
+    const color=[255,255,255].map((value,i)=>
       Math.round(value+([202,40,49][i]-value)*tint));
     graphic.style.color='rgb('+color.join(',')+')';
+    const glow=between(progress,.84,.91)*(1-between(progress,.96,1))*(1-between(fall,0,.12));
+    graphic.style.filter='drop-shadow(0 0 '+(4+glow*13).toFixed(1)+'px rgba('+color.join(',')+','+(.1+glow*.5).toFixed(3)+'))';
     graphic.style.transform='translate3d('+(x-size/2).toFixed(2)+'px,'+
       (y-size/2).toFixed(2)+'px,0) scale('+(size/100).toFixed(4)+')';
     flight.style.opacity=(takeover*(1-landing)).toFixed(3);
+    const streak=between(fall,.025,.17)*(1-between(fall,.75,.98));
+    const length=Math.min(h*.34,240)*streak;
+    trail.style.left=x.toFixed(2)+'px';
+    trail.style.top=y.toFixed(2)+'px';
+    trail.style.width=Math.max(9,size*.22).toFixed(2)+'px';
+    trail.style.height=length.toFixed(2)+'px';
+    trail.style.color='rgb('+color.join(',')+')';
+    trail.style.opacity=(streak*.8).toFixed(3);
+    trail.style.transform='translate(-50%,-100%) rotate('+(-Math.atan2(target.x-source.x,Math.max(1,target.y-source.y))*180/Math.PI).toFixed(2)+'deg)';
   }
   function render() {
     frame=0;
@@ -107,6 +123,8 @@
       flight.classList.remove('is-visible');
       identity.style.removeProperty('--bf-letter-alpha');
       identity.style.removeProperty('--bf-origin-alpha');
+      identity.classList.remove('is-star-isolated');
+      stage.style.backgroundColor='#ffffff';
       return;
     }
     drawPrinciples();

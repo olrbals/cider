@@ -4,7 +4,7 @@
   height: 330svh;
   min-height: 1920px;
   isolation: isolate;
-  background: #effaf3;
+  background: #ffffff;
   color: #149f5c;
 }
 .brand-values__stage {
@@ -17,7 +17,7 @@
   place-items: center;
   overflow: hidden;
   isolation: isolate;
-  background: #effaf3;
+  background: #ffffff;
 }
 .brand-values__stage::after {
   content: "";
@@ -90,7 +90,15 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 
 /* Longer white hold for a clean, isolated red star before 1950. */
 #identity.identity.experience-02 { height:335svh; min-height:2000px; }
-#identity .identity-stage { background:#fff; }
+#identity.identity.experience-02,
+#identity .identity-stage { background:#149f5c; color:#fff; }
+#identity .identity-display,
+#identity .identity-liquid-type,
+#identity .identity-main-star,
+#identity .identity-outline-stars,
+#identity .section-edge-label { color:#fff; }
+#identity.is-star-isolated .identity-sway-line { animation:none; transform:none; }
+#identity.is-star-isolated .identity-liquid-layer { opacity:0; }
 /* Keep original SEVEN STARS interaction, but let its words dissolve to a single star. */
 .identity.experience-02 .identity-sway-line--seven,
 .identity.experience-02 .identity-star-letters,
@@ -126,6 +134,11 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   will-change: transform,color;
 }
 .brand-star-flight path { fill: currentColor; }
+.brand-star-trail { position:absolute; transform-origin:50% 100%; pointer-events:none; opacity:0; background:linear-gradient(to bottom,transparent,currentColor); border-radius:80% 80% 30% 30%; filter:blur(2px); }
+.brand-star-trail i { position:absolute; bottom:12%; width:2px; height:65%; background:linear-gradient(to bottom,transparent,currentColor); }
+.brand-star-trail i:nth-child(1) { left:-13px; height:55%; }
+.brand-star-trail i:nth-child(2) { right:-16px; bottom:24%; height:80%; }
+.brand-star-trail i:nth-child(3) { right:-26px; bottom:40%; height:35%; }
 
 @media (max-width: 900px) {
   .brand-values__word { font-size: clamp(72px,17vw,160px); }
