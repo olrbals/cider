@@ -8,9 +8,9 @@
   const ns = 'http://www.w3.org/2000/svg';
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const palette = [
-    { id: 'identity', color: '#ffffff', accent: '#b9ebce', edge: '#a3debf' },
+    { id: 'brand-values', color: '#effaf3', accent: '#e3f8ec', edge: '#b5e8cf' },
     { id: 'korea', color: '#ffdd00', accent: '#fff4a0', edge: '#fff0a7' },
-    { id: 'principles-folder', color: '#f8fff9', accent: '#e3f8ec', edge: '#b5e8cf' },
+    { id: 'identity', color: '#ffffff', accent: '#b9ebce', edge: '#a3debf' },
     { id: 'history', color: '#f7faf8', accent: '#eff8f2', edge: '#e0f0e7' },
     { id: 'products', color: '#f9f4e7', accent: '#ffffff', edge: '#ffffff' },
     { id: 'pop', color: '#ece4d5', accent: '#ffffff', edge: '#fff9eb' },
@@ -63,7 +63,7 @@
     section.insertBefore(svg, section.firstChild);
     // Preserve the original left/right wave order for every existing scene.
     return { section, svg, body, shimmer, edge,
-      index: spec.id === 'principles-folder' ? 3 : index > 2 ? index - 1 : index
+      index
     };
   }).filter(Boolean);
 
