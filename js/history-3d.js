@@ -251,8 +251,23 @@ function makeCan(stage, track, images) {
     renderer.render(scene, camera);
   }
 
+  // Star point projected from the first can label's actual 3D transform.
+  // Front-facing texture is wrapped around -Z at the initial Y rotation.
+  // The UV artwork's red star is near upper center of the 1950 can.
+  function getStarPoint() {
+    carrier.updateMatrixWorld(true);
+    const landmark=new THREE.Vector3(0,.66,-.69);
+    landmark.applyMatrix4(rolling.matrixWorld);
+    landmark.project(camera);
+    const bounds=stage.getBoundingClientRect();
+    return {
+      x:bounds.left+(landmark.x+1)*bounds.width*.5,
+      y:bounds.top+(1-landmark.y)*bounds.height*.5,
+      size:Math.max(26,Math.min(55,bounds.width*.032))
+    };
+  }
   resize();
-  return { render, resize };
+  return { render, resize, getStarPoint };
 }
 
 // A single pinned four-column counter. Every column keeps its position;
@@ -427,6 +442,10 @@ async function initHistory(section) {
     section.dataset.fallback = 'true';
     console.error('History 3D:', error);
   }
+
+  // Expose only a read-only screen-space landmark for the star handoff.
+  window.__chilsungHistoryStarAnchor = () => can?.getStarPoint() || null;
+  window.dispatchEvent(new Event('chilsung:history-star-ready'));
 
   let progress = 0;
   let fallbackYear = '';
