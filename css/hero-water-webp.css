@@ -1,0 +1,14 @@
+/* Layered Blender water, scoped to the hero. Keep typography, can and stars intact. */
+#top .hw-composite{position:absolute;inset:0;z-index:6;overflow:hidden;pointer-events:none;isolation:isolate;contain:layout paint}
+#top .hw-fill,#top .hw-ribbon,#top .hw-bubbles{position:absolute;inset:0;pointer-events:none}
+#top .hw-fill{opacity:0;background:linear-gradient(180deg,rgba(220,252,235,.74),rgba(245,255,250,.91) 58%,#fff);will-change:clip-path,opacity}
+#top .hw-ribbon{opacity:0;overflow:hidden;will-change:clip-path,opacity}
+#top .hw-ribbon img{position:absolute;top:30%;left:50%;display:block;width:112%;height:auto;max-width:none;user-select:none;pointer-events:none;-webkit-user-drag:none;transform-origin:50% 50%}
+#top .hw-ribbon .hw-back{opacity:.49}
+#top .hw-ribbon .hw-mid{opacity:1}
+#top .hw-ribbon .hw-front{opacity:.72}
+#top .hw-bubble{position:absolute;top:0;left:0;display:block;border:1px solid rgba(255,255,255,.84);background:rgba(255,255,255,.17);border-radius:50%;box-shadow:inset 0 -1px 1px rgba(12,116,70,.24);opacity:0}
+/* Turn off the old liquid sheet and duplicate backdrop filters, NOT the 3D can. */
+#top .hs-liquid-webgl,#top .hero-splash-effects,#top .hs-refraction,#top .hs-jet-refraction,#top .hs-spray-film{display:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+@media(max-width:700px){#top .hw-ribbon img{width:170%}#top .hw-bubble{box-shadow:none}}
+@media(prefers-reduced-motion:reduce){#top .hw-composite{display:none!important}}
