@@ -30,7 +30,7 @@
   if (!ctx) return;
   document.body.append(canvas);
 
-  const MAX_FRUIT = 68; // 65% of prior cap (105), preserving quality and behavior.
+  const MAX_FRUIT = 48; // 65% of prior cap (105), preserving quality and behavior.
   const particles = [];
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const random = (a, b) => a + Math.random() * (b - a);
@@ -87,7 +87,7 @@
     for (let i = 0; i < count && particles.length < MAX_FRUIT; i++) {
       const img = nextImage();
       if (!img.complete || !img.naturalWidth) continue;
-      const size = random(movement ? 42 : 38, movement ? 150 : 130);
+      const size = random(movement ? 32 : 28, movement ? 112 : 92);
       const horizontal = random(-100, 100) - headingX * movement * random(8, 38);
       particles.push({
         img,
@@ -139,6 +139,11 @@
     }
 
     ctx.clearRect(0, 0, innerWidth, innerHeight);
+    // Keep the two-line title readable when fruit travels across the center.
+    const protectCenter = {
+      left:innerWidth*.17,right:innerWidth*.83,
+      top:innerHeight*.27,bottom:innerHeight*.72
+    };
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.age += dt;
@@ -155,7 +160,9 @@
       const fadeOut = clamp((1 - life) / .34, 0, 1);
       const alpha = p.opacity * fadeIn * fadeOut;
       ctx.save();
-      ctx.globalAlpha = alpha;
+      const acrossType = p.x > protectCenter.left && p.x < protectCenter.right &&
+        p.y > protectCenter.top && p.y < protectCenter.bottom;
+      ctx.globalAlpha = alpha * (acrossType ? .18 : 1);
       ctx.translate(p.x, p.y);
       ctx.rotate(p.angle);
       const size = p.size * (1 - .2 * life);
