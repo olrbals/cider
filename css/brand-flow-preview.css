@@ -27,18 +27,6 @@
   background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,.58), transparent 64%);
   z-index: 0;
 }
-.brand-values__heading {
-  position: absolute;
-  z-index: 2;
-  left: 50%;
-  top: clamp(55px,11svh,106px);
-  transform: translateX(-50%);
-  width: max-content;
-  color: #149f5c;
-  font: 500 clamp(11px,1vw,15px)/1.2 "Archivo",sans-serif;
-  letter-spacing: .21em;
-  text-align: center;
-}
 .brand-values__words {
   position: relative;
   z-index: 2;
@@ -65,20 +53,6 @@
 }
 .brand-values__word:first-child { opacity: 1; transform: none; }
 .brand-values__word--long { font-size: clamp(70px,10.7vw,178px); line-height: 1.02; letter-spacing: -.065em; }
-.brand-values__footer {
-  position: absolute;
-  z-index: 2;
-  bottom: clamp(45px,10svh,104px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: #138d58;
-  font: 500 13px/1 "Archivo",sans-serif;
-  letter-spacing: .16em;
-}
-.brand-values__line { display: block; width: 54px; height: 1px; background: #149f5c; opacity: .55; }
 .brand-values__micro {
   position: absolute;
   z-index: 2;
@@ -114,6 +88,9 @@
 html.has-scene-edge-overlay .identity-stage > .section-edge-label,
 html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block; }
 
+/* Longer white hold for a clean, isolated red star before 1950. */
+#identity.identity.experience-02 { height:335svh; min-height:2000px; }
+#identity .identity-stage { background:#fff; }
 /* Keep original SEVEN STARS interaction, but let its words dissolve to a single star. */
 .identity.experience-02 .identity-sway-line--seven,
 .identity.experience-02 .identity-star-letters,
@@ -149,11 +126,10 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   will-change: transform,color;
 }
 .brand-star-flight path { fill: currentColor; }
-#history > .section-wave { display: none; }
+
 @media (max-width: 900px) {
   .brand-values__word { font-size: clamp(72px,17vw,160px); }
   .brand-values__word--long { font-size: clamp(59px,11vw,112px); }
-  .brand-values__heading { top: 14svh; }
 }
 @media (prefers-reduced-motion: reduce) {
   .brand-values { height: auto; min-height: 0; }
@@ -163,3 +139,12 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   .brand-values__bubble, .brand-star-flight { display: none !important; }
   .identity.experience-02 .identity-sway-line--seven, .identity.experience-02 .identity-star-letters, .identity.experience-02 .identity-outline-stars { opacity: 1 !important; }
 }
+
+/* Narrative stacking order: incoming wave above outgoing scene. */
+#brand-values.brand-values { z-index:2; overflow:visible; }
+#korea.korea-scene { z-index:3; }
+#identity.identity.experience-02 { z-index:4; overflow:visible; }
+#history.history { z-index:5; }
+#brand-values .brand-values__stage { z-index:1; }
+.brand-star-flight { z-index:90; }
+@media (prefers-reduced-motion: reduce) { #identity.identity.experience-02 { height:100svh; min-height:700px; } }
