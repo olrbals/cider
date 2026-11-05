@@ -61,8 +61,14 @@
   letter-spacing: .13em;
   writing-mode: vertical-rl;
 }
-.brand-values__micro--left { left: 4.2vw; top: 47%; }
-.brand-values__micro--right { right: 4.2vw; top: 47%; transform: rotate(180deg); }
+.brand-values__micro { font:400 clamp(12px,1.3889vw,20px)/1.1 "Archivo",sans-serif; letter-spacing:0; }
+.brand-values__micro--left { left:1.7361%; top:50%; transform:translateY(-50%); }
+.brand-values__micro--right { right:1.8056%; top:50%; transform:translateY(-50%) rotate(180deg); }
+.brand-values__title,.brand-values__counter { position:absolute; z-index:2; left:50%; transform:translateX(-50%); color:#149f5c; font:400 clamp(12px,1.3889vw,20px)/1.1 "Archivo",sans-serif; white-space:nowrap; }
+.brand-values__title { top:4.4444%; }
+.brand-values__counter { top:93.1111%; }
+.brand-values__word { font-size:min(13.88889vw,22.22222svh,200px); letter-spacing:0; line-height:1.09; color:#149f5c; }
+.brand-values__word--long { font-size:min(12.36vw,19.77svh,178px); }
 .brand-values__bubble {
   position: absolute;
   z-index: 1;
@@ -89,9 +95,9 @@ html.has-scene-edge-overlay .identity-stage > .section-edge-label,
 html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block; }
 
 /* Longer white hold for a clean, isolated red star before 1950. */
-#identity.identity.experience-02 { height:335svh; min-height:2000px; }
+#identity.identity.experience-02 { height:460svh; min-height:2600px; }
 #identity.identity.experience-02,
-#identity .identity-stage { background:#149f5c; color:#fff; }
+#identity .identity-stage { background:rgb(var(--bf-surface,20,159,92)); color:#fff; }
 #identity .identity-display,
 #identity .identity-liquid-type,
 #identity .identity-main-star,
@@ -99,6 +105,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 #identity .section-edge-label { color:#fff; }
 #identity.is-star-isolated .identity-sway-line { animation:none; transform:none; }
 #identity.is-star-isolated .identity-liquid-layer { opacity:0; }
+#identity .identity-main-star { filter:drop-shadow(0 0 calc(var(--bf-glow,0) * 16px) rgba(255,255,255,.7)); }
 /* Keep original SEVEN STARS interaction, but let its words dissolve to a single star. */
 .identity.experience-02 .identity-sway-line--seven,
 .identity.experience-02 .identity-star-letters,
@@ -134,11 +141,6 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   will-change: transform,color;
 }
 .brand-star-flight path { fill: currentColor; }
-.brand-star-trail { position:absolute; transform-origin:50% 100%; pointer-events:none; opacity:0; background:linear-gradient(to bottom,transparent,currentColor); border-radius:80% 80% 30% 30%; filter:blur(2px); }
-.brand-star-trail i { position:absolute; bottom:12%; width:2px; height:65%; background:linear-gradient(to bottom,transparent,currentColor); }
-.brand-star-trail i:nth-child(1) { left:-13px; height:55%; }
-.brand-star-trail i:nth-child(2) { right:-16px; bottom:24%; height:80%; }
-.brand-star-trail i:nth-child(3) { right:-26px; bottom:40%; height:35%; }
 
 @media (max-width: 900px) {
   .brand-values__word { font-size: clamp(72px,17vw,160px); }

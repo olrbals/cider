@@ -82,12 +82,26 @@
       const cross=reduce.matches?1:smooth(.65+(fruit?.04:0),1.25+(fruit?.04:0),t);
       // Fixed-size bottles slip past in different depth layers; no impact impulse.
       const bend=fruit?mix(pre[0],post[0],cross):cubic(pre[0],side?700:750,side?450:950,post[0],cross);
-      const x=bend+(side?760:-760)*(1-entry);
-      const y=mix(pre[1],post[1],cross)+(side?1:-1)*(fruit?10:32)*Math.sin(Math.PI*cross);
-      const angle=mix(pre[4],post[4],cross);
+      const flight=reduce.matches?0:Math.sin(Math.PI*smooth(.70,1.60,t));
+      const drift=reduce.matches?0:smooth(1.28,1.60,t);
+      const x=bend+(side?760:-760)*(1-entry)+(fruit?(side?1:-1)*160*flight:0);
+      const y=mix(pre[1],post[1],cross)+(side?1:-1)*(fruit?10:32)*Math.sin(Math.PI*cross)
+        -(fruit?(side?190:145)*flight:0)+(fruit?Math.sin(t*5+pre[0]) * 20 * drift:0);
+      const angle=mix(pre[4],post[4],cross)+(fruit?(side?1:-1)*48*flight+Math.sin(t*4)*9*drift:0);
       Object.assign(node.style,{left:x.toFixed(3)+'px',top:y.toFixed(3)+'px',width:pre[2]+'px',height:pre[3]+'px',transform:'translate(-50%,-50%) rotate('+angle.toFixed(3)+'deg)',opacity:String(fruit?.88:1)});
     });
-    depthNodes.forEach((n,i)=>n.style.opacity=(depth[i][5]*smooth(1.03,1.4,t)).toFixed(4));
+    depthNodes.forEach((n,i)=>{
+      const [x,y,w,h,rotation,alpha]=depth[i];
+      const launch=reduce.matches?1:smooth(.78+(i%3)*.045,1.48+(i%3)*.045,t);
+      const pulse=reduce.matches?0:Math.sin(Math.PI*launch);
+      const travel=reduce.matches?0:smooth(1.35,1.75,t);
+      const px=mix(720+(x-720)*.48,x,launch)+(x<720?-1:1)*80*pulse;
+      const py=mix(480+(y-480)*.45,y,launch)-100*pulse+Math.sin(t*4.5+i*1.3)*28*travel;
+      const angle=rotation+(reduce.matches?0:(i%2?1:-1)*(32*pulse+Math.sin(t*3+i)*8*travel));
+      n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
+      n.style.transform='translate(-50%,-50%) rotate('+angle.toFixed(2)+'deg)';
+      n.style.opacity=(alpha*smooth(.80,1.12,t)).toFixed(4);
+    });
     setAccessible(duo,alpha>.9);
   }
 

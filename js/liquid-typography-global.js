@@ -13,7 +13,7 @@
     '.era', '.product-explorer', '.pop-stage', '.rich-scene', '.rich-flavors__viewport', '.outro'
   ].join(', ');
   const HEADLINES = [
-    '.hero-type', '.identity-display', '.korea-type',
+    '.hero-type', '.brand-values__word', '.identity-display', '.korea-type',
     '.era-year', '.product-backtype', '.rich-giant', '.rich-copy__content h2', '.rich-fg__caption-line h2'
   ].join(', ');
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -113,7 +113,8 @@
     const particle = document.createElement('span');
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
-    const darkBackground = !activeScene.matches('.identity-stage, .product-explorer, .pop-stage, .history-3d-stage');
+    const darkBackground = !activeScene.matches('.brand-values__stage, .product-explorer, .pop-stage, .history-3d-stage') &&
+      (!activeScene.matches('.identity-stage') || Number(document.querySelector('#identity')?.style.getPropertyValue('--bf-paper')||0)<.5);
     const tint = darkBackground
       ? 'rgba(255, 255, 255, .96)' : 'rgba(19, 131, 91, .8)';
     const angle = Math.random() * Math.PI * 2;
