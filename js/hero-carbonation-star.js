@@ -36,12 +36,11 @@
   const burstStart = .32;
   const burstEnd = .49;
   const dissolveStart = .70;
-  const wipeDistance = .24;
+  const wipeDistance = .28;
   let frame = 0;
   let lastProgress;
   let lastTransition;
-  let flowTime = 0;
-  let lastFlowFrame = 0;
+  const headerSurfaces = [...document.querySelectorAll('main > section')];
   let particles = [];
 
   // Find connected bubbles in the PNG once, then reuse their original pixels
@@ -187,15 +186,15 @@
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
       return seed / 4294967296;
     };
-    const lanes = compact ? 20 : 48;
+    const lanes = compact ? 20 : 40;
     const layers = compact
-      ? [[270, 3, 11, .65], [160, 8, 23, 1.08], [9, 19, 40, 1.62]]
-      : [[720, 3, 13, .65], [360, 8, 28, 1.08], [18, 22, 57, 1.62]];
+      ? [[160, 3, 10, .85], [110, 7, 22, 1.12], [12, 18, 36, 1.45]]
+      : [[390, 3, 11, .85], [230, 8, 25, 1.12], [24, 20, 43, 1.45]];
     rising = layers.flatMap(([count, minSize, maxSize, speed], depth) =>
       Array.from({ length: count }, (_, index) => ({
         x: ((index % lanes) + random()) / lanes,
-        start: random() * .82,
-        size: minSize + random() ** 1.6 * (maxSize * 1.22 - minSize),
+        start: random() * .72,
+        size: minSize + random() ** 1.6 * (maxSize - minSize),
         speed: speed + random() * .6,
         sway: random() * Math.PI * 2,
         drift: 3 + depth * 5 + random() * 7,
@@ -203,17 +202,17 @@
         sprite: bubbleSprites[depth]
       })));
 
-    // Cache dense, overlapping microbubbles as a tile. The texture contains
-    // only bubble sprites, so it can replace the former solid liquid fill.
+    // A light repeating texture supplies depth, not an opaque field of noise.
+    // The liquid fog below supplies immersion; individual rings remain legible.
     const tile = document.createElement('canvas');
     const span = compact ? 260 : 384;
     tile.width = tile.height = span;
     const foam = tile.getContext('2d');
-    for (let i = 0; i < (compact ? 3700 : 7800); i++) {
+    for (let i = 0; i < (compact ? 680 : 1550); i++) {
       const x = random() * span;
       const y = random() * span;
-      const size = 5 + random() ** 1.4 * 18;
-      foam.globalAlpha = .55 + random() * .43;
+      const size = 3 + random() ** 1.5 * 13;
+      foam.globalAlpha = .35 + random() * .4;
       const half = size / 2;
       const offsetsX = x < half ? [0, span] : x > span - half ? [0, -span] : [0];
       const offsetsY = y < half ? [0, span] : y > span - half ? [0, -span] : [0];
@@ -233,19 +232,30 @@
 
     const width = wipeWidth;
     const height = wipeHeight;
-    const approach = smooth(progress, .08, .54);
-    const exit = smooth(progress, .63, .995);
+    // A short upward curtain: fill with sparkling soda, then uncover PURE.
+    // Every position is derived from scroll so pausing cannot run a hidden loop.
+    const approach = smooth(progress, .06, .46);
+    const exit = smooth(progress, .57, .975);
     const front = height * (1.10 - approach * 1.29);
     const back = height * (1.14 - exit * 1.34);
-    const flow = (progress - .06) * 5.3 + exit * 1.2 + flowTime;
+    const flow = progress * 2.6;
     const ctx = wipeContext;
     ctx.clearRect(0, 0, width, height);
     ctx.save();
+    // The transparent mint wash gives the impression of being inside soda.
+    // Its soft edge follows the bubble curtain; no flat white flash.
+    const water = ctx.createLinearGradient(0, 0, 0, height);
+    water.addColorStop(0, 'rgba(223,255,241,.92)');
+    water.addColorStop(.55, 'rgba(169,239,210,.95)');
+    water.addColorStop(1, 'rgba(110,210,168,.96)');
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = water;
+    ctx.fillRect(0, 0, width, height);
     if (foamPattern) {
-      const zoom = .53 + approach * .78 + exit * .21;
+      const zoom = .82 + approach * .18;
       foamPattern.setTransform(new DOMMatrix().translate(-width * (zoom - 1) / 2,
-        -flow * height * .36).scale(zoom));
-      ctx.globalAlpha = smooth(progress, .17, .53);
+        -flow * height * .13).scale(zoom));
+      ctx.globalAlpha = .32 + approach * .18;
       ctx.fillStyle = foamPattern;
       ctx.fillRect(0, 0, width, height);
     }
@@ -285,17 +295,25 @@
     // later position clamps to one and the frame loop stays shut down.
     const boundary = nextSection ? nextSection.getBoundingClientRect().top / stageHeight : 0;
     const transition = reduced.matches ? 0 : phase(wipeDistance - boundary, 0, wipeDistance);
-    const headerHidden = boundary <= 0 || Boolean(wipeContext && transition >= .75);
-    if (header && header.hidden !== headerHidden) header.hidden = headerHidden;
+    // Keep the requested fixed header visible. Switch navigation contrast as
+    // light/dark sections pass behind it, including the carbonation handoff.
+    if (header) {
+      if (header.hidden) header.hidden = false;
+      const sampleY = Math.min(64, Math.max(30, innerHeight * .085));
+      let onLight = false;
+      for (const section of headerSurfaces) {
+        const box = section.getBoundingClientRect();
+        if (box.top <= sampleY && box.bottom > sampleY) {
+          onLight = !['top', 'footer', 'rich-flavors'].includes(section.id);
+        }
+      }
+      if (boundary > 0 && transition > 0) onLight = transition >= .54;
+      header.classList.toggle('is-on-light', onLight);
+    }
     const wipeActive = Boolean(wipeContext && boundary > .002 && transition > .06 && transition < .997);
     if (wipeActive) {
-      if (lastFlowFrame) flowTime += Math.min(now - lastFlowFrame, 40) * .00068;
-      lastFlowFrame = now;
       drawWipe(transition, true);
-      schedule();
     } else {
-      flowTime = 0;
-      lastFlowFrame = 0;
       drawWipe(transition, false);
     }
     if (transition !== lastTransition) {
