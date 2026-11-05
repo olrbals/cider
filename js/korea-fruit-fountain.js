@@ -101,7 +101,7 @@
         size,
         age: 0,
         lifetime: random(1.05, 1.7),
-        opacity: random(.84, 1)
+        opacity: 1
       });
     }
   }
@@ -139,11 +139,6 @@
     }
 
     ctx.clearRect(0, 0, innerWidth, innerHeight);
-    // Keep the two-line title readable when fruit travels across the center.
-    const protectCenter = {
-      left:innerWidth*.17,right:innerWidth*.83,
-      top:innerHeight*.27,bottom:innerHeight*.72
-    };
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.age += dt;
@@ -156,13 +151,12 @@
       p.y += p.vy * dt;
       p.angle += p.spin * dt;
       const life = p.age / p.lifetime;
-      const fadeIn = Math.min(1, life / .1);
-      const fadeOut = clamp((1 - life) / .34, 0, 1);
+      const fadeIn = Math.min(1, life / .035);
+      const fadeOut = clamp((1 - life) / .12, 0, 1);
       const alpha = p.opacity * fadeIn * fadeOut;
       ctx.save();
-      const acrossType = p.x > protectCenter.left && p.x < protectCenter.right &&
-        p.y > protectCenter.top && p.y < protectCenter.bottom;
-      ctx.globalAlpha = alpha * (acrossType ? .18 : 1);
+      // Keep citrus opaque over the title too; fade only at birth/end of life.
+      ctx.globalAlpha = alpha;
       ctx.translate(p.x, p.y);
       ctx.rotate(p.angle);
       const size = p.size * (1 - .2 * life);

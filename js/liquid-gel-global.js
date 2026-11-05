@@ -122,7 +122,10 @@
   function setAmount() {
     // V4 used uAmount = refraction / 8 and displacement proportional
     // to surface slope; scale here is measured in rendered CSS pixels.
-    displacement.setAttribute('scale', (Number(refraction.value) * 65).toFixed(2));
+    // Principles already uses a fill/outline mask; keep its additional DOM
+    // refraction gentle so the centered multiline words do not tear apart.
+    const amount=active?.matches('.brand-values__stage')?18:65;
+    displacement.setAttribute('scale', (Number(refraction.value) * amount).toFixed(2));
   }
 
   function initializeField() {

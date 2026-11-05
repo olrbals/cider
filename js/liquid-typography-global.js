@@ -50,6 +50,16 @@
     outline.className = 'site-liquid-type-outline';
     fill.innerHTML = markup;
     outline.innerHTML = markup;
+    // Principles headlines are full-stage flex boxes, unlike ordinary text.
+    // Both masks must occupy that same box, with their lettering centered inside.
+    if(node.matches('.brand-values__word')) {
+      for(const layer of [fill,outline]) {
+        const content=document.createElement('span');
+        content.className='site-liquid-type-content';
+        content.innerHTML=markup;
+        layer.replaceChildren(content);
+      }
+    }
     outline.setAttribute('aria-hidden', 'true');
 
     const paths = [];
@@ -276,7 +286,8 @@
       const radiusY = radiusX * (.9 - velocity * .08);
       const px = x - rect.left;
       const py = y - rect.top;
-      if (rect.width < 1 || rect.height < 1 ||
+      if ((item.node.matches('.brand-values__word') && Number(item.node.style.opacity)<.05) ||
+          rect.width < 1 || rect.height < 1 ||
           Math.max(rect.top, 0) >= Math.min(rect.bottom, innerHeight) ||
           px < -radiusX || px > rect.width + radiusX ||
           py < -radiusY || py > rect.height + radiusY ||

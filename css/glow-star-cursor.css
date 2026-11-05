@@ -1,0 +1,15 @@
+/* A crisp, continuously glowing brand star, independent of liquid scene filters. */
+/* Align both typography masks with the full Principles headline box. */
+.brand-values__word > .site-liquid-type-fill,
+.brand-values__word > .site-liquid-type-outline { position:absolute; inset:0; width:100%; height:100%; display:grid; place-items:center; }
+.brand-values__word .site-liquid-type-content { display:block; font:inherit; line-height:inherit; letter-spacing:inherit; }
+.glow-star-cursor { position:fixed; left:0; top:0; width:28px; height:28px; z-index:2147483646; pointer-events:none; visibility:hidden; transform:translate(-50%,-50%); contain:layout style; }
+.glow-star-cursor.is-visible { visibility:visible; }
+.glow-star-cursor svg { display:block; width:28px; height:28px; overflow:visible; fill:#149f5c; stroke:#e8fff8; stroke-width:2.5; stroke-linejoin:round; filter:drop-shadow(0 0 3px #eafff8) drop-shadow(0 0 7px #a0ffe5); animation:cursor-star-glow 2.4s ease-in-out infinite alternate; }
+.glow-star-cursor-trail { position:fixed; left:0; top:0; z-index:2147483645; pointer-events:none; border-radius:50%; background:#9fffe3; box-shadow:0 0 7px 3px #b8ffeb; opacity:0; transform:translate(-50%,-50%); }
+.glow-star-cursor.is-pressed svg { transform:scale(.86); }
+@keyframes cursor-star-glow { from { filter:drop-shadow(0 0 3px #eafff8) drop-shadow(0 0 6px #a0ffe5); } to { filter:drop-shadow(0 0 5px #eafff8) drop-shadow(0 0 13px #b8ffeb); } }
+@media (hover:hover) and (pointer:fine) { html.has-glow-star-cursor, html.has-glow-star-cursor * { cursor:none !important; } }
+@media (hover:none), (pointer:coarse) { .glow-star-cursor,.glow-star-cursor-trail { display:none; } }
+@media (prefers-reduced-motion:reduce) { .glow-star-cursor-trail { display:none; } }
+@media (prefers-reduced-motion:reduce) { .glow-star-cursor svg { animation:none; } }
