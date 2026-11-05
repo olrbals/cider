@@ -17,10 +17,11 @@ const HISTORY_ERAS = [
 const LABEL_SWITCH_POINT = 0.5;
 const ROLL_START = 0.2;
 const ROLL_END = 0.8;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 // Very light era-specific color temperatures, not eight competing backgrounds.
 const ERA_AMBIENCE = [
-  { surface: [249, 248, 243], halo: [231, 213, 172] }, // 1950 · vintage cream
+  { surface: [255, 255, 255], halo: [231, 213, 172] }, // white star aperture → 1950
   { surface: [246, 249, 246], halo: [196, 224, 203] }, // 1960
   { surface: [244, 249, 244], halo: [178, 221, 186] }, // 1970
   { surface: [247, 250, 243], halo: [211, 230, 169] }, // 1987
@@ -51,36 +52,35 @@ function loadImage(url) {
 function makeCan(stage, track, images) {
   const width = 1024;
   const height = 512;
-  const labelCanvas = document.createElement('canvas');
-  labelCanvas.width = width;
-  labelCanvas.height = height;
-  const context = labelCanvas.getContext('2d', { alpha: false });
   let currentLabel = 0;
 
-  function paintLabel(index) {
+  const labelTextures = images.map((image, index) => {
+    const labelCanvas = document.createElement('canvas');
+    labelCanvas.width = width;
+    labelCanvas.height = height;
+    const context = labelCanvas.getContext('2d', { alpha: false });
     // Paint one complete UV texture: never composite an era over its predecessor.
     // The opaque base also clears any transparent pixels left by the prior label.
     const offset = (HISTORY_ERAS[index].uvShift || 0) * width;
     context.globalAlpha = 1;
     context.fillStyle = '#f4f3ee';
     context.fillRect(0, 0, width, height);
-    context.drawImage(images[index], offset, 0, width, height);
-    if (offset < 0) context.drawImage(images[index], offset + width, 0, width, height);
-    if (offset > 0) context.drawImage(images[index], offset - width, 0, width, height);
-  }
+    context.drawImage(image, offset, 0, width, height);
+    if (offset < 0) context.drawImage(image, offset + width, 0, width, height);
+    if (offset > 0) context.drawImage(image, offset - width, 0, width, height);
+    const texture = new THREE.CanvasTexture(labelCanvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 4;
+    return texture;
+  });
 
   function setLabel(index) {
     if (index === currentLabel) return;
-    paintLabel(index);
+    label.material.map = labelTextures[index];
     currentLabel = index;
-    labelTexture.needsUpdate = true;
   }
 
-  paintLabel(0);
-  const labelTexture = new THREE.CanvasTexture(labelCanvas);
-  labelTexture.colorSpace = THREE.SRGBColorSpace;
-  // Match the Hero's crisp printed artwork without changing any era UV layout.
-  labelTexture.anisotropy = 4;
+  const labelTexture = labelTextures[0];
 
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-2, 2, 2, -2, 0.1, 40);
@@ -95,6 +95,8 @@ function makeCan(stage, track, images) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   // Slightly brighter than Hero (1.15) to keep vintage label inks readable.
   renderer.toneMappingExposure = 1.28;
+  // Upload once at initialization, never at the midpoint of a scroll rotation.
+  labelTextures.forEach(texture => renderer.initTexture(texture));
   stage.querySelector('.history-3d-canvas').append(renderer.domElement);
 
   // Reuse the Hero can's four studio softboxes as a real PMREM environment.
@@ -204,7 +206,9 @@ function makeCan(stage, track, images) {
   rolling.add(pullRing);
 
   let frustumHeight = 3.1;
+  let lastRotation = NaN;
   function resize() {
+    lastRotation = NaN;
     const bounds = stage.getBoundingClientRect();
     const viewportWidth = Math.max(1, bounds.width);
     const viewportHeight = Math.max(1, bounds.height);
@@ -218,7 +222,7 @@ function makeCan(stage, track, images) {
     camera.right = frustumHeight * aspect / 2;
     camera.top = frustumHeight / 2;
     camera.bottom = -frustumHeight / 2;
-    camera.updateProjectionMatrix();
+    camera.clearViewOffset();
     // Figma-inspired two-column history: both elements stay within the
     // desktop 200px side gutters at a 1440px viewport.
     const desktopFit = Math.min(1, viewportWidth / 1440);
@@ -237,17 +241,45 @@ function makeCan(stage, track, images) {
       carrier.scale.setScalar(baseCanScale * desktopFit * gutterFit);
       carrier.position.set((canCenterPx - viewportWidth / 2) * worldPerPixel, 0, 0);
     }
-    renderer.setSize(viewportWidth, viewportHeight, false);
+    // Keep the full-stage projection, but render only the pixels around the can.
+    // The bounds enclose every Y rotation and leave room for the lid and AA.
+    carrier.updateMatrixWorld(true);
+    const corners = [];
+    for (const x of [-.75, .75]) {
+      for (const y of [-1.65, 1.65]) {
+        for (const z of [-.75, .75]) {
+          const point = new THREE.Vector3(x, y, z).applyMatrix4(carrier.matrixWorld).project(camera);
+          corners.push([(point.x + 1) * viewportWidth / 2, (1 - point.y) * viewportHeight / 2]);
+        }
+      }
+    }
+    const xs = corners.map(point => point[0]);
+    const ys = corners.map(point => point[1]);
+    const left = Math.max(0, Math.floor(Math.min(...xs)) - 12);
+    const top = Math.max(0, Math.floor(Math.min(...ys)) - 12);
+    const width = Math.max(1, Math.min(Math.ceil(viewportWidth), Math.ceil(Math.max(...xs)) + 12) - left);
+    const height = Math.max(1, Math.min(Math.ceil(viewportHeight), Math.ceil(Math.max(...ys)) + 12) - top);
+    camera.setViewOffset(viewportWidth, viewportHeight, left, top, width, height);
+    renderer.setSize(width, height, false);
+    Object.assign(renderer.domElement.style, {
+      position: 'absolute', left: left + 'px', top: top + 'px',
+      width: width + 'px', height: height + 'px'
+    });
   }
 
   function render(pair, local) {
     // Keep one 360-degree rotation per historical transition.
     // With the can upright, this is a horizontal spin around its vertical axis.
     // Rest at both ends and replace the art only while the rear faces us.
-    const rotationFraction = smoothstep(ROLL_START, ROLL_END, local);
+    const rotationFraction = reducedMotion.matches
+      ? (local >= LABEL_SWITCH_POINT ? 1 : 0)
+      : smoothstep(ROLL_START, ROLL_END, local);
     const labelIndex = Math.min(images.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0));
+    const rotation = Math.PI + 0.28 + (pair + rotationFraction) * Math.PI * 2;
+    if (rotation === lastRotation && labelIndex === currentLabel) return;
     setLabel(labelIndex);
-    rolling.rotation.y = Math.PI + 0.28 + (pair + rotationFraction) * Math.PI * 2;
+    rolling.rotation.y = rotation;
+    lastRotation = rotation;
     renderer.render(scene, camera);
   }
 
@@ -256,14 +288,21 @@ function makeCan(stage, track, images) {
   // The UV artwork's red star is near upper center of the 1950 can.
   function getStarPoint() {
     carrier.updateMatrixWorld(true);
-    const landmark=new THREE.Vector3(0,.66,-.69);
-    landmark.applyMatrix4(rolling.matrixWorld);
-    landmark.project(camera);
-    const bounds=stage.getBoundingClientRect();
+    const bounds=renderer.domElement.getBoundingClientRect();
+    // Measured on the existing 1774×887 artwork: u=.5, image y=.255.
+    // CylinderGeometry maps u to theta and v to height; project its footprint too.
+    const project=(u,v)=>{
+      const point=new THREE.Vector3(Math.sin(u*Math.PI*2)*.684,(.5-v)*canLength,Math.cos(u*Math.PI*2)*.684);
+      point.applyMatrix4(rolling.matrixWorld).project(camera);
+      return {x:bounds.left+(point.x+1)*bounds.width*.5,y:bounds.top+(1-point.y)*bounds.height*.5};
+    };
+    const landmark=project(.5,.255);
+    const top=project(.5,.128),bottom=project(.5,.384);
+    const left=project(.431,.229),right=project(.569,.229);
     return {
-      x:bounds.left+(landmark.x+1)*bounds.width*.5,
-      y:bounds.top+(1-landmark.y)*bounds.height*.5,
-      size:Math.max(26,Math.min(55,bounds.width*.032))
+      x:landmark.x,y:landmark.y,
+      size:Math.max(12,Math.abs(bottom.y-top.y)/.805),
+      width:Math.max(12,Math.abs(right.x-left.x)/.86)
     };
   }
   resize();
@@ -283,7 +322,6 @@ function createArchiveCounter(stage, years) {
     '맑고 깨끗한 역사',
     '큰 별로 새롭게'
   ];
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const overlay = document.createElement('div');
   overlay.className = 'history-3d-overlay';
   const caption = document.createElement('div');
@@ -326,6 +364,7 @@ function createArchiveCounter(stage, years) {
   };
   let currentIndex = -1;
   let captionPair = -1;
+  let lastBlend = -1;
 
   function settle(index) {
     const year = years[index];
@@ -335,67 +374,31 @@ function createArchiveCounter(stage, years) {
       item.animation = null;
       item.reel.replaceChildren(makeGlyph(value));
       item.reel.style.filter = '';
+      item.reel.style.transform = '';
     });
   }
 
-  // Each transition spins all four physical reels forward or backward.
-  // Twenty full digit steps + up to nine aligning steps = 2–3 revolutions,
-  // then an exact landing on the destination year, once per year change.
-  function spin(fromIndex, toIndex) {
-    const from = years[fromIndex];
-    const to = years[toIndex];
-    const direction = toIndex >= fromIndex ? 1 : -1;
-    digits.forEach((item, index) => {
-      item.animation?.cancel();
-      item.animation = null;
-      // Unchanged places stay perfectly still (e.g. 1950 → 1960 spins only 5 → 6).
-      // Also clear any reel left mid-animation by a rapid reverse scroll.
-      if (from[index] === to[index]) {
-        item.reel.replaceChildren(makeGlyph(to[index]));
-        item.reel.style.filter = '';
-        return;
-      }
-      const startDigit = Number(from[index]);
-      const endDigit = Number(to[index]);
-      const remainder = direction > 0
-        ? (endDigit - startDigit + 10) % 10
-        : (startDigit - endDigit + 10) % 10;
-      const steps = 20 + remainder;
-      const frames = [makeGlyph(String(startDigit))];
-      for (let step = 1; step <= steps; step++) {
-        frames.push(makeGlyph(String((startDigit + direction * step + 1000) % 10)));
-      }
-      item.reel.replaceChildren(...frames);
-      item.reel.style.filter = 'blur(.7px)';
-      const animation = item.reel.animate([
-        { transform: 'translate3d(0,0,0)' },
-        { transform: 'translate3d(0,-' + (100 * steps / (steps + 1)).toFixed(5) + '%,0)' }
-      ], {
-        duration: 450 + index * 27,
-        delay: index * 16,
-        easing: 'cubic-bezier(.17,.82,.24,1)',
-        fill: 'forwards'
-      });
-      item.animation = animation;
-      animation.onfinish = () => {
-        if (item.animation !== animation) return;
-        item.reel.replaceChildren(makeGlyph(to[index]));
-        animation.cancel();
-        item.animation = null;
-        item.reel.style.filter = '';
-      };
-    });
-  }
-
+  // Reels and captions share the can's scroll-derived handoff, including reverse.
   function setYear(pair, blend) {
+    if (captionPair === pair && lastBlend === blend) return;
+    lastBlend = blend;
     const selected = Math.min(years.length - 1, pair + (blend < .5 ? 0 : 1));
 
-    if (currentIndex === -1) {
-      settle(selected);
-    } else if (selected !== currentIndex) {
-      if (reducedMotion.matches || !digits[0].reel.animate) settle(selected);
-      else spin(currentIndex, selected);
+    if(reducedMotion.matches){if(currentIndex !== selected || captionPair !== pair)settle(selected);}
+    else {
+      if(captionPair!==pair || currentIndex===-1){
+        digits.forEach((item,i)=>{
+          item.animation?.cancel();item.animation=null;
+          item.reel.replaceChildren(makeGlyph(years[pair][i]),makeGlyph(years[pair+1][i]));
+          item.reel.style.filter='';
+        });
+      }
+      digits.forEach((item,i)=>{
+        const amount=years[pair][i]===years[pair+1][i]?0:blend;
+        item.reel.style.transform='translateY('+(-amount*1.3).toFixed(5)+'em)';
+      });
     }
+    if(currentIndex !== selected) screenReaderYear.textContent = years[selected];
     currentIndex = selected;
 
     if (captionPair !== pair) {
@@ -405,11 +408,11 @@ function createArchiveCounter(stage, years) {
     }
     copyCurrent.style.opacity = (1 - blend).toFixed(3);
     copyNext.style.opacity = blend.toFixed(3);
-    screenReaderYear.textContent = years[selected];
   }
 
   reducedMotion.addEventListener('change', () => {
     if (currentIndex >= 0) settle(currentIndex);
+    captionPair = -1;
   });
   return setYear;
 }
@@ -449,14 +452,15 @@ async function initHistory(section) {
 
   let progress = 0;
   let fallbackYear = '';
+  let lastSurface = '', lastHalo = '';
   function render(value) {
     progress = clamp(value);
-    const point = progress * (eras.length - 1);
+    const point = smoothstep(0,.045,progress)*clamp((progress-.035)/.965) * (eras.length - 1);
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
     // Hold → roll → hold, with exactly one texture/year switch at 180°.
     // All values are functions of scroll progress: reverse scroll stays in sync.
-    const digitBlend = smoothstep(0.43, 0.57, local);
+    const digitBlend = reducedMotion.matches ? (local >= LABEL_SWITCH_POINT ? 1 : 0) : smoothstep(0.43, 0.57, local);
     renderArchiveCounter(pair, digitBlend);
     section.dataset.progress = progress.toFixed(3);
     const activeIndex = Math.min(eras.length - 1, pair + (local >= LABEL_SWITCH_POINT ? 1 : 0));
@@ -470,9 +474,11 @@ async function initHistory(section) {
     const mixChannel = (a, b) => Math.round(a + (b - a) * mix);
     const surface = from.surface.map((value, index) => mixChannel(value, to.surface[index]));
     const halo = from.halo.map((value, index) => mixChannel(value, to.halo[index]));
-    historyRoot.style.setProperty('--history-surface', `rgb(${surface.join(',')})`);
-    historyRoot.style.setProperty('--history-halo', `rgba(${halo.join(',')},0.2)`);
-    if (fallbackImage && fallbackYear !== years[activeIndex]) {
+    const surfaceColor = `rgb(${surface.join(',')})`;
+    const haloColor = `rgba(${halo.join(',')},0.2)`;
+    if(surfaceColor !== lastSurface){historyRoot.style.setProperty('--history-surface', surfaceColor);lastSurface=surfaceColor;}
+    if(haloColor !== lastHalo){historyRoot.style.setProperty('--history-halo', haloColor);lastHalo=haloColor;}
+    if (!can && fallbackImage && fallbackYear !== years[activeIndex]) {
       fallbackImage.src = assetURL(HISTORY_ERAS[activeIndex].fallback);
       fallbackImage.classList.toggle('is-horizontal', !!HISTORY_ERAS[activeIndex].horizontalFallback);
       fallbackYear = years[activeIndex];
@@ -482,14 +488,10 @@ async function initHistory(section) {
 
   if (window.gsap && window.ScrollTrigger) {
     window.gsap.registerPlugin(window.ScrollTrigger);
-    window.ScrollTrigger.create({
-      trigger: section,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: true,
-      onUpdate: self => render(self.progress),
-      onRefresh: self => render(self.progress)
-    });
+    const playhead={progress:0};
+    window.gsap.to(playhead,{progress:1,ease:'none',onUpdate:()=>render(playhead.progress),scrollTrigger:{
+      id:'history-eras',trigger:section,start:'top top',end:'bottom bottom',scrub:.18,invalidateOnRefresh:true
+    }});
     window.ScrollTrigger.refresh();
   } else {
     const sync = () => {
@@ -501,6 +503,7 @@ async function initHistory(section) {
   }
   const observer = new ResizeObserver(() => { can?.resize(); render(progress); });
   observer.observe(stage);
+  reducedMotion.addEventListener('change', () => render(progress));
   render(progress);
 }
 

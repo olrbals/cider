@@ -78,7 +78,7 @@
     const choice = Math.random();
     // Readable rings with a few small companion bubbles, never pixel-sized dots.
     const radius = choice < .18 ? random(3.2, 4) :
-      choice < .75 ? random(4.2, 6.2) : random(6.3, 8.125);
+      choice < .75 ? random(4.2, 6.2) : random(6.3, 8.125 * 1.22);
     const depth = choice < .18 ? 1 : 0;
     const rise = random(70, 150) * (depth ? 1.18 : 1);
     const x = around === null ? random(-8, width + 8) : around + random(-28, 28);

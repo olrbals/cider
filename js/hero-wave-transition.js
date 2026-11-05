@@ -46,6 +46,8 @@
   }
 
   const scenes = palette.map((spec, index) => {
+    // The star aperture owns this boundary; preserve later wave indices.
+    if (spec.id === 'history') return null;
     const section = document.getElementById(spec.id);
     if (!section) return null;
     const svg = make('svg', 'section-wave');

@@ -94,8 +94,8 @@
 html.has-scene-edge-overlay .identity-stage > .section-edge-label,
 html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block; }
 
-/* Longer white hold for a clean, isolated red star before 1950. */
-#identity.identity.experience-02 { height:460svh; min-height:2600px; }
+/* One expanding white star opens the archive, without a separate color fade. */
+#identity.identity.experience-02 { height:360svh; min-height:1900px; }
 #identity.identity.experience-02,
 #identity .identity-stage { background:rgb(var(--bf-surface,20,159,92)); color:#fff; }
 #identity .identity-display,
@@ -141,6 +141,15 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   will-change: transform,color;
 }
 .brand-star-flight path { fill: currentColor; }
+/* Let sticky layout pin the can before the history boundary. A scroll-driven
+   transform on the stage can trail native scrolling by a compositor frame. */
+#history .history-3d-pin{position:absolute;inset:0;z-index:4;pointer-events:none}
+#history.has-star-entry .history-3d-pin{top:calc(-100svh - max(65svh,475px))}
+#history .history-3d-pin .history-3d-stage{margin-bottom:0;opacity:var(--history-entry-opacity,1)}
+#history.has-star-entry .history-3d-stage{opacity:var(--history-entry-opacity,0)}
+.brand-star-aperture { position:absolute; left:0; top:0; width:100px; height:100px; transform-origin:0 0; fill:#fff; opacity:0; pointer-events:none; z-index:0; }
+#identity.is-star-opening .identity-stage { filter:none !important; }
+#identity.is-paper-open .identity-stage { background:#fff; }
 
 @media (max-width: 900px) {
   .brand-values__word { font-size: clamp(72px,17vw,160px); }

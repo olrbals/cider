@@ -25,8 +25,15 @@
   flight.innerHTML='<svg viewBox="0 0 100 100" focusable="false"><path d="M50 6 L61.7 36 H93 L68 55.3 L77.5 86.5 L50 68.2 L22.5 86.5 L32 55.3 L7 36 H38.3 Z"/></svg>';
   document.body.append(flight);
   const graphic=flight.querySelector('svg');
+  const aperture=graphic.cloneNode(true);
+  aperture.classList.add('brand-star-aperture');
+  identity.querySelector('.identity-stage').prepend(aperture);
+  const playhead={progress:0};
   let frame=0;
   let source=null;
+  let archiveActive=false;
+  const historyStage=history.querySelector('.history-3d-stage');
+  history.classList.toggle('has-star-entry',!reduced.matches);
 
   function captureSource() {
     // scene-polish.js replaces the A of STARS with this SVG;
@@ -62,62 +69,83 @@
   }
   function drawStar() {
     const r=identity.getBoundingClientRect();
+    // Once the handoff is offscreen, stop rewriting it and reading its layout
+    // during every archive scroll frame. Re-enter immediately on reverse scroll.
+    if(r.bottom<=0){
+      if(!archiveActive){
+        flight.classList.remove('is-visible');
+        historyStage.style.setProperty('--history-entry-opacity','1');
+        archiveActive=true;
+      }
+      return;
+    }
+    archiveActive=false;
     const h=viewport();
     const available=Math.max(1,r.height-h);
-    const progress=clamp(-r.top/available);
+    const progress=window.gsap&&window.ScrollTrigger?playhead.progress:clamp(-r.top/available);
     // The typography eases away while the star retains its exact position.
-    const textAlpha=1-between(progress,.43,.59);
-    const originalAlpha=1-between(progress,.60,.66);
+    const textAlpha=1-between(progress,.34,.45);
+    const originalAlpha=1-between(progress,.42,.47);
     identity.style.setProperty('--bf-letter-alpha',textAlpha.toFixed(3));
     identity.style.setProperty('--bf-origin-alpha',originalAlpha.toFixed(3));
 
-    const paper=between(progress,.60,.76);
+    const openEnd=.68;
+    const paper=between(progress,.43,openEnd);
+    const paperOpen=paper===1;
+    const fall=between(progress,openEnd,.985);
+    identity.classList.toggle('is-paper-open',paperOpen);
     identity.style.setProperty('--bf-paper',paper.toFixed(4));
-    identity.style.setProperty('--bf-surface',[20,159,92].map(v=>Math.round(v+(255-v)*paper)).join(','));
-    const glow=between(progress,.43,.52)*(1-between(progress,.62,.72));
+    const glow=0;
     identity.style.setProperty('--bf-glow',glow.toFixed(4));
-    identity.classList.toggle('is-star-isolated',progress>.42);
-    if(progress<.40)source=null;
-    if(progress>.42&&progress<.64)captureSource();
+    identity.classList.toggle('is-star-isolated',progress>.34);
+    if(progress<.32)source=null;
+    if(progress>.34&&progress<.43)captureSource();
     const historyRect=history.getBoundingClientRect();
-    const arrival=clamp((h-historyRect.top)/h);
-    const takeover=between(progress,.60,.66);
-    const landing=between(arrival,.65,.75);
-    const visible=takeover>0 && arrival<.77 && r.top<h && !document.hidden;
+    const takeover=between(progress,.42,.47);
+    const landing=between(progress,.945,.995);
+    const visible=fall>.40 && progress<.995 && r.bottom>0 && r.top<h && !document.hidden;
+    const entry=between(progress,.75,.95);
+    historyStage.style.setProperty('--history-entry-opacity',historyRect.top>0?entry.toFixed(4):'1');
+    identity.classList.toggle('is-star-opening',progress>.40);
+    const center=source||{x:innerWidth*.5,y:h*.55,size:Math.min(190,innerWidth*.135)};
+    const huge=Math.hypot(innerWidth,h)*3.25;
+    // Ease the change in perceived scale so the star reads before it fills the screen.
+    const expanded=center.size*Math.pow(huge/center.size,paper);
+    const ax=center.x+(innerWidth*.5-center.x)*paper;
+    const ay=center.y+(h*.5-center.y)*paper;
+    aperture.style.opacity=paperOpen?'0':takeover.toFixed(4);
+    if(!paperOpen&&takeover>0){
+      const stageBox=identity.querySelector('.identity-stage').getBoundingClientRect();
+      aperture.style.transform='translate('+(ax-expanded/2-stageBox.left)+'px,'+(ay-expanded/2-stageBox.top)+'px) scale('+(expanded/100)+')';
+    }
     flight.classList.toggle('is-visible',visible);
     if(!visible)return;
 
-    if(!source)source={x:innerWidth*.5,y:h*.52,size:Math.min(190,innerWidth*.135)};
-    const depart=between(progress,.72,1);
-    const fall=clamp(arrival/.73);
-    const move=ease(fall);
+    const move=fall;
     // Ask the 3D history renderer for the landmark on the actual can,
     // projected using its current camera/scale/section position.
     const projected=window.__chilsungHistoryStarAnchor?.();
-    const target=projected||{
-      x:innerWidth*.5,y:historyRect.top+h*.36,size:Math.min(48,innerWidth*.035)
-    };
-    // During the isolated white pause, position and size do not change.
-    // Only after the history wave begins entering does the star descend.
-    // A broad gentle arc occupies the extended white hold; landing then tracks
-    // the renderer's moving screen-space landmark, with zero end velocity.
-    const waypoint={x:source.x+Math.min(innerWidth*.13,160),y:Math.min(source.y+h*.10,h*.66)};
-    const startX=source.x+(waypoint.x-source.x)*depart;
-    const startY=source.y+(waypoint.y-source.y)*depart;
-    const x=startX+(target.x-startX)*move+Math.sin(Math.PI*move)*Math.min(innerWidth*.055,65);
-    const y=startY+(target.y-startY)*move;
-    const size=source.size+(target.size-source.size)*move;
-    const tint=between(fall,.68,.96);
-    const green=[255,255,255].map((v,i)=>v+([20,159,92][i]-v)*paper);
+    // A fallback picture has no reliable UV landmark: dissolve centrally
+    // rather than pretending to align with an unknown printed star.
+    const target=projected||{x:innerWidth*.5,y:h*.55,size:Math.min(90,innerWidth*.18)};
+    const x=ax+(target.x-ax)*move;
+    const y=ay+(target.y-ay)*move;
+    const size=Math.exp(Math.log(expanded)*(1-move)+Math.log(target.size)*move);
+    // Match the narrower footprint of the artwork on the curved label.
+    const width=projected?size*(1+(projected.width/projected.size-1)*move):size;
+    const tint=between(fall,.76,.96);
+    const green=[255,255,255].map((v,i)=>v+([20,159,92][i]-v)*between(fall,.40,.68));
     const color=green.map((value,i)=>Math.round(value+([202,40,49][i]-value)*tint));
     graphic.style.color='rgb('+color.join(',')+')';
-    graphic.style.filter='drop-shadow(0 0 '+(4+glow*13).toFixed(1)+'px rgba('+color.join(',')+','+(.1+glow*.5).toFixed(3)+'))';
-    graphic.style.transform='translate3d('+(x-size/2).toFixed(2)+'px,'+
-      (y-size/2).toFixed(2)+'px,0) scale('+(size/100).toFixed(4)+')';
-    flight.style.opacity=(takeover*(1-landing)).toFixed(3);
+    graphic.style.filter='none';
+    graphic.style.transform='translate3d('+(x-width/2).toFixed(2)+'px,'+
+      (y-size*(.5-.0375*move)).toFixed(2)+'px,0) scale('+
+      (width/100).toFixed(4)+','+(size/100).toFixed(4)+')';
+    flight.style.opacity=(1-(projected?landing:between(progress,.89,.96))).toFixed(3);
   }
   function render() {
     frame=0;
+    history.classList.toggle('has-star-entry',!reduced.matches);
     if(reduced.matches) {
       flight.classList.remove('is-visible');
       identity.style.removeProperty('--bf-letter-alpha');
@@ -126,6 +154,12 @@
       identity.style.removeProperty('--bf-surface');
       identity.style.removeProperty('--bf-paper');
       identity.style.removeProperty('--bf-glow');
+      aperture.style.opacity='0';
+      identity.classList.remove('is-star-opening');
+      identity.classList.remove('is-paper-open');
+      const hs=history.querySelector('.history-3d-stage');
+      hs.style.removeProperty('--history-entry-opacity');
+      archiveActive=false;
       stage.style.backgroundColor='#ffffff';
       return;
     }
@@ -139,5 +173,9 @@
   document.addEventListener('visibilitychange',schedule);
   reduced.addEventListener('change',schedule);
   addEventListener('load',schedule,{once:true});
+  if(window.gsap&&window.ScrollTrigger){
+    window.gsap.registerPlugin(window.ScrollTrigger);
+    window.gsap.to(playhead,{progress:1,ease:'none',onUpdate:schedule,scrollTrigger:{id:'brand-star-opening',trigger:identity,start:'top top',end:'bottom bottom',scrub:.30,invalidateOnRefresh:true}});
+  }
   schedule();
 })();

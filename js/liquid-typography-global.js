@@ -130,7 +130,7 @@
     const angle = Math.random() * Math.PI * 2;
     const trail = isRipple ? 0 : Math.random() * (14 + velocity * 42);
     const scatter = isRipple ? 0 : 9 + Math.random() * (21 + velocity * 16);
-    const size = isRipple ? 22 : 3.5 + Math.random() * 12.5;
+    const size = isRipple ? 22 : 3.5 + Math.random() * (16 * 1.22 - 3.5);
     particle.style.left = (x - directionX * trail +
       Math.cos(angle) * scatter).toFixed(1) + 'px';
     particle.style.top = (y - directionY * trail +

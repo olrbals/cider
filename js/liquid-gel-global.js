@@ -16,7 +16,9 @@
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (!precision.matches || motion.matches) return;
 
-  const targets = '.hero, .brand-values__stage, .identity-stage, .korea-stage, .principles-folder__stage, .history-3d-stage, .era, .product-explorer, .pop-stage, .outro, .site-header, .rich-flavors__viewport';
+  // SEVEN STARS already has a pointer mask on the lettering. A second
+  // displacement pass on the whole stage distorts the letter edges.
+  const targets = '.hero, .brand-values__stage, .korea-stage, .principles-folder__stage, .era, .product-explorer, .pop-stage, .outro, .site-header, .rich-flavors__viewport';
   const svgNS = 'http://www.w3.org/2000/svg';
   const makeSVG = name => document.createElementNS(svgNS, name);
   const svg = makeSVG('svg');
@@ -116,7 +118,7 @@
   let mapStamp = 0;
   let motionEnergy = 0;
   let interacting = false;
-  let richDistorted = false;
+  let fieldDistorted = false;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   function setAmount() {
@@ -166,7 +168,7 @@
     pending.length = 0;
     if (active) {
       initializeField();
-      active.classList.toggle('site-liquid-target', !richTarget() || richDistorted);
+      active.classList.toggle('site-liquid-target', !optimizedTarget() || fieldDistorted);
       setAmount();
       schedule();
     }
@@ -174,29 +176,10 @@
 
   function nearestTarget(x, y) {
     if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return null;
-    // A RICH overlay must not inherit the outgoing sticky history filter.
-    const richHit = document.elementFromPoint(x, y);
-    if (richHit instanceof Element && richHit.closest('#rich-flavors')) return null;
-    // Sticky history can sit above the next section's hit-testing surface.
-    // Resolve its visible rectangle before relying on elementFromPoint.
-    const historyStage = document.querySelector('.history-3d-stage');
-    const historySection = historyStage?.closest('.history-3d');
-    const hr = historyStage?.getBoundingClientRect();
-    const sectionRect = historySection?.getBoundingClientRect();
-    if (hr && sectionRect && sectionRect.top <= 0 && sectionRect.bottom > innerHeight * .5
-        && x >= hr.left && x < hr.right && y >= hr.top && y < hr.bottom) return historyStage;
     const hit = document.elementFromPoint(x, y);
     if (!(hit instanceof Element) || panel.contains(hit)) return null;
-    // Route the RICH scene to its full-frame refraction surface.
-    if (hit.closest('#rich-flavors')) return null;
-    // The 3D stage ignores pointer events so the page can scroll. Route
-    // hits on its visible track back to the sticky stage for refraction.
-    const history = hit.closest('.history-3d');
-    if (history) {
-      const stage = history.querySelector('.history-3d-stage');
-      const rect = stage?.getBoundingClientRect();
-      if (rect && x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom) return stage;
-    }
+    // Keep the moving WebGL archive out of the full-frame displacement pass.
+    if (hit.closest('#history, #rich-flavors')) return null;
     return hit.closest(targets);
   }
 
@@ -323,8 +306,8 @@
     return 'data:image/bmp;base64,'+btoa(binary);
   }
 
-  // Optimize only RICH; preserve the established effects in every other section.
-  const richTarget = () => active?.classList.contains('rich-flavors__viewport');
+  // RICH keeps the same ripple field without idle filtering or PNG encoding.
+  const optimizedTarget = () => active?.matches('.rich-flavors__viewport');
   function writeTexture(force = false) {
     if (!active || !pixelData) return;
     // V4 originally takes the height gradient in a WebGL shader.
@@ -349,19 +332,19 @@
         pixelData.data[j+1] = green;
       }
     }
-    if (richTarget()) {
+    if (optimizedTarget()) {
       // A fully neutral 8-bit field has no ripple left. Bypass only this
       // state; any non-neutral pixel immediately restores the full filter.
-      richDistorted = distorted;
+      fieldDistorted = distorted;
       active.classList.toggle('site-liquid-target', distorted);
       if (!distorted) { if (force) setAmount(); return; }
     }
-    if (richTarget() && !changed) return;
-    if (!richTarget()) ctx.putImageData(pixelData, 0, 0);
-    // RICH uses the exact opaque RGB field as a lossless top-down bitmap.
+    if (optimizedTarget() && !changed) return;
+    if (!optimizedTarget()) ctx.putImageData(pixelData, 0, 0);
+    // These scenes use the exact opaque RGB field as a lossless top-down bitmap.
     // This avoids canvas readback + PNG encoding; feImage still displaces
     // the actual live DOM/WebGL scene. Other sections keep their PNG path.
-    surface.setAttribute('href', richTarget()
+    surface.setAttribute('href', optimizedTarget()
       ? encodeGelBitmap(pixelData.data, cols, rows)
       : mapCanvas.toDataURL('image/png'));
     if (force) setAmount();
@@ -377,11 +360,11 @@
     for (const stroke of strokes) pushGel(stroke);
     simulate(dt);
     // 30Hz image uploads keep text, 3D and scrolling responsive.
-    if (time - mapStamp >= 33 || (!richTarget() && strokes.length > 0)) {
+    if (time - mapStamp >= 33 || (!optimizedTarget() && strokes.length > 0)) {
       writeTexture();
       mapStamp = time;
     }
-    if ((!richTarget() && interacting) || pending.length || motionEnergy > .00025) schedule();
+    if ((!optimizedTarget() && interacting) || pending.length || motionEnergy > .00025) schedule();
   }
 
   function schedule() {

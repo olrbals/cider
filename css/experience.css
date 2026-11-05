@@ -299,15 +299,22 @@ body[data-experience-hover="true"] .identity { cursor: none; }
 .hero-star-right { left: 82.7778%; top: 59%; width: 85px; height: 85px; }
 .hero-star-mid-left { left: 8.75%; top: 45.1111%; width: 40px; height: 40px; }
 .hero-star-upper-right { left: 89.5833%; top: 39.5556%; width: 85px; height: 85px; }
-/* Navigation stays keyboard/pointer accessible without covering the designed poster. */
+/* Keep navigation visible without adding height to the hero layout. */
 .site-header {
+  position: fixed;
+  z-index: 100;
   background: none;
-  opacity: 0;
-  transition: opacity .22s ease;
+  box-shadow: none;
+  pointer-events: none;
 }
-.site-header:hover,.site-header:focus-within { opacity: 1; }
-@media(prefers-reduced-motion:reduce) {
-  .site-header { transition: none; }
+.site-header[hidden] { display: none; }
+.site-header a { pointer-events: auto; }
+@media(max-width:600px) {
+  .site-header { padding-inline:clamp(8px,3vw,24px); grid-template-columns:auto 1fr; gap:10px; }
+  .site-header .header-logo { width:clamp(70px,25vw,150px); }
+  .site-header .header-logo img { width:78%; }
+  .site-header nav { justify-content:flex-end; gap:clamp(6px,3vw,20px); }
+  .site-header nav a { font-size:clamp(10px,2.6vw,14px); }
 }
 
 /* FEEL THE FIZZ six-fruit fountain — composited, pointer-transparent canvas. */
