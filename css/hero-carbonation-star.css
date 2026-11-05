@@ -11,10 +11,12 @@
 #top .hero-carbonation-star img { width:100%; height:100%; max-width:none; object-fit:contain; }
 #top .hero-carbonation-bubbles { position:absolute; z-index:3; inset:0; width:100%; height:100%; pointer-events:none; }
 .hero-carbonation-wipe { position:fixed; z-index:70; inset:0; width:100%; height:100%; pointer-events:none; }
-/* Overlap only the outgoing hero so PURE is ready behind the short wipe. */
-#top.hero.has-carbonation-wipe { height:240svh; margin-bottom:-90svh; z-index:3; opacity:var(--hero-outgoing-opacity,1); }
+/* Start the bubbling handoff earlier without moving the sticky hero frame.
+   PURE rises behind it; no extra blank scroll hold. */
+#top.hero.has-carbonation-wipe { height:240svh; margin-bottom:-120svh; z-index:3; opacity:var(--hero-outgoing-opacity,1); }
 #top.hero.is-submerged { opacity:0; pointer-events:none; }
-body:has(#top.is-submerged) .site-header { color:var(--color-brand-deep); }
+/* Header remains fixed and readable as the background changes. */
+.site-header.is-on-light { color:var(--color-brand-deep); }
 #top.has-carbonation-wipe + #brand-values > .section-wave { display:none; }
 #top.has-carbonation-wipe + #brand-values > .brand-values__stage { opacity:var(--hero-principles-reveal,1); }
 #top .hero-type-bottom,#top .hero-ring,#top .hero-figma-star,#top .hero-splash-effects,#top .hs-refraction,#top .hs-jet-refraction,#top .hero-carbonation-star__aura { display:none; }
