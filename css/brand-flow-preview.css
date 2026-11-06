@@ -172,16 +172,3 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 #brand-values .brand-values__stage { z-index:1; }
 .brand-star-flight { z-index:90; }
 @media (prefers-reduced-motion: reduce) { #identity.identity.experience-02 { height:100svh; min-height:700px; } }
-
-/* V5.1 — highlighter principles: one ink color, a different marker per word
-   (Figma 1456:10 / 1431:33 / 1456:2 colors used as translucent marker). */
-.brand-values__word.has-highlight { isolation: isolate; color: #149f5c; }
-.brand-values__band {
-  position: absolute; z-index: -1; display: block; pointer-events: none;
-  border-radius: .12em; background: var(--marker, rgba(20,159,92,.26));
-  transform: scaleX(var(--hl, 0)); transform-origin: 0 50%;
-}
-.brand-values__word[data-brand-value="0"] { --marker: rgba(20,159,92,.26); }
-.brand-values__word[data-brand-value="1"] { --marker: rgba(50,113,229,.30); }
-.brand-values__word[data-brand-value="2"] { --marker: rgba(251,227,9,.85); }
-@media (prefers-reduced-motion: reduce) { .brand-values__band { transform: none; } }
