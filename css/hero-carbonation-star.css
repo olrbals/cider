@@ -34,3 +34,14 @@
   #top.has-carbonation-wipe + #brand-values > .section-wave { display:block; }
   #top.has-carbonation-wipe + #brand-values > .brand-values__stage { opacity:1; }
 }
+
+/* V9 header: content after the Lotte Chilsung corporate header, nothing clickable. */
+.site-header, .site-header * { pointer-events:none !important; cursor:default; }
+.site-header nav { gap:clamp(22px,3.2vw,48px); }
+.site-header nav span { display:grid; place-items:center; min-height:44px; font-size:15px; font-weight:800; letter-spacing:.06em; white-space:nowrap; }
+.site-header .header-utils { justify-self:end; display:flex; align-items:center; gap:18px; font-size:13px; font-weight:700; letter-spacing:.08em; }
+.site-header .header-utils > * + * { padding-left:18px; border-left:1px solid rgba(255,255,255,.55); }
+.site-header .header-utils__search { box-sizing:content-box; }
+.site-header .header-utils__search { display:block; }
+.site-header .header-utils__mall { font-size:15px; letter-spacing:0; }
+@media (max-width:900px){ .site-header .header-utils { display:none; } .site-header nav { gap:12px; } .site-header nav span { font-size:12px; } }
