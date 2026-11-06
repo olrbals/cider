@@ -25,7 +25,8 @@
 .rich-duo__slot[data-rich-slot="slice"],.rich-duo__slot[data-rich-slot="bunch"]{z-index:1}
 .rich-duo__slot[data-rich-slot="grape"]{z-index:2}
 .rich-duo__slot[data-rich-slot="peach"]{z-index:3}
-.rich-duo__slot[data-rich-slot="peach"] img,.rich-duo__slot[data-rich-slot="grape"] img{transform:scale(.792)}
+.rich-duo__slot[data-rich-slot="peach"] img,.rich-duo__slot[data-rich-slot="grape"] img{transform:scale(calc(.792 * (1 + .07 * var(--rich-pop,0))))}
+.rich-duo__slot[data-rich-slot="slice"] img,.rich-duo__slot[data-rich-slot="bunch"] img,.rich-duo__slot[data-rich-slot="single"] img{transform:scale(calc(1 + .14 * var(--rich-pop,0)))}
 .rich-duo__slot[data-rich-slot="whole"],.rich-duo__slot[data-rich-slot="single"]{z-index:4}
 .rich-duo__slot[data-rich-slot="whole"] img,.rich-duo__depth>span[data-rich-depth="0"] img,.rich-duo__depth>span[data-rich-depth="6"] img{transform:scaleY(-1)}
 .rich-duo__depth{position:absolute;inset:0;z-index:0;pointer-events:none}
@@ -35,8 +36,3 @@
 @media(prefers-reduced-motion:reduce){.rich-signoff img{transform:none}}
 
 
-/* V8.1 "건배": the hero's splash on pastel — water-star burst at the clink
-   and the lens splash over the whole scene (high-pass footage, hard-light). */
-.rich-cheers-burst{position:absolute;z-index:6;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;width:860px;height:860px;transform:translate(-50%,-50%)}
-.rich-cheers-front{position:absolute;inset:0;z-index:3;width:100%;height:100%;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;object-fit:cover;will-change:transform,opacity}
-@media(prefers-reduced-motion:reduce){.rich-cheers-burst,.rich-cheers-front{display:none}}

@@ -93,34 +93,20 @@
     const peach=slots.find(s=>s.key==='peach'),grape=slots.find(s=>s.key==='grape');
     let best=1e9;for(let t=.55;t<=1.4;t+=.005){const d=Math.abs(pose(peach,t).x-pose(grape,t).x);if(d<best){best=d;clinkT=t;}}
   }
-  // Clink = the hero's splash, re-made for the pastel scene: the hero's
-  // water-star burst (five real jets) from between the necks, then the
-  // hero's lens splash rushing at the viewer. Footage is high-passed
-  // (neutral grey + highlights/shadows) and hard-light blended so clear
-  // water reads on light backgrounds.
-  const art=duo.querySelector('.rich-duo__art');
-  const clip=(cls,src,parent)=>{const v=document.createElement('video');v.className=cls;v.src=src;
-    v.muted=true;v.playsInline=true;v.preload='auto';v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('aria-hidden','true');
-    parent.append(v);return v;};
-  const burst=clip('rich-cheers-burst','media/rich-cheers-burst.mp4',art);
-  const front=clip('rich-cheers-front','media/rich-cheers-front.mp4',duo);
-
-  let clinked=false,clinkAt=0,fxRaf=0,lastT=-1,frontAt=0;
+  // Clink: no water. The bottles tap necks, the background blooms and the
+  // fruits pop out from between the bottles toward the viewer.
+  let clinked=false,clinkAt=0,fxRaf=0,lastT=-1;
   function drawFx(now){
     fxRaf=0;
     if(lastDuoT>=0)placeDepth(lastDuoT);
-    if(!clinked){burst.style.opacity='0';front.style.opacity='0';return;}
-    const kb=burst.duration?burst.currentTime/burst.duration:0;
-    burst.style.opacity=(burst.ended?0:Math.min(1,kb*12)*(1-smooth(.55,.95,kb))).toFixed(3);
-    // Lens splash follows once the jets are ~1/3 out, exactly like the hero.
-    if(!frontAt&&(kb>=.32||burst.ended)){frontAt=now;front.currentTime=0;front.play().catch(()=>{});}
-    const kf=front.duration&&frontAt?front.currentTime/front.duration:0;
-    front.style.opacity=(frontAt&&!front.ended?.85*smooth(0,.04,kf)*(1-smooth(.62,1,kf)):0).toFixed(3);
-    front.style.transform='scale('+(1+.35*(1-(1-smooth(0,.5,kf))**3)).toFixed(4)+')';
-    if(!(burst.ended&&(front.ended||!frontAt))||now-clinkAt<950)fxRaf=requestAnimationFrame(drawFx);
-    else{burst.style.opacity='0';front.style.opacity='0';}
+    // Juicy squash-and-pop on the bottles and fruits at the tap.
+    const k=clinked?Math.min(1,(now-clinkAt)/520):1;
+    const pop=Math.sin(k*Math.PI)*(1-k)*1.6;
+    duo.style.setProperty('--rich-pop',pop.toFixed(4));
+    if(clinked&&now-clinkAt<1000)fxRaf=requestAnimationFrame(drawFx);
+    else duo.style.setProperty('--rich-pop','0');
   }
-  // Background fruits burst out of the splash and fly toward the viewer:
+  // Background fruits pop out from the clink and fly toward the viewer:
   // they start tiny at the clink point and grow past their resting size
   // (overshoot = "coming at you") on a ~0.9s clock, so every scroll speed
   // sees the same 파앙. Before the clink they are hidden.
@@ -144,14 +130,11 @@
   }
   function cheers(t,poses){
     // Fire once when scrolling down through the clink; re-arm when scrolling back.
-    if(t<clinkT-.05){clinked=false;frontAt=0;}
+    if(t<clinkT-.05)clinked=false;
     if(!clinked&&t>=clinkT&&lastT<clinkT&&lastT>=0&&t-clinkT<.4&&!reduce.matches){
-      clinked=true;clinkAt=performance.now();frontAt=0;
+      clinked=true;clinkAt=performance.now();
       const p=poses.peach,g=poses.grape;
-      const x=(p.x+g.x)/2,y=(p.y+g.y)/2-150;
-      clinkPt={x,y:y+60};
-      burst.style.left=x+'px';burst.style.top=y+'px';
-      burst.currentTime=0;burst.play().catch(()=>{});
+      clinkPt={x:(p.x+g.x)/2,y:(p.y+g.y)/2-90};
       if(!fxRaf)fxRaf=requestAnimationFrame(drawFx);
     }
     lastT=t;
