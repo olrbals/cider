@@ -1,5 +1,5 @@
 /* RICH handoff and ending. Earlier archive scenes retain their source files. */
-.rich-flavors{position:relative;z-index:5;height:650svh;margin-top:-100svh;background:transparent;isolation:isolate}
+.rich-flavors{position:relative;z-index:5;height:600svh;margin-top:-100svh;background:transparent;isolation:isolate}
 .rich-flavors__viewport{position:sticky;top:0;left:0;width:100vw;max-width:100vw;height:100svh;overflow:hidden;isolation:isolate;background:transparent}
 .rich-copy{position:absolute;inset:0;z-index:0;overflow:hidden;isolation:isolate;pointer-events:none;background:rgba(255,255,255,var(--rich-paper,0));opacity:var(--rich-copy-opacity,1)}
 .rich-year{position:absolute;left:50%;top:45%;color:#149f5c;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -33,3 +33,9 @@
 .rich-signoff{position:absolute;inset:0;z-index:2;display:grid;place-items:center;visibility:hidden;opacity:0;background:#149f5c;overflow:hidden}
 .rich-signoff img{display:block;width:clamp(180px,24vw,340px);height:auto;filter:brightness(0) invert(1);opacity:var(--rich-logo-opacity,0);transform:translateY(calc(8px * (1 - var(--rich-logo-opacity,0))))}
 @media(prefers-reduced-motion:reduce){.rich-signoff img{transform:none}}
+
+/* V7 fruit drop: water canvas behind the copy text; real splash footage
+   (inverted + tinted) multiplied onto the white paper so it reads as water. */
+.rich-drop{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;opacity:0;transition:opacity .25s}
+.rich-drop-splash{position:absolute;display:block;pointer-events:none;opacity:0;mix-blend-mode:multiply;object-fit:cover;transition:opacity .2s}
+@media(prefers-reduced-motion:reduce){.rich-drop-splash{display:none}}

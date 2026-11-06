@@ -14,7 +14,7 @@
   const mix=(a,b,t)=>a+(b-a)*t;
   const cubic=(a,b,c,d,t)=>(1-t)**3*a+3*(1-t)**2*t*b+3*(1-t)*t*t*c+t*t*t*d;
   let width=innerWidth,height=innerHeight,designScale=1,raf=0,anchor=null;
-  const productStart=2.65,signoffStart=4.70;
+  const productStart=2.30,signoffStart=4.35; // V7: copy reel shortened, fruit drop fills it
   const slots=[
     {key:'slice',side:0,pre:[246.695,388.8275,180,143.59,29.53],post:[465.426,394.34,180,143.59,29.53]},
     {key:'peach',side:0,pre:[376.854,438.017,212,530.134,7],post:[591.7145,417.862,212,530.134,-8]},
@@ -37,7 +37,7 @@
   function geometry(){
     width=viewport.clientWidth;height=innerHeight;
     designScale=Math.min(width/1440,height/900);
-    root.style.height=(height*6.5).toFixed(2)+'px';
+    root.style.height=(height*6.0).toFixed(2)+'px';
     root.style.setProperty('--rich-design-scale',designScale.toFixed(6));
     root.style.setProperty('--rich-duo-scale',Math.min(innerWidth/(innerWidth<750?1100:1440),height/900).toFixed(6));
     captureAnchor();
@@ -48,8 +48,8 @@
     if(!anchor)captureAnchor();
     const a=anchor||{x:width*.28,y:height*.56,fontSize:100};
     const morph=reduce.matches?Number(s>=.55):smooth(0,.55,s);
-    const change=smooth(.55,.68,s),appear=smooth(.67,.83,s),roll=smooth(1.30,1.85,s);
-    const end=1-smooth(2.35,2.58,s),paper=smooth(0,.38,s);
+    const change=smooth(.55,.68,s),appear=smooth(.67,.83,s),roll=smooth(1.02,1.40,s);
+    const end=1-smooth(2.22,2.40,s),paper=smooth(0,.38,s);
     const destinationY=(height-900*designScale)/2+406*designScale;
     Object.assign(year.style,{left:mix(a.x,width/2,morph).toFixed(3)+'px',top:mix(a.y,destinationY,morph).toFixed(3)+'px',opacity:s>0?String(end):'0'});
     const shrink=mix(1,40*designScale/a.fontSize,morph);
@@ -116,8 +116,8 @@
     // Also restore the archive on a fast reverse jump beyond the RICH viewport.
     if(r.top>height||r.bottom<0){history?.classList.toggle('rich-year-handoff',r.bottom<0);return;}
     updateStory(s);updateDuo(s-productStart);updateEnding(s);
-    root.dataset.richProgress=clamp(s/5.5).toFixed(5);
-    root.dataset.richScene=s>=5.15?'logo':s>=signoffStart?'signoff':s>=productStart?'products':s>=1.85?'message':s>=1.30?'copy-roll':s>=.83?'new':s>=.55?'year-change':'year-move';
+    root.dataset.richProgress=clamp(s/5.0).toFixed(5);
+    root.dataset.richScene=s>=4.80?'logo':s>=signoffStart?'signoff':s>=productStart?'products':s>=1.40?'message':s>=1.02?'copy-roll':s>=.83?'new':s>=.55?'year-change':'year-move';
   }
   function queue(){if(!raf)raf=requestAnimationFrame(render);}
   function resize(){geometry();queue();}
