@@ -28,9 +28,10 @@ const faceYaw = u => -u * TAU;   // rotation.y that turns label-u toward +Z
 const SPIN_END = .40;        // ① spins in place
 const SETTLE_END = .50;      // ② stops logo-front
 const TAB_AT = .48;          // ③ tab cracks + water star bursts (clock-driven)
-const FRONT_AT = .80;        // ④ water rushes at the viewer (clock-driven)
-const WAVE_START = .86;      // ⑤ next page rolls up from the bottom
-const WAVE_END = 1.30;       //    …and covers the screen → PURE
+const FRONT_AT = .56;        // ④ the star's burst carries on at the viewer (clock-chained)
+const WAVE_START = .62;      // ⑤ next page rolls up from the bottom, PURE riding in it
+const WAVE_END = 1.30;       //    …covers the screen before the hero unpins (1.35)
+const HANDOFF = 1.58;        // real PURE section pins at 1.6 — crossfade from the clone
 
 function setLayoutScale() {
   hero.style.setProperty('--hero-layout-scale',
@@ -39,17 +40,17 @@ function setLayoutScale() {
 
 function updateChrome(s, boundary) {
   // Shared hooks from hero-carbonation-star.css: section overlap + PURE reveal.
-  hero.style.setProperty('--hero-outgoing-opacity', String(1 - smooth(s, 1.28, 1.34)));
-  hero.classList.toggle('is-submerged', s >= 1.34);
+  hero.style.setProperty('--hero-outgoing-opacity', String(1 - smooth(s, HANDOFF, HANDOFF + .06)));
+  hero.classList.toggle('is-submerged', s >= HANDOFF + .06);
   nextSection?.style.setProperty('--hero-principles-reveal',
-    s < .02 ? 1 : smooth(s, 1.46, 1.58)); // after PURE has pinned: no slide-in
+    s < .02 ? 1 : smooth(s, HANDOFF, HANDOFF + .06)); // same spot as the clone: invisible swap
   hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .2, .55)));
   hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .2, .55)).toFixed(1) + 'px');
   hero.style.setProperty('--hero-wash', s >= WAVE_END ? '1.05' : '-.35');
   if (header) {
     const offHero = nextSection ? boundary <= .08 : s > 1.5;
     header.classList.toggle('is-off-hero', offHero);
-    header.classList.toggle('is-on-light', !offHero && s >= 1.2);
+    header.classList.toggle('is-on-light', !offHero && (s >= 1.2 || hero.dataset.waveTop < 110));
   }
 }
 
@@ -209,6 +210,7 @@ async function start() {
   let lastS = -1;
   let looping = false;
   let waveDrawn = false;
+  let waveTop = 1e5;
 
   // ⑤ The next page as a rolling wave (same language as the site's other
   // section transitions), drawn above everything in the hero.
@@ -287,6 +289,7 @@ async function start() {
     view.unit = unit;
     view.home.set((722 - 720) * layout * unit, -(620 - 450) * layout * unit, 0);
     view.scale = 470 * layout * unit / (canLength + .16);
+    if (ghost) { ghost.remove(); ghost = null; }
     dirty = true;
   }
 
@@ -345,6 +348,7 @@ async function start() {
     if (gate <= 0 && !waveDrawn) { if (!spray.paused) spray.pause(); spray.style.opacity = '0'; return false; }
     const W = view.width, H = view.height, ctx = waveCtx;
     const rise = Math.min(smooth(s, WAVE_START, WAVE_END), gate);
+    waveTop = rise <= 0 ? view.height * 2 : view.height * (1.12 - 1.30 * rise) - view.height * .085;
     if (rise <= 0) {
       if (waveDrawn) { waveCtx.clearRect(0, 0, W, H); waveDrawn = false; }
       if (!spray.paused) spray.pause();
@@ -408,16 +412,54 @@ async function start() {
     return true;
   }
 
+  // ⑤ PURE rides in on the wave: a fixed copy of the real word at exactly the
+  // spot where the real section pins, revealed by the rising water, then
+  // crossfaded with the real one at HANDOFF (no slide, no blank white).
+  const realWord = nextSection?.querySelector('.brand-values__word');
+  let ghost = null, ghostBox = null;
+  function buildGhost() {
+    if (!realWord) return;
+    ghost?.remove();
+    const sectionTop = Math.max(0, nextSection.getBoundingClientRect().top);
+    const r = realWord.getBoundingClientRect();
+    ghostBox = { left: r.left, top: r.top - sectionTop, width: r.width, height: r.height };
+    ghost = realWord.cloneNode(true);
+    ghost.removeAttribute('data-brand-value');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.className = realWord.className + ' hero-pure-ghost';
+    const cs = getComputedStyle(realWord);
+    Object.assign(ghost.style, { position: 'fixed', inset: 'auto', margin: '0', left: ghostBox.left + 'px', top: ghostBox.top + 'px',
+      width: ghostBox.width + 'px', height: ghostBox.height + 'px', color: cs.color, font: cs.font, letterSpacing: cs.letterSpacing,
+      display: cs.display, justifyContent: cs.justifyContent, alignItems: cs.alignItems, textAlign: cs.textAlign,
+      opacity: '0', transform: 'none', zIndex: '4', pointerEvents: 'none' });
+    document.body.append(ghost);
+  }
+  function placeGhost(s) {
+    hero.dataset.waveTop = Math.round(waveTop);
+    if (!realWord) return;
+    if (s < WAVE_START || s >= HANDOFF + .08) { if (ghost && ghost.style.opacity !== '0') ghost.style.opacity = '0'; return; }
+    if (!ghost) buildGhost();
+    const cut = Math.max(0, Math.min(ghostBox.height, waveTop + view.height * .06 - ghostBox.top));
+    const shown = 1 - cut / ghostBox.height;
+    ghost.style.clipPath = 'inset(' + cut.toFixed(1) + 'px -40px -40px -40px)';
+    ghost.style.transform = 'translate3d(0,' + (36 * (1 - shown)).toFixed(1) + 'px,0)';
+    // Stay fully opaque under the fading-in real word, then drop: no alpha dip.
+    ghost.style.opacity = s >= HANDOFF + .06 ? '0' : '1';
+  }
+
   function placeClips(s, t) {
     // ④ Water rushes at the viewer (plays once). It grows out of the star's
     // centre with an expanding radial reveal, so the burst carries straight on.
     let surge = 0;
-    if (s >= FRONT_AT && s < WAVE_END + .04) {
+    // One continuous splash: the lens water only starts once the star's jets
+    // have flown out (burst ≥55%), whatever the scroll speed.
+    const burstK = burst.duration ? burst.currentTime / burst.duration : 0;
+    const burstReady = jetsFired && (burstK >= .55 || burst.ended);
+    if (s >= FRONT_AT && s < WAVE_END + .04 && (frontOn || burstReady)) {
       if (!frontOn) {
         frontOn = true;
         front.currentTime = 0;
         front.play().catch(() => {});
-        jets.forEach(jet => { jet.currentTime = 0; jet.play().catch(() => {}); }); // second burst
       }
       const k = front.duration ? front.currentTime / front.duration : 0;
       surge = Math.max(.001, k);
@@ -425,9 +467,11 @@ async function start() {
       const grow = 1 - (1 - smooth(k, 0, .5)) ** 3;
       front.style.transformOrigin = center.x.toFixed(1) + 'px ' + center.y.toFixed(1) + 'px';
       front.style.transform = 'scale(' + (1 + .35 * grow).toFixed(4) + ')'; // never smaller than the screen: no visible frame edge
-      front.style.opacity = (smooth(k, 0, .06) * (1 - smooth(k, .72, 1))).toFixed(3);
+      // Fades in fast while the jets are still flying, so the two read as one.
+      front.style.opacity = (smooth(k, 0, .04) * (1 - smooth(k, .78, 1))).toFixed(3);
       if (!front.ended) dirty = true;
     } else {
+      if (!burstReady && jetsFired && s >= FRONT_AT) dirty = true; // wait for the jets
       if (s < FRONT_AT - .04 || s >= WAVE_END + .04) {
         frontOn = false;
         front.pause();
@@ -443,6 +487,7 @@ async function start() {
     if (!allow) waveGate = 0;
     else if (waveGate < 1) { waveGate = Math.min(1, waveGate + dtGate / .9); dirty = true; }
     if (drawWave(s, t, waveGate)) dirty = true;
+    placeGhost(s);
   }
 
   function frame(now) {
@@ -451,7 +496,7 @@ async function start() {
     const s = Math.max(0, scrollY / Math.max(1, innerHeight));
     const boundary = nextSection ? nextSection.getBoundingClientRect().top / innerHeight : 0;
     if (s !== lastS) { lastS = s; updateChrome(s, boundary); }
-    const inHero = s < 1.62;
+    const inHero = s < 1.7;
     const idle = 1 - smooth(s, 0, .06);
     if (idle > 0) {
       idleYaw += dt * .55 * idle;
