@@ -34,8 +34,5 @@
 .rich-signoff img{display:block;width:clamp(180px,24vw,340px);height:auto;filter:brightness(0) invert(1);opacity:var(--rich-logo-opacity,0);transform:translateY(calc(8px * (1 - var(--rich-logo-opacity,0))))}
 @media(prefers-reduced-motion:reduce){.rich-signoff img{transform:none}}
 
-/* V7 fruit drop: water canvas behind the copy text; real splash footage
-   (inverted + tinted) multiplied onto the white paper so it reads as water. */
-.rich-drop{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;opacity:0;transition:opacity .25s}
-.rich-drop-splash{position:absolute;display:block;pointer-events:none;opacity:0;mix-blend-mode:multiply;object-fit:cover;transition:opacity .2s}
-@media(prefers-reduced-motion:reduce){.rich-drop-splash{display:none}}
+/* V7.1 fruit drop: full-screen canvas behind the copy text (no water strip). */
+.rich-drop{position:absolute;inset:0;z-index:1;width:100%;height:100%;display:block;pointer-events:none;opacity:0;mix-blend-mode:multiply} /* tints, never washes out the copy */
