@@ -14,8 +14,7 @@
     { id: 'history', color: '#f7faf8', accent: '#eff8f2', edge: '#e0f0e7' },
     { id: 'products', color: '#f9f4e7', accent: '#ffffff', edge: '#ffffff' },
     { id: 'pop', color: '#ece4d5', accent: '#ffffff', edge: '#fff9eb' },
-    { id: 'footer', color: '#0e6b3c', accent: '#48b77e', edge: '#9fe0b8' },
-    { id: 'site-footer', color: '#ffffff', accent: '#e9f6ef', edge: '#cfeedd' }
+    { id: 'footer', color: '#149f5c', accent: '#3dbb7e', edge: '#a3debf' }
   ];
   const clamp = v => Math.max(0, Math.min(1, v));
   const smooth = v => { const t = clamp(v); return t * t * (3 - 2 * t); };
