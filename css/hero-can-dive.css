@@ -23,3 +23,7 @@
 #top .hero-pop-star__body { -webkit-mask:var(--star-mask) center/100% 100% no-repeat; mask:var(--star-mask) center/100% 100% no-repeat; background:radial-gradient(ellipse at 50% 55%, rgba(255,255,255,.06), rgba(255,255,255,.17) 70%, rgba(255,255,255,.22)); }
 #top .hero-pop-star__glow { background:radial-gradient(closest-side, rgba(255,255,255,.55), rgba(255,255,255,0)); opacity:var(--star-flash,0); transform:scale(.8); }
 @media (prefers-reduced-motion:reduce) { #top .hero-pop-star { display:none; } }
+/* Five real water jets fire from the star's centre along its arms. */
+#top .hero-pop-star > .hero-pop-star__jet { inset:auto; left:20%; top:-14%; width:60%; height:auto; aspect-ratio:1; object-fit:cover;
+  transform-origin:50% 100%; transform:rotate(var(--a)) scale(1.05); filter:brightness(1.4); opacity:0; }
+#top .hero-pop-star__glow { transform:scale(1.05); }

@@ -26,14 +26,14 @@ const LOGO_U = 0.5 + UV_SHIFT;   // star logo + "Chilsung"
 const faceYaw = u => -u * TAU;   // rotation.y that turns label-u toward +Z
 
 // Scroll timeline in viewport heights (PURE reaches the top at 1.6).
-const SPIN_END = .50;
-const SETTLE_END = .74;      // landed logo-front, tipped toward the viewer
-const TAB_AT = .72;          // the tab cracks open (clock-driven)
-const POUR_START = .78;
-const POUR_END = .98;        // fully tipped
-const POUR_FLOW = .84;       // stream leaves the can
-const SPLASH_AT = .96;       // real droplet burst
-const WASH_END = 1.26;       // soft white wash complete → PURE
+const SPIN_END = .42;
+const SETTLE_END = .62;      // landed logo-front, tipped toward the viewer
+const TAB_AT = .60;          // the tab cracks open + water star bursts (clock-driven)
+const POUR_START = .88;      // star holds on screen from .60 to here
+const POUR_END = 1.06;       // fully tipped
+const POUR_FLOW = .94;       // stream leaves the can
+const SPLASH_AT = 1.04;      // real droplet burst
+const WASH_END = 1.30;       // soft white wash complete → PURE
 const POUR_SPOT = { x: .40, y: .36 }; // can center while pouring (viewport)
 
 function setLayoutScale() {
@@ -47,9 +47,9 @@ function updateChrome(s, boundary) {
   hero.classList.toggle('is-submerged', s >= 1.34);
   nextSection?.style.setProperty('--hero-principles-reveal',
     s < .02 ? 1 : smooth(s, 1.34, 1.48));
-  hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .25, .70)));
-  hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .25, .70)).toFixed(1) + 'px');
-  hero.style.setProperty('--hero-wash', (smooth(s, .98, WASH_END) * 1.4 - .35).toFixed(4));
+  hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .2, .55)));
+  hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .2, .55)).toFixed(1) + 'px');
+  hero.style.setProperty('--hero-wash', (smooth(s, 1.07, WASH_END) * 1.4 - .35).toFixed(4));
   if (header) {
     const offHero = nextSection ? boundary <= .08 : s > 1.5;
     header.classList.toggle('is-off-hero', offHero);
@@ -221,13 +221,18 @@ async function start() {
   star.setAttribute('aria-hidden', 'true');
   star.innerHTML = '<span class="hero-pop-star__glow"></span><span class="hero-pop-star__body"></span>'
     + '<video class="hero-pop-star__drops" muted loop playsinline preload="auto"></video>'
+    + [0, 72, 144, 216, 288].map(a => '<video class="hero-pop-star__jet" style="--a:' + a + 'deg" muted playsinline preload="auto"></video>').join('')
     + '<img class="hero-pop-star__art" alt="" src="' + new URL('../img/hero-star/finalstarforgreen.png', import.meta.url).href + '">';
   const drops = star.querySelector('video');
   drops.muted = true;
   drops.src = new URL('../media/hero-star-droplets.mp4', import.meta.url).href;
   star.style.setProperty('--star-mask', 'url("' + new URL('../img/hero-star/star-mask.png', import.meta.url).href + '")');
+  const jets = [...star.querySelectorAll('.hero-pop-star__jet')];
+  const jetSrc = new URL('../media/hero-star-jet.mp4', import.meta.url).href;
+  jets.forEach(jet => { jet.muted = true; jet.src = jetSrc; });
   stage.append(star);
   let starT = 0;
+  let jetsFired = false;
   let tabOpen = 0;        // 0 → 1, played on a clock once triggered
   let tabTarget = 0;
 
@@ -271,12 +276,22 @@ async function start() {
 
   const centerLocal = new THREE.Vector3(0, 0, 0);
   const center = {};
-  const springOut = t => { const k = 1.9, u = Math.min(1, Math.max(0, t)) - 1; return 1 + (k + 1) * u * u * u + k * u * u; };
+  const springOut = t => { const k = 2.6, u = Math.min(1, Math.max(0, t)) - 1; return 1 + (k + 1) * u * u * u + k * u * u; };
   function placeStar(s) {
     // ③ "팡": spring pop on a clock; ④ breaks apart as the pour begins (scroll).
     const opening = tabTarget === 1;
     const pop = opening ? springOut(Math.min(1, starT / .8)) : starT;
-    const breakUp = smooth(s, POUR_START, POUR_START + .12);
+    if (opening && !jetsFired) {
+      jetsFired = true;
+      jets.forEach(jet => { jet.currentTime = 0; jet.play().catch(() => {}); });
+    } else if (!opening && starT === 0) jetsFired = false;
+    // Jets fade as their burst settles, so no frozen last frame lingers.
+    jets.forEach(jet => {
+      const k = jet.duration ? jet.currentTime / jet.duration : 1;
+      jet.style.opacity = jetsFired && !jet.ended ? (1 - smooth(k, .55, .95)).toFixed(3) : '0';
+    });
+    if (jetsFired && !jets[0].ended) dirty = true;
+    const breakUp = smooth(s, POUR_START, POUR_START + .10);
     const opacity = (opening ? Math.min(1, starT / .12) : starT) * (1 - breakUp);
     if (opacity <= .001) {
       if (star.style.opacity !== '0') { star.style.opacity = '0'; drops.pause(); }
@@ -285,8 +300,8 @@ async function start() {
     toScreen(centerLocal, center);
     const layout = Math.min(view.width / 1440, view.height / 900);
     const width = 1030 * layout * 1.05;
-    const scale = (.28 + .72 * pop) * (1 + .22 * breakUp);
-    const flash = opening ? 1 - smooth(starT, .05, .55) : 0;
+    const scale = (.18 + .82 * pop) * (1 + .3 * breakUp);
+    const flash = opening ? 1 - smooth(starT, .02, .45) : 0;
     star.style.cssText = 'left:' + (center.x - width / 2).toFixed(1) + 'px;top:' + (center.y - width * 900 / 1030 / 2).toFixed(1)
       + 'px;width:' + width.toFixed(1) + 'px;height:' + (width * 900 / 1030).toFixed(1) + 'px;opacity:' + opacity.toFixed(3)
       + ';transform:scale(' + scale.toFixed(4) + ') rotate(' + (-9 * (1 - pop)).toFixed(2) + 'deg);--star-flash:' + flash.toFixed(3)
@@ -346,7 +361,7 @@ async function start() {
     else if (s < TAB_AT - .05) tabTarget = 0;
     const starGoal = tabTarget;
     if (starT !== starGoal) {
-      starT = starGoal ? Math.min(1, starT + dt / .75) : Math.max(0, starT - dt / .32);
+      starT = starGoal ? Math.min(1, starT + dt / .6) : Math.max(0, starT - dt / .32);
       dirty = true;
     }
     if (tabOpen !== tabTarget) {
