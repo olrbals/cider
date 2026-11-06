@@ -187,13 +187,14 @@
       return seed / 4294967296;
     };
     const lanes = compact ? 20 : 40;
+    // V4.3: fewer pin-point dots (they read as noise), same three depths.
     const layers = compact
-      ? [[140, 4, 12, .82], [115, 10, 24, 1.05], [18, 23, 43, 1.28]]
-      : [[280, 4, 13, .82], [210, 12, 30, 1.05], [35, 28, 53, 1.28]];
+      ? [[70, 5, 12, .82], [90, 10, 24, 1.05], [16, 23, 43, 1.28]]
+      : [[140, 5, 13, .82], [170, 12, 30, 1.05], [32, 28, 53, 1.28]];
     rising = layers.flatMap(([count, minSize, maxSize, speed], depth) =>
       Array.from({ length: count }, (_, index) => ({
         x: ((index % lanes) + random()) / lanes,
-        start: random() * .72,
+        start: random() * 1.28,
         size: minSize + random() ** 1.6 * (maxSize - minSize),
         speed: speed + random() * .6,
         sway: random() * Math.PI * 2,
@@ -225,7 +226,7 @@
     foamPattern = wipeContext.createPattern(tile, 'repeat');
   }
 
-  function drawWipe(progress, active) {
+  function drawWipe(progress, active, seconds = 0) {
     if (!wipeContext) return;
     if (wipe.hidden === active) wipe.hidden = !active;
     if (!active) return;
@@ -234,42 +235,62 @@
     const height = wipeHeight;
     // Scrub both entrances identically; the leading edge rises from below and
     // the trailing edge clears upward to reveal PURE (no autoplay/timers).
-    const approach = smooth(progress, .04, .47);
+    // V4.3: the curtain climbs at roughly 2× scroll speed (was ~4×) so a
+    // single wheel notch no longer jumps it across the screen.
+    const approach = smooth(progress, .02, .50);
     const exit = smooth(progress, .59, .98);
-    const front = height * (1.10 - approach * 1.29);
+    const front = height * (1.06 - approach * 1.24);
     const back = height * (1.14 - exit * 1.34);
-    const flow = progress * 2.6;
+    // Bubbles rise ~1–2× the scroll distance (was 3–7× with wrap-around
+    // jumps), plus a slow natural ascent so they stay alive between notches.
+    const flow = progress * .85 + seconds * .085;
     const ctx = wipeContext;
     ctx.clearRect(0, 0, width, height);
     ctx.save();
-    // The transparent mint wash gives the impression of being inside soda.
-    // Its soft edge follows the bubble curtain; no flat white flash.
+    // Clear, mostly see-through soda instead of an opaque mint sheet: the
+    // hero stays readable through it and whitens as it fades to PURE.
     const water = ctx.createLinearGradient(0, 0, 0, height);
-    water.addColorStop(0, 'rgba(236,255,247,.86)');
-    water.addColorStop(.55, 'rgba(175,241,214,.90)');
-    water.addColorStop(1, 'rgba(114,213,170,.92)');
+    water.addColorStop(0, 'rgba(242,255,250,' + (.10 + approach * .16) + ')');
+    water.addColorStop(.6, 'rgba(214,250,234,' + (.16 + approach * .16) + ')');
+    water.addColorStop(1, 'rgba(176,240,212,' + (.24 + approach * .14) + ')');
     ctx.globalAlpha = 1;
     ctx.fillStyle = water;
     ctx.fillRect(0, 0, width, height);
     if (foamPattern) {
       const zoom = .82 + approach * .18;
       foamPattern.setTransform(new DOMMatrix().translate(-width * (zoom - 1) / 2,
-        -flow * height * .13).scale(zoom));
-      ctx.globalAlpha = .22 + approach * .17;
+        -flow * height * .35).scale(zoom));
+      ctx.globalAlpha = .06 + approach * .08;
       ctx.fillStyle = foamPattern;
       ctx.fillRect(0, 0, width, height);
     }
 
+    const leading = [];
     for (const bubble of rising) {
-      const age = flow - bubble.start;
-      if (age <= 0) continue;
-      const rise = (age * bubble.speed) % 1.28;
+      const rise = (flow * bubble.speed + bubble.start) % 1.28;
       const y = height * (1.08 - rise);
-      const size = bubble.size * (.65 + approach * .72);
-      if (y < front - size || y > Math.min(height, back + height * .12) + size) continue;
-      const x = bubble.x * width + Math.sin(age * 5 + bubble.sway) * bubble.drift;
-      ctx.globalAlpha = bubble.alpha * smooth(age, 0, .08) * smooth(rise, 0, .12);
+      const size = bubble.size * (.75 + approach * .55);
+      if (y < -size || y > Math.min(height, back + height * .12) + size) continue;
+      const x = bubble.x * width + Math.sin(rise * 14 + bubble.sway) * bubble.drift;
+      const alpha = bubble.alpha * smooth(rise, 0, .10);
+      // Bubbles above the water line are the first wave rising from the
+      // bottom; they are drawn after the clip so they lead the liquid.
+      if (y < front) {
+        leading.push([bubble, x, y, size, alpha]);
+        continue;
+      }
+      ctx.globalAlpha = alpha;
       ctx.drawImage(bubble.sprite, x - size / 2, y - size / 2, size, size);
+    }
+    // A soft bright meniscus marks the soda surface as it climbs.
+    if (front > -height * .05 && front < height) {
+      const line = ctx.createLinearGradient(0, front - 26, 0, front + 34);
+      line.addColorStop(0, 'rgba(255,255,255,0)');
+      line.addColorStop(.42, 'rgba(255,255,255,.34)');
+      line.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = line;
+      ctx.fillRect(0, front - 26, width, 60);
     }
     ctx.restore();
 
@@ -285,8 +306,18 @@
       ctx.fillRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'source-over';
     }
-    feather(front - height * .10, front + height * .13, true);
+    feather(front - height * .04, front + height * .08, true);
     if (exit > 0) feather(back - height * .12, back + height * .12, false);
+
+    // Leading bubbles thin out the further they are above the water line.
+    const reach = height * .55;
+    for (const [bubble, x, y, size, alpha] of leading) {
+      const lead = 1 - smooth(front - y, 0, reach);
+      if (lead <= 0) continue;
+      ctx.globalAlpha = alpha * lead * .9 * (1 - exit) * smooth(progress, .03, .14);
+      ctx.drawImage(bubble.sprite, x - size / 2, y - size / 2, size, size);
+    }
+    ctx.globalAlpha = 1;
   }
 
   function render(now) {
@@ -303,11 +334,13 @@
       if (header.hidden) header.hidden = false;
       const offHero = nextSection ? boundary <= .08 : bounds.bottom <= 0;
       header.classList.toggle('is-off-hero', offHero);
-      header.classList.toggle('is-on-light', !offHero && transition >= .53);
+      header.classList.toggle('is-on-light', !offHero && transition >= .58);
     }
     const wipeActive = Boolean(wipeContext && boundary > .002 && transition > .03 && transition < .995);
     if (wipeActive) {
-      drawWipe(transition, true);
+      drawWipe(transition, true, (now || performance.now()) / 1000);
+      // Keep the slow ascent alive only while the curtain is on screen.
+      schedule();
     } else {
       drawWipe(transition, false);
     }
@@ -324,7 +357,8 @@
     // the first bubbles climb, then dissolve only once the foreground fills.
     const intro = -bounds.top / (stageHeight * 1.55);
     const progress = reduced.matches ? 0 : wipeContext && transition > 0
-      ? dissolveStart + smooth(transition, .16, .69) * (1.12 - dissolveStart)
+      // V4.3: dissolve while the soda is still clear enough to see it.
+      ? dissolveStart + smooth(transition, .05, .50) * (1.12 - dissolveStart)
       : Math.max(0, Math.min(1.12, intro));
     if (progress === lastProgress) return;
     lastProgress = progress;
