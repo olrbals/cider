@@ -28,6 +28,43 @@
   const aperture=graphic.cloneNode(true);
   aperture.classList.add('brand-star-aperture');
   identity.querySelector('.identity-stage').prepend(aperture);
+  // Highlighter bands sit behind the text as their own elements, so the
+  // liquid-typography layers inside each word stay untouched.
+  const highlightBands=words.map(word=>{
+    const lines=word.querySelectorAll('br').length/Math.max(1,word.querySelectorAll('.site-liquid-type-content').length||1)+1;
+    word.classList.add('has-highlight');
+    return Array.from({length:Math.round(lines)},()=>{
+      const band=document.createElement('span');
+      band.className='brand-values__band';
+      band.setAttribute('aria-hidden','true');
+      word.prepend(band);
+      return band;
+    }).reverse();
+  });
+  const lineRange=document.createRange();
+  function placeBands(i){
+    const word=words[i];
+    const content=word.querySelector('.site-liquid-type-content')||word;
+    lineRange.selectNodeContents(content);
+    const rows=[];
+    for(const r of lineRange.getClientRects()){
+      if(r.width<2)continue;
+      const row=rows.find(x=>Math.abs(x.top-r.top)<r.height*.4);
+      if(row){row.left=Math.min(row.left,r.left);row.right=Math.max(row.right,r.right);}
+      else rows.push({top:r.top,left:r.left,right:r.right,height:r.height});
+    }
+    rows.sort((x,y)=>x.top-y.top);
+    const box=word.getBoundingClientRect();
+    highlightBands[i].forEach((band,n)=>{
+      const row=rows[n];
+      if(!row)return;
+      const pad=row.height*.03;
+      band.style.left=(row.left-box.left-pad).toFixed(1)+'px';
+      band.style.width=(row.right-row.left+pad*2).toFixed(1)+'px';
+      band.style.top=(row.top-box.top+row.height*.56).toFixed(1)+'px';
+      band.style.height=(row.height*.30).toFixed(1)+'px';
+    });
+  }
   const playhead={progress:0};
   let frame=0;
   let source=null;
@@ -64,6 +101,13 @@
       word.style.transform='translate3d(0,'+dy.toFixed(2)+'px,0) scale('+
         (1-.025*(1-opacity)).toFixed(4)+')';
       word.setAttribute('aria-hidden',opacity<.2?'true':'false');
+      // Highlighter: each line is drawn left→right after the word lands,
+      // and wiped as it leaves. Two-line words stagger their strokes.
+      if(opacity>.01)placeBands(i);
+      highlightBands[i].forEach((band,n)=>{
+        const start=(i===0?0:a+.035)+n*.05;
+        band.style.setProperty('--hl',(between(progress,start,start+.075)*leaving).toFixed(4));
+      });
     });
     stage.style.backgroundColor='#ffffff';
   }
