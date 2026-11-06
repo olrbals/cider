@@ -36,11 +36,11 @@
   const burstStart = .32;
   const burstEnd = .49;
   const dissolveStart = .70;
-  const wipeDistance = .28;
+  // Reserve enough native scroll distance for the bubbling curtain in BOTH directions.
+  const wipeDistance = .72;
   let frame = 0;
   let lastProgress;
   let lastTransition;
-  const headerSurfaces = [...document.querySelectorAll('main > section')];
   let particles = [];
 
   // Find connected bubbles in the PNG once, then reuse their original pixels
@@ -158,21 +158,21 @@
     wipe.height = Math.max(1, Math.round(wipeHeight * ratio));
     wipeContext.setTransform(wipe.width / wipeWidth, 0, 0, wipe.height / wipeHeight, 0, 0);
     if (!bubbleSprites) {
-      bubbleSprites = [.47, .62, .70].map((strength, depth) => {
+      bubbleSprites = [.55, .66, .77].map((strength, depth) => {
         const texture = document.createElement('canvas');
         texture.width = texture.height = 96;
         const sprite = texture.getContext('2d');
         const rim = sprite.createRadialGradient(44, 43, 18, 48, 48, 43);
-        rim.addColorStop(0, depth === 0 ? 'rgba(210,247,232,.64)' : 'rgba(255,255,255,0)');
-        rim.addColorStop(.48, depth === 0 ? 'rgba(234,255,247,.54)' : 'rgba(255,255,255,.02)');
-        rim.addColorStop(.67, 'rgba(242,255,251,.16)');
-        rim.addColorStop(.83, 'rgba(32,132,103,' + strength + ')');
-        rim.addColorStop(.94, 'rgba(207,251,235,.38)');
+        rim.addColorStop(0, depth === 0 ? 'rgba(237,255,247,.16)' : 'rgba(255,255,255,0)');
+        rim.addColorStop(.57, 'rgba(245,255,251,.11)');
+        rim.addColorStop(.72, 'rgba(255,255,255,.22)');
+        rim.addColorStop(.83, 'rgba(20,124,84,' + strength + ')');
+        rim.addColorStop(.94, 'rgba(244,255,250,.68)');
         rim.addColorStop(1, 'rgba(236,255,248,0)');
         sprite.fillStyle = rim;
         sprite.fillRect(0, 0, 96, 96);
-        sprite.strokeStyle = 'rgba(255,255,255,.94)';
-        sprite.lineWidth = depth === 2 ? 3 : 4;
+        sprite.strokeStyle = 'rgba(255,255,255,.98)';
+        sprite.lineWidth = depth === 2 ? 3.8 : 4.4;
         if (depth === 2) sprite.filter = 'blur(1.1px)';
         sprite.beginPath();
         sprite.arc(47, 47, 33, 3.62, 4.94);
@@ -188,8 +188,8 @@
     };
     const lanes = compact ? 20 : 40;
     const layers = compact
-      ? [[160, 3, 10, .85], [110, 7, 22, 1.12], [12, 18, 36, 1.45]]
-      : [[390, 3, 11, .85], [230, 8, 25, 1.12], [24, 20, 43, 1.45]];
+      ? [[140, 4, 12, .82], [115, 10, 24, 1.05], [18, 23, 43, 1.28]]
+      : [[280, 4, 13, .82], [210, 12, 30, 1.05], [35, 28, 53, 1.28]];
     rising = layers.flatMap(([count, minSize, maxSize, speed], depth) =>
       Array.from({ length: count }, (_, index) => ({
         x: ((index % lanes) + random()) / lanes,
@@ -198,7 +198,7 @@
         speed: speed + random() * .6,
         sway: random() * Math.PI * 2,
         drift: 3 + depth * 5 + random() * 7,
-        alpha: .38 + random() * .54,
+        alpha: .56 + random() * .40,
         sprite: bubbleSprites[depth]
       })));
 
@@ -208,11 +208,11 @@
     const span = compact ? 260 : 384;
     tile.width = tile.height = span;
     const foam = tile.getContext('2d');
-    for (let i = 0; i < (compact ? 680 : 1550); i++) {
+    for (let i = 0; i < (compact ? 260 : 580); i++) {
       const x = random() * span;
       const y = random() * span;
-      const size = 3 + random() ** 1.5 * 13;
-      foam.globalAlpha = .35 + random() * .4;
+      const size = 4 + random() ** 1.5 * 12;
+      foam.globalAlpha = .20 + random() * .24;
       const half = size / 2;
       const offsetsX = x < half ? [0, span] : x > span - half ? [0, -span] : [0];
       const offsetsY = y < half ? [0, span] : y > span - half ? [0, -span] : [0];
@@ -232,10 +232,10 @@
 
     const width = wipeWidth;
     const height = wipeHeight;
-    // A short upward curtain: fill with sparkling soda, then uncover PURE.
-    // Every position is derived from scroll so pausing cannot run a hidden loop.
-    const approach = smooth(progress, .06, .46);
-    const exit = smooth(progress, .57, .975);
+    // Scrub both entrances identically; the leading edge rises from below and
+    // the trailing edge clears upward to reveal PURE (no autoplay/timers).
+    const approach = smooth(progress, .04, .47);
+    const exit = smooth(progress, .59, .98);
     const front = height * (1.10 - approach * 1.29);
     const back = height * (1.14 - exit * 1.34);
     const flow = progress * 2.6;
@@ -245,9 +245,9 @@
     // The transparent mint wash gives the impression of being inside soda.
     // Its soft edge follows the bubble curtain; no flat white flash.
     const water = ctx.createLinearGradient(0, 0, 0, height);
-    water.addColorStop(0, 'rgba(223,255,241,.92)');
-    water.addColorStop(.55, 'rgba(169,239,210,.95)');
-    water.addColorStop(1, 'rgba(110,210,168,.96)');
+    water.addColorStop(0, 'rgba(236,255,247,.86)');
+    water.addColorStop(.55, 'rgba(175,241,214,.90)');
+    water.addColorStop(1, 'rgba(114,213,170,.92)');
     ctx.globalAlpha = 1;
     ctx.fillStyle = water;
     ctx.fillRect(0, 0, width, height);
@@ -255,7 +255,7 @@
       const zoom = .82 + approach * .18;
       foamPattern.setTransform(new DOMMatrix().translate(-width * (zoom - 1) / 2,
         -flow * height * .13).scale(zoom));
-      ctx.globalAlpha = .32 + approach * .18;
+      ctx.globalAlpha = .22 + approach * .17;
       ctx.fillStyle = foamPattern;
       ctx.fillRect(0, 0, width, height);
     }
@@ -265,25 +265,27 @@
       if (age <= 0) continue;
       const rise = (age * bubble.speed) % 1.28;
       const y = height * (1.08 - rise);
-      const size = bubble.size * (.50 + approach * .72);
+      const size = bubble.size * (.65 + approach * .72);
       if (y < front - size || y > Math.min(height, back + height * .12) + size) continue;
       const x = bubble.x * width + Math.sin(age * 5 + bubble.sway) * bubble.drift;
-      ctx.globalAlpha = bubble.alpha * smooth(age, 0, .12) * smooth(rise, 0, .13);
+      ctx.globalAlpha = bubble.alpha * smooth(age, 0, .08) * smooth(rise, 0, .12);
       ctx.drawImage(bubble.sprite, x - size / 2, y - size / 2, size, size);
     }
     ctx.restore();
 
-    // Mask particle density at both edges; no painted liquid boundary.
+    // IMPORTANT: clip the WHOLE canvas to the rising front/trailing edge.
+    // V4.1 only faded a narrow strip and accidentally left the rest of the
+    // full-screen mint layer visible, making bubbles look like a flat flash.
     function feather(start, end, entering) {
       const edge = ctx.createLinearGradient(0, start, 0, end);
-      edge.addColorStop(0, entering ? 'transparent' : '#fff');
-      edge.addColorStop(1, entering ? '#fff' : 'transparent');
+      edge.addColorStop(0, entering ? 'rgba(255,255,255,0)' : 'rgba(255,255,255,1)');
+      edge.addColorStop(1, entering ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0)');
       ctx.globalCompositeOperation = 'destination-in';
       ctx.fillStyle = edge;
       ctx.fillRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'source-over';
     }
-    if (approach < 1) feather(front - height * .12, front + height * .16, true);
+    feather(front - height * .10, front + height * .13, true);
     if (exit > 0) feather(back - height * .12, back + height * .12, false);
   }
 
@@ -295,22 +297,15 @@
     // later position clamps to one and the frame loop stays shut down.
     const boundary = nextSection ? nextSection.getBoundingClientRect().top / stageHeight : 0;
     const transition = reduced.matches ? 0 : phase(wipeDistance - boundary, 0, wipeDistance);
-    // Keep the requested fixed header visible. Switch navigation contrast as
-    // light/dark sections pass behind it, including the carbonation handoff.
+    // Header belongs to the HERO only: hide near the completed handoff,
+    // and restore immediately on reverse scroll without moving page layout.
     if (header) {
       if (header.hidden) header.hidden = false;
-      const sampleY = Math.min(64, Math.max(30, innerHeight * .085));
-      let onLight = false;
-      for (const section of headerSurfaces) {
-        const box = section.getBoundingClientRect();
-        if (box.top <= sampleY && box.bottom > sampleY) {
-          onLight = !['top', 'footer', 'rich-flavors'].includes(section.id);
-        }
-      }
-      if (boundary > 0 && transition > 0) onLight = transition >= .54;
-      header.classList.toggle('is-on-light', onLight);
+      const offHero = nextSection ? boundary <= .08 : bounds.bottom <= 0;
+      header.classList.toggle('is-off-hero', offHero);
+      header.classList.toggle('is-on-light', !offHero && transition >= .53);
     }
-    const wipeActive = Boolean(wipeContext && boundary > .002 && transition > .06 && transition < .997);
+    const wipeActive = Boolean(wipeContext && boundary > .002 && transition > .03 && transition < .995);
     if (wipeActive) {
       drawWipe(transition, true);
     } else {
@@ -318,18 +313,18 @@
     }
     if (transition !== lastTransition) {
       lastTransition = transition;
-      hero.classList.toggle('is-submerged', Boolean(wipeContext && transition >= .54));
+      hero.classList.toggle('is-submerged', Boolean(wipeContext && transition >= .64));
       if (wipeContext) {
-        hero.style.setProperty('--hero-outgoing-opacity', 1 - smooth(transition, .42, .54));
+        hero.style.setProperty('--hero-outgoing-opacity', 1 - smooth(transition, .48, .64));
         nextSection.style.setProperty('--hero-principles-reveal',
-          transition === 0 ? 1 : smooth(transition, .64, .82));
+          transition === 0 ? 1 : smooth(transition, .70, .87));
       }
     }
-    // Keep the original scroll distance through the held star. Compress only
-    // its dissolution and handoff into the shorter overlap with PURE.
-    const intro = -bounds.top / (stageHeight * 1.8);
+    // Bring the bubbling star up before the curtain. Keep it visible while
+    // the first bubbles climb, then dissolve only once the foreground fills.
+    const intro = -bounds.top / (stageHeight * 1.55);
     const progress = reduced.matches ? 0 : wipeContext && transition > 0
-      ? dissolveStart + transition * (1.12 - dissolveStart)
+      ? dissolveStart + smooth(transition, .16, .69) * (1.12 - dissolveStart)
       : Math.max(0, Math.min(1.12, intro));
     if (progress === lastProgress) return;
     lastProgress = progress;
