@@ -4,10 +4,12 @@
 #top .hero-layout { position:absolute; width:1440px; height:900px; left:50%; top:50%; transform:translate(-50%,-50%) scale(var(--hero-layout-scale)); transform-origin:center; isolation:isolate; }
 #top .hero-type-top { position:absolute; z-index:4; left:159px; top:85px; right:auto; bottom:auto; color:#fff; font:400 200px/normal var(--font-family-display); letter-spacing:-8px; filter:none; opacity:1; }
 #top .hero-korean-title { display:block; position:absolute; z-index:4; left:1163px; top:303px; transform:translateX(-50%); color:#fff; font:700 52px/1.3 "Yaldevi Colombo SemiBold",var(--font-family-base); letter-spacing:-1.04px; white-space:nowrap; }
-#top .hero-product-layer { position:absolute; z-index:5; left:406px; top:303px; width:627px; height:581px; transform:translateX(var(--hero-shake)) rotate(var(--hero-tilt,0deg)); filter:none; opacity:1; overflow:hidden; }
+#top .hero-product-layer { position:absolute; z-index:5; left:406px; top:303px; width:627px; height:581px; transform:translate(var(--hero-shake),var(--hero-shake-y,0px)) rotate(var(--hero-tilt,0deg)); filter:none; opacity:1; overflow:hidden; }
 #top .hero-can-body { display:block; position:absolute; inset:0; }
 #top .hero-can-body img { position:absolute; left:-.05%; top:-.05%; width:627px; height:627px; max-width:none; visibility:visible; }
-#top .hero-carbonation-star { position:absolute; z-index:2; left:205px; top:0; width:1030px; height:900px; pointer-events:none; opacity:var(--hero-star-opacity,0); }
+#top .hero-carbonation-star { position:absolute; z-index:2; left:205px; top:0; width:1030px; height:900px; pointer-events:none; opacity:var(--hero-star-opacity,0); transform:scale(var(--hero-star-scale,1)); transform-origin:50% 66%; filter:brightness(var(--hero-star-flash,1)); }
+/* V4.4: liquid ripple only during the pop (cheap at rest). */
+#top .hero-carbonation-star.is-popping { filter:brightness(var(--hero-star-flash,1)) url(#hero-star-liquid); }
 #top .hero-carbonation-star img { width:100%; height:100%; max-width:none; object-fit:contain; }
 #top .hero-carbonation-bubbles { position:absolute; z-index:3; inset:0; width:100%; height:100%; pointer-events:none; }
 .hero-carbonation-wipe { position:fixed; z-index:70; inset:0; width:100%; height:100%; pointer-events:none; }

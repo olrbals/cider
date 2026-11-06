@@ -1,4 +1,10 @@
-/* Scroll-driven carbonation in the existing 1440 × 900 hero layout. */
+/* HERO V4.4 — 1440 × 900 Figma layout.
+ * ① still → ② the can buzzes (time-based, so it reads as a real vibration)
+ * → ③ a short hush, then the water star pops from behind the can
+ * → ④ carbonation rushes up → ⑤ a clear, wavy soda surface fills the
+ * screen → ⑥ a white foam head rolls over everything and becomes PURE.
+ * ②③ are triggered by scroll and play on a clock; ④–⑥ are scrubbed by scroll.
+ */
 (() => {
   'use strict';
   const hero = document.querySelector('#top.hero');
@@ -8,6 +14,7 @@
   if (!image || !canvas || !stage) return;
 
   const context = canvas.getContext('2d');
+  const starSlot = image.parentElement;
   const nextSection = document.querySelector('#brand-values');
   const header = document.querySelector('.site-header');
   const wipe = document.createElement('canvas');
@@ -15,8 +22,8 @@
   let wipeWidth = 1;
   let wipeHeight = 1;
   let bubbleSprites;
-  let foamPattern;
   let rising = [];
+  let foam = [];
   if (wipeContext) {
     wipe.className = 'hero-carbonation-wipe';
     wipe.hidden = true;
@@ -31,15 +38,47 @@
     const t = phase(progress, start, end);
     return t * t * (3 - 2 * t);
   };
+  // Overshoot ease: the star springs slightly past full size, then settles.
+  const springOut = t => {
+    const s = 1.9;
+    const u = clamp(t) - 1;
+    return 1 + (s + 1) * u * u * u + s * u * u;
+  };
   const originX = 719.5;
   const originY = 593.5;
   const burstStart = .32;
   const burstEnd = .49;
   const dissolveStart = .70;
-  // Reserve enough native scroll distance for the bubbling curtain in BOTH directions.
-  const wipeDistance = .72;
+  // The soda sequence (④–⑥) starts once PURE is 0.95 screens away, so the
+  // hero length itself is unchanged.
+  const wipeDistance = .95;
+
+  // ②③ timing (ms) and the scroll positions that trigger / reset it.
+  const SHAKE = 540;
+  const HUSH = 120;
+  const POP = 720;
+  const UNPOP = 520;
+  const triggerAt = .06;
+  const resetAt = .02;
+  let popState = 'idle';
+  let popStart = 0;
+  let started = false;
+
+  // A brief liquid ripple applied to the star only while it pops.
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const filterHost = document.createElementNS(svgNS, 'svg');
+  filterHost.setAttribute('aria-hidden', 'true');
+  filterHost.setAttribute('width', '0');
+  filterHost.setAttribute('height', '0');
+  filterHost.style.position = 'absolute';
+  filterHost.innerHTML = '<filter id="hero-star-liquid" x="-10%" y="-10%" width="120%" height="120%">'
+    + '<feTurbulence type="fractalNoise" baseFrequency=".011 .019" numOctaves="2" seed="7" result="n"/>'
+    + '<feDisplacementMap in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>';
+  document.body.append(filterHost);
+  const ripple = filterHost.querySelector('feDisplacementMap');
+
   let frame = 0;
-  let lastProgress;
+  let lastKey;
   let lastTransition;
   let particles = [];
 
@@ -152,8 +191,7 @@
   function prepareWipe() {
     wipeWidth = Math.max(1, document.documentElement.clientWidth);
     wipeHeight = Math.max(1, innerHeight);
-    const compact = wipeWidth <= 600;
-    const ratio = Math.min(devicePixelRatio || 1, compact ? .9 : 1);
+    const ratio = Math.min(devicePixelRatio || 1, 1);
     wipe.width = Math.max(1, Math.round(wipeWidth * ratio));
     wipe.height = Math.max(1, Math.round(wipeHeight * ratio));
     wipeContext.setTransform(wipe.width / wipeWidth, 0, 0, wipe.height / wipeHeight, 0, 0);
@@ -186,44 +224,43 @@
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
       return seed / 4294967296;
     };
-    const lanes = compact ? 20 : 40;
-    // V4.3: fewer pin-point dots (they read as noise), same three depths.
-    const layers = compact
-      ? [[70, 5, 12, .82], [90, 10, 24, 1.05], [16, 23, 43, 1.28]]
-      : [[140, 5, 13, .82], [170, 12, 30, 1.05], [32, 28, 53, 1.28]];
+    const gauss = () => (random() + random() + random() - 1.5) / 1.5;
+    // Small / medium / large bubbles. About 40% rise in a column behind
+    // the can so the rush visibly comes out of the soda itself.
+    const layers = [[230, 4, 12, .85], [220, 10, 28, 1.05], [48, 26, 56, 1.3]];
     rising = layers.flatMap(([count, minSize, maxSize, speed], depth) =>
-      Array.from({ length: count }, (_, index) => ({
-        x: ((index % lanes) + random()) / lanes,
-        start: random() * 1.28,
-        size: minSize + random() ** 1.6 * (maxSize - minSize),
-        speed: speed + random() * .6,
-        sway: random() * Math.PI * 2,
-        drift: 3 + depth * 5 + random() * 7,
-        alpha: .56 + random() * .40,
-        sprite: bubbleSprites[depth]
-      })));
+      Array.from({ length: count }, () => {
+        const column = random() < .4;
+        return {
+          x: column ? .5 + gauss() * .13 : random(),
+          start: random() * 1.3,
+          size: minSize + random() ** 1.6 * (maxSize - minSize),
+          speed: speed + random() * .7,
+          sway: random() * Math.PI * 2,
+          drift: 3 + depth * 5 + random() * 7,
+          alpha: .6 + random() * .38,
+          sprite: bubbleSprites[depth]
+        };
+      }));
+    // Foam head: dense small bubbles riding the white crest.
+    foam = Array.from({ length: 170 }, () => ({
+      x: random(), lift: random() ** 1.7, size: 5 + random() ** 1.4 * 20,
+      wobble: random() * Math.PI * 2, alpha: .55 + random() * .4,
+      sprite: bubbleSprites[random() < .7 ? 0 : 1]
+    }));
+  }
 
-    // A light repeating texture supplies depth, not an opaque field of noise.
-    // The liquid fog below supplies immersion; individual rings remain legible.
-    const tile = document.createElement('canvas');
-    const span = compact ? 260 : 384;
-    tile.width = tile.height = span;
-    const foam = tile.getContext('2d');
-    for (let i = 0; i < (compact ? 260 : 580); i++) {
-      const x = random() * span;
-      const y = random() * span;
-      const size = 4 + random() ** 1.5 * 12;
-      foam.globalAlpha = .20 + random() * .24;
-      const half = size / 2;
-      const offsetsX = x < half ? [0, span] : x > span - half ? [0, -span] : [0];
-      const offsetsY = y < half ? [0, span] : y > span - half ? [0, -span] : [0];
-      for (const dy of offsetsY) {
-        for (const dx of offsetsX) {
-          foam.drawImage(bubbleSprites[0], x + dx - size / 2, y + dy - size / 2, size, size);
-        }
-      }
-    }
-    foamPattern = wipeContext.createPattern(tile, 'repeat');
+  // One broad, slowly rolling soda surface (two sines, no small ripples).
+  function surface(x, base, amp, swell) {
+    const u = x / wipeWidth * Math.PI * 2;
+    return base + amp * (Math.sin(u * 1.15 + swell) * .62 + Math.sin(u * 2.4 - swell * 1.35 + 1.2) * .38);
+  }
+  function surfacePath(ctx, base, amp, swell) {
+    ctx.beginPath();
+    ctx.moveTo(0, wipeHeight + 2);
+    for (let x = 0; x <= wipeWidth + 24; x += 24) ctx.lineTo(x, surface(x, base, amp, swell));
+    ctx.lineTo(wipeWidth + 24, wipeHeight + 2);
+    ctx.closePath();
   }
 
   function drawWipe(progress, active, seconds = 0) {
@@ -233,143 +270,186 @@
 
     const width = wipeWidth;
     const height = wipeHeight;
-    // Scrub both entrances identically; the leading edge rises from below and
-    // the trailing edge clears upward to reveal PURE (no autoplay/timers).
-    // V4.3: the curtain climbs at roughly 2× scroll speed (was ~4×) so a
-    // single wheel notch no longer jumps it across the screen.
-    const approach = smooth(progress, .02, .50);
-    const exit = smooth(progress, .59, .98);
-    const front = height * (1.06 - approach * 1.24);
-    const back = height * (1.14 - exit * 1.34);
-    // Bubbles rise ~1–2× the scroll distance (was 3–7× with wrap-around
-    // jumps), plus a slow natural ascent so they stay alive between notches.
-    const flow = progress * .85 + seconds * .085;
     const ctx = wipeContext;
+    // ④ rush → ⑤ soda level → ⑥ foam head. Each scrubs with the scroll.
+    const rush = smooth(progress, 0, .26);
+    const level = smooth(progress, .08, .50);
+    const head = smooth(progress, .44, .80);
+    const front = height * (1.10 - 1.34 * level);
+    const crest = height * (1.20 - 1.46 * head);
+    const swell = seconds * 1.5 + progress * 7;
+    const amp = height * .032 * (.55 + .45 * rush);
     ctx.clearRect(0, 0, width, height);
-    ctx.save();
-    // Clear, mostly see-through soda instead of an opaque mint sheet: the
-    // hero stays readable through it and whitens as it fades to PURE.
-    const water = ctx.createLinearGradient(0, 0, 0, height);
-    water.addColorStop(0, 'rgba(242,255,250,' + (.10 + approach * .16) + ')');
-    water.addColorStop(.6, 'rgba(214,250,234,' + (.16 + approach * .16) + ')');
-    water.addColorStop(1, 'rgba(176,240,212,' + (.24 + approach * .14) + ')');
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = water;
-    ctx.fillRect(0, 0, width, height);
-    if (foamPattern) {
-      const zoom = .82 + approach * .18;
-      foamPattern.setTransform(new DOMMatrix().translate(-width * (zoom - 1) / 2,
-        -flow * height * .35).scale(zoom));
-      ctx.globalAlpha = .06 + approach * .08;
-      ctx.fillStyle = foamPattern;
-      ctx.fillRect(0, 0, width, height);
-    }
 
-    const leading = [];
-    for (const bubble of rising) {
-      const rise = (flow * bubble.speed + bubble.start) % 1.28;
-      const y = height * (1.08 - rise);
-      const size = bubble.size * (.75 + approach * .55);
-      if (y < -size || y > Math.min(height, back + height * .12) + size) continue;
-      const x = bubble.x * width + Math.sin(rise * 14 + bubble.sway) * bubble.drift;
-      const alpha = bubble.alpha * smooth(rise, 0, .10);
-      // Bubbles above the water line are the first wave rising from the
-      // bottom; they are drawn after the clip so they lead the liquid.
-      if (y < front) {
-        leading.push([bubble, x, y, size, alpha]);
-        continue;
+    // ⑤ Clear soda below a rolling surface: the hero stays visible through it.
+    if (front < height + amp) {
+      surfacePath(ctx, front, amp, swell);
+      const water = ctx.createLinearGradient(0, Math.max(0, front - amp), 0, height);
+      water.addColorStop(0, 'rgba(238,255,249,.30)');
+      water.addColorStop(.5, 'rgba(206,248,230,.36)');
+      water.addColorStop(1, 'rgba(160,234,202,.48)');
+      ctx.fillStyle = water;
+      ctx.fill();
+      // Bright meniscus line along the surface.
+      ctx.beginPath();
+      for (let x = 0; x <= width + 24; x += 24) {
+        const y = surface(x, front, amp, swell);
+        if (x) ctx.lineTo(x, y); else ctx.moveTo(x, y);
       }
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,.82)';
+      ctx.lineWidth = 2.4;
+      ctx.shadowColor = 'rgba(255,255,255,.9)';
+      ctx.shadowBlur = 14;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ④ Carbonation: fast, dense, and alive on its own clock.
+    const reach = height * (.30 + .75 * rush);
+    for (const bubble of rising) {
+      const rise = (seconds * .30 * bubble.speed + progress * 1.25 * bubble.speed + bubble.start) % 1.3;
+      const y = height * (1.1 - rise);
+      if (y < -60 || y > height + 60) continue;
+      const x = bubble.x * width + Math.sin(rise * 12 + bubble.sway) * bubble.drift;
+      const water = surface(x, front, amp, swell);
+      let alpha = bubble.alpha * smooth(rise, 0, .08);
+      if (y < water) alpha *= rush * (1 - smooth(water - y, 0, reach));
+      if (y > surface(x, crest, amp * .8, swell * 1.2 + 2)) alpha *= .3;
+      if (alpha <= .01) continue;
+      const size = bubble.size * (.8 + .4 * rush);
+      const stretch = 1 + .22 * rush * (bubble.speed - .8);
       ctx.globalAlpha = alpha;
-      ctx.drawImage(bubble.sprite, x - size / 2, y - size / 2, size, size);
-    }
-    // A soft bright meniscus marks the soda surface as it climbs.
-    if (front > -height * .05 && front < height) {
-      const line = ctx.createLinearGradient(0, front - 26, 0, front + 34);
-      line.addColorStop(0, 'rgba(255,255,255,0)');
-      line.addColorStop(.42, 'rgba(255,255,255,.34)');
-      line.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = line;
-      ctx.fillRect(0, front - 26, width, 60);
-    }
-    ctx.restore();
-
-    // IMPORTANT: clip the WHOLE canvas to the rising front/trailing edge.
-    // V4.1 only faded a narrow strip and accidentally left the rest of the
-    // full-screen mint layer visible, making bubbles look like a flat flash.
-    function feather(start, end, entering) {
-      const edge = ctx.createLinearGradient(0, start, 0, end);
-      edge.addColorStop(0, entering ? 'rgba(255,255,255,0)' : 'rgba(255,255,255,1)');
-      edge.addColorStop(1, entering ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0)');
-      ctx.globalCompositeOperation = 'destination-in';
-      ctx.fillStyle = edge;
-      ctx.fillRect(0, 0, width, height);
-      ctx.globalCompositeOperation = 'source-over';
-    }
-    feather(front - height * .04, front + height * .08, true);
-    if (exit > 0) feather(back - height * .12, back + height * .12, false);
-
-    // Leading bubbles thin out the further they are above the water line.
-    const reach = height * .55;
-    for (const [bubble, x, y, size, alpha] of leading) {
-      const lead = 1 - smooth(front - y, 0, reach);
-      if (lead <= 0) continue;
-      ctx.globalAlpha = alpha * lead * .9 * (1 - exit) * smooth(progress, .03, .14);
-      ctx.drawImage(bubble.sprite, x - size / 2, y - size / 2, size, size);
+      ctx.drawImage(bubble.sprite, x - size / 2, y - size * stretch / 2, size, size * stretch);
     }
     ctx.globalAlpha = 1;
+
+    // ⑥ Foam head: soft layered white crest, solid white beneath = PURE.
+    if (crest < height + 120) {
+      const crestSwell = swell * 1.2 + 2;
+      const crestAmp = amp * .8;
+      [[-58, .28], [-30, .55], [0, 1]].forEach(([offset, alpha]) => {
+        surfacePath(ctx, crest + offset, crestAmp, crestSwell);
+        ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+        ctx.fill();
+      });
+      for (const bubble of foam) {
+        const x = bubble.x * width + Math.sin(seconds * 2 + bubble.wobble) * 4;
+        const y = surface(x, crest, crestAmp, crestSwell) - 8 - bubble.lift * 78;
+        if (y > height + 30) continue;
+        ctx.globalAlpha = bubble.alpha * (1 - bubble.lift * .55);
+        ctx.drawImage(bubble.sprite, x - bubble.size / 2, y - bubble.size / 2, bubble.size, bubble.size);
+      }
+      ctx.globalAlpha = 1;
+    }
+    // Once the screen is white, dissolve the layer to reveal PURE beneath.
+    wipe.style.opacity = String(1 - smooth(progress, .80, .94));
+  }
+
+  function heroPop(time, intro, transition) {
+    if (!started) {
+      started = true;
+      if (intro > triggerAt) popState = 'shown';
+    }
+    if (transition > 0) popState = 'shown';
+    else if (intro > triggerAt && (popState === 'idle' || popState === 'unpopping')) {
+      popState = 'shaking';
+      popStart = time;
+    } else if (intro < resetAt) {
+      if (popState === 'shaking') popState = 'idle';
+      else if (popState === 'popping' || popState === 'shown') {
+        popState = 'unpopping';
+        popStart = time;
+      }
+    }
+    if (popState === 'shaking' && time - popStart >= SHAKE + HUSH) {
+      popState = 'popping';
+      popStart += SHAKE + HUSH;
+    }
+    if (popState === 'popping' && time - popStart >= POP) popState = 'shown';
+    if (popState === 'unpopping' && time - popStart >= UNPOP) popState = 'idle';
+
+    const elapsed = time - popStart;
+    const state = { progress: 0, shakeX: 0, shakeY: 0, tilt: 0, scale: 1, flash: 1, ripple: 0, opacity: null };
+    if (popState === 'shaking' && elapsed < SHAKE) {
+      // ② A tight buzz: quick attack, steady hold, hard stop.
+      const e = elapsed / SHAKE;
+      const envelope = Math.min(1, e / .07) * (e > .9 ? (1 - e) / .1 : 1);
+      const ms = elapsed / 1000;
+      state.shakeX = (Math.sin(ms * Math.PI * 2 * 26) * 7 + Math.sin(ms * Math.PI * 2 * 41) * 3) * envelope;
+      state.shakeY = Math.sin(ms * Math.PI * 2 * 33 + 1) * 2.2 * envelope;
+      state.tilt = Math.sin(ms * Math.PI * 2 * 19 + .6) * 1.8 * envelope;
+    } else if (popState === 'popping') {
+      // ③ Pop: bubbles fly out into the star shape as it springs open.
+      const k = clamp(elapsed / POP);
+      state.progress = burstStart + (burstEnd - burstStart) * Math.min(1, k * 1.3);
+      state.opacity = smooth(k, 0, .16);
+      state.scale = .42 + .58 * springOut(Math.min(1, k / .72));
+      state.flash = 1 + .55 * (1 - smooth(k, .04, .5));
+      state.ripple = 46 * (1 - smooth(k, 0, .75));
+    } else if (popState === 'shown') {
+      state.progress = .55;
+    } else if (popState === 'unpopping') {
+      // Reverse: the star breaks back into rising bubbles and fades.
+      const k = clamp(elapsed / UNPOP);
+      state.progress = dissolveStart + k * (1.04 - dissolveStart);
+      state.scale = 1 + .06 * k;
+    }
+    return state;
   }
 
   function render(now) {
     frame = 0;
+    const time = now || performance.now();
     const bounds = hero.getBoundingClientRect();
     const stageHeight = stage.offsetHeight || innerHeight;
-    // Read the native section boundary. Once PURE reaches the top, every
-    // later position clamps to one and the frame loop stays shut down.
     const boundary = nextSection ? nextSection.getBoundingClientRect().top / stageHeight : 0;
     const transition = reduced.matches ? 0 : phase(wipeDistance - boundary, 0, wipeDistance);
-    // Header belongs to the HERO only: hide near the completed handoff,
-    // and restore immediately on reverse scroll without moving page layout.
     if (header) {
       if (header.hidden) header.hidden = false;
       const offHero = nextSection ? boundary <= .08 : bounds.bottom <= 0;
       header.classList.toggle('is-off-hero', offHero);
-      header.classList.toggle('is-on-light', !offHero && transition >= .58);
+      header.classList.toggle('is-on-light', !offHero && transition >= .67);
     }
-    const wipeActive = Boolean(wipeContext && boundary > .002 && transition > .03 && transition < .995);
-    if (wipeActive) {
-      drawWipe(transition, true, (now || performance.now()) / 1000);
-      // Keep the slow ascent alive only while the curtain is on screen.
-      schedule();
-    } else {
-      drawWipe(transition, false);
-    }
+    const wipeActive = Boolean(wipeContext && !reduced.matches && boundary > .002
+      && transition > .01 && transition < .995);
+    drawWipe(transition, wipeActive, time / 1000);
     if (transition !== lastTransition) {
       lastTransition = transition;
-      hero.classList.toggle('is-submerged', Boolean(wipeContext && transition >= .64));
+      hero.classList.toggle('is-submerged', Boolean(wipeContext && transition >= .76));
       if (wipeContext) {
-        hero.style.setProperty('--hero-outgoing-opacity', 1 - smooth(transition, .48, .64));
+        hero.style.setProperty('--hero-outgoing-opacity', 1 - smooth(transition, .70, .76));
         nextSection.style.setProperty('--hero-principles-reveal',
-          transition === 0 ? 1 : smooth(transition, .70, .87));
+          transition === 0 ? 1 : smooth(transition, .76, .86));
       }
     }
-    // Bring the bubbling star up before the curtain. Keep it visible while
-    // the first bubbles climb, then dissolve only once the foreground fills.
-    const intro = -bounds.top / (stageHeight * 1.55);
-    const progress = reduced.matches ? 0 : wipeContext && transition > 0
-      // V4.3: dissolve while the soda is still clear enough to see it.
-      ? dissolveStart + smooth(transition, .05, .50) * (1.12 - dissolveStart)
-      : Math.max(0, Math.min(1.12, intro));
-    if (progress === lastProgress) return;
-    lastProgress = progress;
 
-    const strength = smooth(progress, .015, .235) * (1 - smooth(progress, .235, .255));
-    const vibration = progress * Math.PI * 112;
-    hero.style.setProperty('--hero-shake', (Math.sin(vibration) * strength * 9).toFixed(3) + 'px');
-    hero.style.setProperty('--hero-tilt', (Math.sin(vibration + .65) * strength * 1).toFixed(3) + 'deg');
-    const opacity = smooth(progress, .36, .425) * (1 - smooth(progress, dissolveStart, .88));
+    let state;
+    if (reduced.matches) {
+      state = { progress: .55, shakeX: 0, shakeY: 0, tilt: 0, scale: 1, flash: 1, ripple: 0, opacity: null };
+    } else {
+      state = heroPop(time, -bounds.top / stageHeight, transition);
+      // ④ The star bursts into the rising soda as the rush begins.
+      if (transition > 0) state.progress = dissolveStart + smooth(transition, .04, .40) * (1.12 - dissolveStart);
+    }
+    const animating = wipeActive || popState === 'shaking' || popState === 'popping' || popState === 'unpopping';
+    if (animating) schedule();
+
+    const opacity = state.opacity ?? smooth(state.progress, .36, .425) * (1 - smooth(state.progress, dissolveStart, .88));
+    const key = [state.progress, state.shakeX, state.shakeY, state.tilt, state.scale, state.flash, state.ripple, opacity].join();
+    if (key === lastKey) return;
+    lastKey = key;
+    hero.style.setProperty('--hero-shake', state.shakeX.toFixed(2) + 'px');
+    hero.style.setProperty('--hero-shake-y', state.shakeY.toFixed(2) + 'px');
+    hero.style.setProperty('--hero-tilt', state.tilt.toFixed(3) + 'deg');
     hero.style.setProperty('--hero-star-opacity', opacity.toFixed(4));
-    drawBubbles(progress);
+    hero.style.setProperty('--hero-star-scale', state.scale.toFixed(4));
+    hero.style.setProperty('--hero-star-flash', state.flash.toFixed(3));
+    starSlot.classList.toggle('is-popping', state.ripple > .5);
+    if (state.ripple > .5) {
+      ripple.setAttribute('scale', state.ripple.toFixed(1));
+    }
+    drawBubbles(state.progress);
   }
 
   function schedule() {
@@ -385,13 +465,13 @@
       context.setTransform(canvas.width / 1440, 0, 0, canvas.height / 900, 0, 0);
     }
     if (wipeContext) prepareWipe();
-    lastProgress = undefined;
+    lastKey = undefined;
     lastTransition = undefined;
     schedule();
   }
   image.decode().then(() => {
     particles = collectBubbles();
-    lastProgress = undefined;
+    lastKey = undefined;
     schedule();
   }).catch(error => console.warn('Hero carbonation:', error));
   addEventListener('scroll', schedule, { passive: true });
