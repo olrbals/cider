@@ -35,9 +35,11 @@
 @media(prefers-reduced-motion:reduce){.rich-signoff img{transform:none}}
 
 
-/* V8 "건배": real-water splash (high-pass footage, hard-light so it reads on
-   pastel) and seven water stars bursting from the clink point. */
-.rich-cheers-splash{position:absolute;z-index:6;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;transform:translate(-50%,-92%);width:880px;height:528px;object-fit:fill}
-.rich-cheers-stars{position:absolute;inset:0;z-index:7;pointer-events:none}
-.rich-cheers-stars img{position:absolute;left:0;top:0;width:100px;height:100px;opacity:0;will-change:transform,opacity}
-@media(prefers-reduced-motion:reduce){.rich-cheers-splash,.rich-cheers-stars{display:none}}
+/* V8.1 "건배": the hero's splash on pastel — water-star burst at the clink
+   and the lens splash over the whole scene (high-pass footage, hard-light). */
+.rich-cheers-burst{position:absolute;z-index:6;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;width:860px;height:860px;transform:translate(-50%,-50%)}
+.rich-cheers-front{position:absolute;inset:0;z-index:3;width:100%;height:100%;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;object-fit:cover;will-change:transform,opacity}
+.rich-cheers-ribbon{position:absolute;z-index:1;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;width:760px;height:900px;
+  transform:translate(-50%,-50%) rotate(var(--rib-rot,0deg)) scaleX(var(--rib-flip,1));
+  -webkit-mask:linear-gradient(to bottom,transparent 0,#000 18%,#000 82%,transparent 100%);mask:linear-gradient(to bottom,transparent 0,#000 18%,#000 82%,transparent 100%)}
+@media(prefers-reduced-motion:reduce){.rich-cheers-burst,.rich-cheers-front,.rich-cheers-ribbon{display:none}}

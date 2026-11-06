@@ -93,45 +93,55 @@
     const peach=slots.find(s=>s.key==='peach'),grape=slots.find(s=>s.key==='grape');
     let best=1e9;for(let t=.55;t<=1.4;t+=.005){const d=Math.abs(pose(peach,t).x-pose(grape,t).x);if(d<best){best=d;clinkT=t;}}
   }
-  // Clink effects live in the scaled 1440×900 art layer.
+  // Clink = the hero's splash, re-made for the pastel scene: the hero's
+  // water-star burst (five real jets) from between the necks, then the
+  // hero's lens splash rushing at the viewer. Footage is high-passed
+  // (neutral grey + highlights/shadows) and hard-light blended so clear
+  // water reads on light backgrounds.
   const art=duo.querySelector('.rich-duo__art');
-  const splash=document.createElement('video');
-  splash.className='rich-cheers-splash';splash.src='media/rich-cheers-splash.mp4';
-  splash.muted=true;splash.playsInline=true;splash.preload='auto';
-  splash.setAttribute('muted','');splash.setAttribute('playsinline','');splash.setAttribute('aria-hidden','true');
-  splash.addEventListener('play',()=>{splash.style.opacity='1';});
-  splash.addEventListener('ended',()=>{splash.style.opacity='0';});
-  const starLayer=document.createElement('div');starLayer.className='rich-cheers-stars';starLayer.setAttribute('aria-hidden','true');
-  const stars=Array.from({length:7},(_,i)=>{const img=new Image();img.src='img/hero-star/water-star-light.png';img.alt='';img.decoding='async';starLayer.append(img);
-    return {img,dir:(-90+i*360/7+(i%2?9:-7))*Math.PI/180,dist:300+((i*53)%5)*40,size:130+((i*37)%4)*22,spin:(i%2?1:-1)*(40+i*9)};});
-  art.append(splash,starLayer);
-  let clinked=false,clinkAt=0,clinkPos={x:720,y:420},starRaf=0,lastT=-1;
-  function drawStars(now){
-    starRaf=0;
-    const k=(now-clinkAt)/1400;
-    if(!clinked||k>=1){stars.forEach(s=>{s.img.style.opacity='0';});return;}
-    const pop=t=>{const c=2.2,u=Math.min(1,t)-1;return 1+(c+1)*u*u*u+c*u*u;};
-    stars.forEach((s,i)=>{
-      const e=1-(1-Math.min(1,k*1.25))**3;                 // fast out, soft stop
-      const x=clinkPos.x+Math.cos(s.dir)*s.dist*e, y=clinkPos.y+Math.sin(s.dir)*s.dist*e+70*k*k; // a little gravity
-      const sc=.25+.75*pop(Math.min(1,k*2.6)), a=Math.min(1,k*8)*(1-smooth(.62,1,k));
-      s.img.style.width=s.img.style.height=s.size+'px';
-      s.img.style.transform='translate('+(x-s.size/2).toFixed(1)+'px,'+(y-s.size/2).toFixed(1)+'px) rotate('+(s.spin*k).toFixed(1)+'deg) scale('+sc.toFixed(3)+')';
-      s.img.style.opacity=a.toFixed(3);
-    });
-    starRaf=requestAnimationFrame(drawStars);
+  const clip=(cls,src,parent)=>{const v=document.createElement('video');v.className=cls;v.src=src;
+    v.muted=true;v.playsInline=true;v.preload='auto';v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('aria-hidden','true');
+    parent.append(v);return v;};
+  const burst=clip('rich-cheers-burst','media/rich-cheers-burst.mp4',art);
+  const front=clip('rich-cheers-front','media/rich-cheers-front.mp4',duo);
+  // Reference look: water ribbons keep flowing around the crossed bottles.
+  const ribbons=[clip('rich-cheers-ribbon','media/rich-cheers-ribbon.mp4',art),clip('rich-cheers-ribbon','media/rich-cheers-ribbon.mp4',art)];
+  ribbons.forEach((r,i)=>{r.loop=true;r.style.setProperty('--rib-rot',(i?38:-34)+'deg');r.style.setProperty('--rib-flip',i?'-1':'1');});
+  let clinked=false,clinkAt=0,fxRaf=0,lastT=-1,frontAt=0;
+  function drawFx(now){
+    fxRaf=0;
+    if(!clinked){burst.style.opacity='0';front.style.opacity='0';return;}
+    const kb=burst.duration?burst.currentTime/burst.duration:0;
+    burst.style.opacity=(burst.ended?0:Math.min(1,kb*12)*(1-smooth(.55,.95,kb))).toFixed(3);
+    // Lens splash follows once the jets are ~1/3 out, exactly like the hero.
+    if(!frontAt&&(kb>=.32||burst.ended)){frontAt=now;front.currentTime=0;front.play().catch(()=>{});}
+    const kf=front.duration&&frontAt?front.currentTime/front.duration:0;
+    front.style.opacity=(frontAt&&!front.ended?.7*smooth(0,.04,kf)*(1-smooth(.62,1,kf)):0).toFixed(3);
+    front.style.transform='scale('+(1+.35*(1-(1-smooth(0,.5,kf))**3)).toFixed(4)+')';
+    if(!(burst.ended&&(front.ended||!frontAt)))fxRaf=requestAnimationFrame(drawFx);
+    else{burst.style.opacity='0';front.style.opacity='0';}
   }
   function cheers(t,poses){
     // Fire once when scrolling down through the clink; re-arm when scrolling back.
-    if(t<clinkT-.05){clinked=false;}
+    if(t<clinkT-.05){clinked=false;frontAt=0;}
     if(!clinked&&t>=clinkT&&lastT<clinkT&&lastT>=0&&t-clinkT<.4&&!reduce.matches){
-      clinked=true;clinkAt=performance.now();
+      clinked=true;clinkAt=performance.now();frontAt=0;
       const p=poses.peach,g=poses.grape;
-      clinkPos={x:(p.x+g.x)/2,y:(p.y+g.y)/2-150};
-      splash.style.left=clinkPos.x+'px';splash.style.top=(clinkPos.y+40)+'px';
-      splash.currentTime=0;splash.play().catch(()=>{});
-      if(!starRaf)starRaf=requestAnimationFrame(drawStars);
+      const x=(p.x+g.x)/2,y=(p.y+g.y)/2-150;
+      burst.style.left=x+'px';burst.style.top=y+'px';
+      burst.currentTime=0;burst.play().catch(()=>{});
+      if(!fxRaf)fxRaf=requestAnimationFrame(drawFx);
     }
+    // Ribbons: in at the clink, ride between the two bottles, out with the scene.
+    const ribbonA=reduce.matches?0:smooth(clinkT-.01,clinkT+.12,t)*(1-smooth(1.70,2.0,t));
+    const p=poses.peach,g=poses.grape;
+    ribbons.forEach((r,i)=>{
+      if(ribbonA<=.01){if(!r.paused)r.pause();if(r.style.opacity!=='0')r.style.opacity='0';return;}
+      const x=(p.x+g.x)/2+(i?70:-70),y=(p.y+g.y)/2+(i?10:-20);
+      r.style.left=x.toFixed(1)+'px';r.style.top=y.toFixed(1)+'px';
+      r.style.opacity=(ribbonA*.95).toFixed(3);
+      if(r.paused){r.currentTime=i*1.1;r.play().catch(()=>{});}
+    });
     lastT=t;
   }
   function updateDuo(t){
