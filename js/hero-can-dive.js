@@ -210,6 +210,23 @@ async function start() {
   wave.setAttribute('aria-hidden', 'true');
   stage.append(wave);
   const waveCtx = wave.getContext('2d');
+  // Real spray riding the crest: looping droplet footage, screen-blended,
+  // fading upward so it reads as water thrown off the wave.
+  const sprays = [0, 1, 2, 3].map(i => {
+    const v = document.createElement('video');
+    v.className = 'hero-wave-spray';
+    v.src = new URL('../media/hero-star-droplets.mp4', import.meta.url).href;
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.preload = 'auto';
+    v.setAttribute('aria-hidden', 'true');
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.style.setProperty('--flip', i % 2 ? '-1' : '1');
+    stage.append(v);
+    return v;
+  });
 
   // Water star: bursts behind the can as the tab cracks open. The original
   // bubble-star artwork + real droplet footage cut to the same silhouette,
@@ -275,7 +292,7 @@ async function start() {
   const centerLocal = new THREE.Vector3(0, 0, 0);
   const center = {};
   const springOut = t => { const k = 2.6, u = Math.min(1, Math.max(0, t)) - 1; return 1 + (k + 1) * u * u * u + k * u * u; };
-  function placeStar(s) {
+  function placeStar(s, surge) {
     // ③ "팡": spring pop on a clock; ④ breaks apart as the water rushes forward.
     const opening = tabTarget === 1;
     const pop = opening ? springOut(Math.min(1, starT / .8)) : starT;
@@ -289,7 +306,9 @@ async function start() {
       jet.style.opacity = jetsFired && !jet.ended ? (1 - smooth(k, .55, .95)).toFixed(3) : '0';
     });
     if (jetsFired && !jets[0].ended) dirty = true;
-    const breakUp = smooth(s, FRONT_AT, FRONT_AT + .08);
+    // ④ The star bursts again and surges at the viewer, handing over to
+    // the lens splash that grows out of its centre.
+    const breakUp = smooth(surge, .12, .42);
     const opacity = (opening ? Math.min(1, starT / .12) : starT) * (1 - breakUp);
     if (opacity <= .001) {
       if (star.style.opacity !== '0') { star.style.opacity = '0'; drops.pause(); }
@@ -298,7 +317,7 @@ async function start() {
     toScreen(centerLocal, center);
     const layout = Math.min(view.width / 1440, view.height / 900);
     const width = 1030 * layout * 1.05;
-    const scale = (.18 + .82 * pop) * (1 + .3 * breakUp);
+    const scale = (.18 + .82 * pop) * (1 + 1.6 * (1 - (1 - smooth(surge, 0, .45)) ** 2));
     const flash = opening ? 1 - smooth(starT, .02, .45) : 0;
     star.style.cssText = 'left:' + (center.x - width / 2).toFixed(1) + 'px;top:' + (center.y - width * 900 / 1030 / 2).toFixed(1)
       + 'px;width:' + width.toFixed(1) + 'px;height:' + (width * 900 / 1030).toFixed(1) + 'px;opacity:' + opacity.toFixed(3)
@@ -311,7 +330,10 @@ async function start() {
     const W = view.width, H = view.height, ctx = waveCtx;
     ctx.clearRect(0, 0, W, H);
     const rise = smooth(s, WAVE_START, WAVE_END);
-    if (rise <= 0) return false;
+    if (rise <= 0) {
+      sprays.forEach(v => { if (!v.paused) v.pause(); v.style.opacity = '0'; });
+      return false;
+    }
     // Swell grows in the middle of the climb and calms as it fills.
     const swell = H * (.035 + .05 * Math.sin(Math.min(1, rise) * Math.PI));
     const base = H * (1.12 - 1.30 * rise);
@@ -349,21 +371,42 @@ async function start() {
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.restore();
+    // Spray: four overlapping bands anchored to the highest crest point in
+    // their span; strongest mid-climb, gone once the page has filled.
+    const sprayAlpha = Math.sin(Math.min(1, rise) * Math.PI) * (1 - smooth(rise, .82, .97));
+    sprays.forEach((v, i) => {
+      if (sprayAlpha <= .01) { if (!v.paused) v.pause(); v.style.opacity = '0'; return; }
+      const w = W * .36, h = H * .34, left = -W * .04 + i * W * .27;
+      let crest = H;
+      for (let x = Math.max(0, left); x <= Math.min(W, left + w); x += 24) crest = Math.min(crest, edge(x, 0, 1));
+      v.style.cssText = 'left:' + left.toFixed(1) + 'px;top:' + (crest - h * .78).toFixed(1) + 'px;width:' + w.toFixed(1)
+        + 'px;height:' + h.toFixed(1) + 'px;opacity:' + (sprayAlpha * .95).toFixed(3) + ';--flip:' + (i % 2 ? '-1' : '1');
+      if (v.paused) { v.currentTime = (i * .37) % 1.5; v.play().catch(() => {}); }
+    });
     return true;
   }
 
   function placeClips(s, t) {
-    placeStar(s);
-    // ④ Water rushes at the viewer (plays once, slight push-in for depth).
+    // ④ Water rushes at the viewer (plays once). It grows out of the star's
+    // centre with an expanding radial reveal, so the burst carries straight on.
+    let surge = 0;
     if (s >= FRONT_AT && s < WAVE_END + .04) {
       if (!frontOn) {
         frontOn = true;
         front.currentTime = 0;
         front.play().catch(() => {});
+        jets.forEach(jet => { jet.currentTime = 0; jet.play().catch(() => {}); }); // second burst
       }
       const k = front.duration ? front.currentTime / front.duration : 0;
-      front.style.opacity = (smooth(k, 0, .08) * (1 - smooth(k, .7, 1))).toFixed(3);
-      front.style.transform = 'scale(' + (1 + .35 * k).toFixed(4) + ')';
+      surge = Math.max(.001, k);
+      toScreen(centerLocal, center);
+      const grow = 1 - (1 - smooth(k, 0, .5)) ** 3;
+      front.style.transformOrigin = center.x.toFixed(1) + 'px ' + center.y.toFixed(1) + 'px';
+      front.style.transform = 'scale(' + (1 + .35 * grow).toFixed(4) + ')'; // never smaller than the screen: no visible frame edge
+      front.style.setProperty('--reveal-x', center.x.toFixed(1) + 'px');
+      front.style.setProperty('--reveal-y', center.y.toFixed(1) + 'px');
+      front.style.setProperty('--reveal-r', (5 + 150 * grow).toFixed(1) + 'vmax');
+      front.style.opacity = (smooth(k, 0, .06) * (1 - smooth(k, .72, 1))).toFixed(3);
       if (!front.ended) dirty = true;
     } else {
       if (s < FRONT_AT - .04 || s >= WAVE_END + .04) {
@@ -372,6 +415,7 @@ async function start() {
       }
       front.style.opacity = '0';
     }
+    placeStar(s, surge);
     if (drawWave(s, t)) dirty = true;
   }
 
