@@ -32,8 +32,8 @@ const TAB_AT = .72;          // the tab cracks open (clock-driven)
 const POUR_START = .78;
 const POUR_END = .98;        // fully tipped
 const POUR_FLOW = .84;       // stream leaves the can
-const FILL_START = .90;
-const FILL_END = 1.28;       // screen is solid white → PURE
+const SPLASH_AT = .96;       // real droplet burst
+const WASH_END = 1.26;       // soft white wash complete → PURE
 const POUR_SPOT = { x: .40, y: .36 }; // can center while pouring (viewport)
 
 function setLayoutScale() {
@@ -49,7 +49,7 @@ function updateChrome(s, boundary) {
     s < .02 ? 1 : smooth(s, 1.34, 1.48));
   hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .25, .70)));
   hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .25, .70)).toFixed(1) + 'px');
-  hero.style.setProperty('--hero-white', String(smooth(s, 1.24, 1.30)));
+  hero.style.setProperty('--hero-wash', (smooth(s, .98, WASH_END) * 1.4 - .35).toFixed(4));
   if (header) {
     const offHero = nextSection ? boundary <= .08 : s > 1.5;
     header.classList.toggle('is-off-hero', offHero);
@@ -193,12 +193,25 @@ async function start() {
   tab.add(opening);
   renderer.initTexture(labelTexture);
 
-  // 2D liquid layer above the WebGL can: stream + rising fill.
-  const liquid = document.createElement('canvas');
-  liquid.className = 'hero-pour-liquid';
-  liquid.setAttribute('aria-hidden', 'true');
-  stage.append(liquid);
-  const pourCtx = liquid.getContext('2d');
+  // Real footage (Pexels, free licence) composited with screen blend:
+  // black disappears, only the lit water remains over the green.
+  const makeClip = (name, loop) => {
+    const video = document.createElement('video');
+    video.className = 'hero-pour-clip hero-pour-' + name;
+    video.src = new URL('../media/hero-pour-' + name + '.mp4', import.meta.url).href;
+    video.muted = true;
+    video.loop = loop;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.setAttribute('aria-hidden', 'true');
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    stage.append(video);
+    return video;
+  };
+  const streamClip = makeClip('stream', true);
+  const splashClip = makeClip('splash', false);
+  let splashOn = false;
   let tabOpen = 0;        // 0 → 1, played on a clock once triggered
   let tabTarget = 0;
 
@@ -210,10 +223,6 @@ async function start() {
     const width = stage.clientWidth || innerWidth;
     const height = stage.clientHeight || innerHeight;
     renderer.setSize(width, height, false);
-    const ratio = Math.min(devicePixelRatio || 1, 1.5);
-    liquid.width = Math.round(width * ratio);
-    liquid.height = Math.round(height * ratio);
-    pourCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     const layout = Math.min(width / 1440, height / 900);
@@ -244,192 +253,37 @@ async function start() {
   const bottomLocal = new THREE.Vector3(0, -rimCenter, 0);
   const mouth = {}, top = {}, bottom = {};
 
-  // ---- Realistic soda: clear water, rim highlights, micro-bubbles, caustics.
-  let seed = 7;
-  const rand = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296;
-  // A real bubble: transparent core, bright rim, a tiny specular dot.
-  const bubble = document.createElement('canvas');
-  bubble.width = bubble.height = 32;
-  {
-    const c = bubble.getContext('2d');
-    const g = c.createRadialGradient(16, 16, 4, 16, 16, 15);
-    g.addColorStop(0, 'rgba(255,255,255,.05)');
-    g.addColorStop(.62, 'rgba(255,255,255,.16)');
-    g.addColorStop(.86, 'rgba(255,255,255,.95)');
-    g.addColorStop(1, 'rgba(255,255,255,0)');
-    c.fillStyle = g;
-    c.beginPath(); c.arc(16, 16, 15, 0, TAU); c.fill();
-    c.fillStyle = 'rgba(255,255,255,.95)';
-    c.beginPath(); c.arc(11, 11, 2.6, 0, TAU); c.fill();
-  }
-  // Soft caustic light lines, tiled.
-  const caustic = document.createElement('canvas');
-  caustic.width = caustic.height = 384;
-  {
-    const c = caustic.getContext('2d');
-    c.filter = 'blur(1.6px)';
-    c.strokeStyle = 'rgba(255,255,255,.75)';
-    for (let i = 0; i < 46; i++) {
-      const x = rand() * 384, y = rand() * 384, r = 20 + rand() * 60;
-      c.lineWidth = .8 + rand() * 1.8;
-      c.beginPath();
-      c.ellipse(x, y, r, r * (.35 + rand() * .5), rand() * Math.PI, rand() * 3, rand() * 3 + 2.4);
-      c.stroke();
-    }
-  }
-  const causticPattern = pourCtx.createPattern(caustic, 'repeat');
-  const micro = Array.from({ length: 300 }, () => ({
-    x: rand(), column: rand() < .35, offset: (rand() - .5) * .16,
-    size: 1.2 + rand() ** 2.2 * 6, speed: .25 + rand() * .55,
-    phase: rand(), sway: rand() * TAU, alpha: .45 + rand() * .5
-  }));
-  const spray = Array.from({ length: 34 }, () => ({
-    vx: (rand() - .5) * 1.6, vy: -(.6 + rand() * 1.2), phase: rand(), size: 1.5 + rand() * 4.5
-  }));
-  const streamFizz = Array.from({ length: 26 }, () => ({ phase: rand(), side: rand() - .5, size: 1 + rand() * 3 }));
-
-  function surfaceAt(x, base, t, impactX, splash) {
-    const u = x / view.width * TAU;
-    const amp = view.height * .012;
-    let y = base + amp * (Math.sin(u * 1.3 + t * 1.9) * .55 + Math.sin(u * 3.1 - t * 2.6 + 1) * .3
-      + Math.sin(u * 7.3 + t * 4.1) * .15);
-    if (splash > 0) {
-      const d = (x - impactX) / (view.width * .045);
-      y -= view.height * .028 * splash * Math.exp(-d * d) * (.75 + .25 * Math.sin(t * 13));
-    }
-    return y;
-  }
-
-  function offsetLine(ctx, path, offset) {
-    ctx.beginPath();
-    for (let i = 0; i < path.length; i++) {
-      const a = path[Math.max(0, i - 1)], b = path[Math.min(path.length - 1, i + 1)];
-      let nx = -(b[1] - a[1]), ny = b[0] - a[0];
-      const n = Math.hypot(nx, ny) || 1;
-      const x = path[i][0] + nx / n * offset, y = path[i][1] + ny / n * offset;
-      if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
-    }
-  }
-
-  function drawLiquid(s, t) {
-    const W = view.width, H = view.height, ctx = pourCtx;
-    ctx.clearRect(0, 0, W, H);
+  function placeClips(s) {
+    const W = view.width, H = view.height;
+    // ④ Stream: hangs from the lowest lip, leaning with the can, revealed top→down.
     const flow = smooth(s, POUR_FLOW, POUR_FLOW + .09);
-    const level = smooth(s, FILL_START, FILL_END);
-    if (flow <= 0 && level <= 0) return;
-    const base = H * (1.04 - 1.12 * level);
-    const solid = smooth(level, .45, .92);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    // ④ Stream: a clear glassy ribbon defined by its highlights, not a fill.
-    let impactX = mouth.x, impactY = H;
-    if (flow > 0) {
+    if (flow > 0 && s < WASH_END + .04) {
+      const height = Math.max(120, H - mouth.y + 60);
+      const width = height * 240 / 810;
       let dx = top.x - bottom.x, dy = top.y - bottom.y;
-      const len = Math.hypot(dx, dy) || 1;
-      dx /= len; dy /= len;
-      const speed = H * .55, gravity = H * 3.2;
-      const points = [];
-      for (let i = 0; i <= 60; i++) {
-        const u = i / 60 * .9;
-        const x = mouth.x + dx * speed * u + Math.sin(t * 9 + i * .5) * .8;
-        const y = mouth.y + dy * speed * u + gravity * u * u / 2;
-        points.push([x, y]);
-        if (y >= Math.min(H + 20, surfaceAt(x, base, t, x, 0))) break;
-      }
-      const path = points.slice(0, Math.max(2, Math.ceil(points.length * flow)));
-      [impactX, impactY] = path[path.length - 1];
-      const w = Math.max(14, H * .038) * (.6 + .4 * flow);
-      const trace = (width, style) => { ctx.lineWidth = width; ctx.strokeStyle = style; ctx.stroke(); };
-      offsetLine(ctx, path, 0);
-      trace(w, 'rgba(225,255,240,.16)');                 // clear body
-      trace(w * .55, 'rgba(255,255,255,.10)');
-      offsetLine(ctx, path, -w * .36); trace(Math.max(1.2, w * .07), 'rgba(255,255,255,.85)'); // lit rim
-      offsetLine(ctx, path, w * .40); trace(Math.max(1, w * .05), 'rgba(255,255,255,.42)');   // far rim
-      // Travelling glints read as flowing liquid.
-      offsetLine(ctx, path, -w * .12);
-      ctx.setLineDash([w * .9, w * 2.4]);
-      ctx.lineDashOffset = -t * H * .9;
-      trace(Math.max(1.2, w * .11), 'rgba(255,255,255,.9)');
-      ctx.setLineDash([]);
-      // Fizz carried inside the stream.
-      for (const f of streamFizz) {
-        const k = ((t * 1.3 + f.phase) % 1) * (path.length - 1);
-        const p0 = path[Math.floor(k)], p1 = path[Math.min(path.length - 1, Math.floor(k) + 1)];
-        const x = p0[0] + (p1[0] - p0[0]) * (k % 1) + f.side * w * .6;
-        const y = p0[1] + (p1[1] - p0[1]) * (k % 1);
-        ctx.globalAlpha = .85;
-        ctx.drawImage(bubble, x - f.size, y - f.size, f.size * 2, f.size * 2);
-      }
-      ctx.globalAlpha = 1;
+      const lean = Math.max(-.42, Math.min(.42, Math.atan2(dx, Math.max(1, dy)) * .3));
+      streamClip.style.cssText = 'left:' + (mouth.x - width / 2).toFixed(1) + 'px;top:' + (mouth.y - 6).toFixed(1)
+        + 'px;width:' + width.toFixed(1) + 'px;height:' + height.toFixed(1) + 'px;opacity:' + Math.min(1, flow * 1.4).toFixed(3)
+        + ';transform:rotate(' + (-lean).toFixed(4) + 'rad);clip-path:inset(0 0 ' + ((1 - flow) * 100).toFixed(1) + '% 0)';
+      if (streamClip.paused) streamClip.play().catch(() => {});
+    } else if (!streamClip.paused || streamClip.style.opacity !== '0') {
+      streamClip.pause();
+      streamClip.style.opacity = '0';
     }
-
-    // ⑤ Pool: clear soda first (green shows through), whitening to PURE.
-    if (level > 0) {
-      const splash = flow * (1 - smooth(level, .75, 1));
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(0, H + 2);
-      for (let x = 0; x <= W + 16; x += 16) ctx.lineTo(x, surfaceAt(x, base, t, impactX, splash));
-      ctx.lineTo(W + 16, H + 2);
-      ctx.closePath();
-      const fill = ctx.createLinearGradient(0, base, 0, H);
-      fill.addColorStop(0, 'rgba(246,255,251,' + (.16 + .84 * solid) + ')');
-      fill.addColorStop(1, 'rgba(214,248,232,' + (.26 + .74 * solid) + ')');
-      ctx.fillStyle = fill;
-      ctx.fill();
-      ctx.clip();
-      // Caustic light drifting through the water.
-      if (solid < 1) {
-        causticPattern.setTransform(new DOMMatrix().translate(Math.sin(t * .4) * 40, -t * 18).scale(1.6));
-        ctx.globalAlpha = .06 * (1 - solid);
-        ctx.fillStyle = causticPattern;
-        ctx.fillRect(0, base - 40, W, H - base + 40);
+    // ⑤ Splash: a real burst of droplets fills the screen (plays once).
+    if (s >= SPLASH_AT && s < WASH_END + .04) {
+      if (!splashOn) {
+        splashOn = true;
+        splashClip.currentTime = 0;
+        splashClip.play().catch(() => {});
       }
-      // Dense rising micro-bubbles, densest under the stream.
-      const depth = H - base + 30;
-      for (const m of micro) {
-        const x = (m.column ? impactX / W + m.offset : m.x) * W + Math.sin(t * 3 + m.sway) * 3;
-        const y = H + 10 - ((t * m.speed * .5 + m.phase) % 1) * depth;
-        ctx.globalAlpha = m.alpha * (1 - solid * .75);
-        ctx.drawImage(bubble, x - m.size, y - m.size, m.size * 2, m.size * 2);
+      splashClip.style.opacity = '1';
+    } else {
+      if (s < SPLASH_AT - .04 || s >= WASH_END + .04) {
+        splashOn = false;
+        splashClip.pause();
       }
-      ctx.restore();
-      // Bright meniscus with a soft glow, plus a thin foam of tiny bubbles.
-      ctx.beginPath();
-      for (let x = 0; x <= W + 16; x += 16) {
-        const y = surfaceAt(x, base, t, impactX, splash);
-        if (x) ctx.lineTo(x, y); else ctx.moveTo(x, y);
-      }
-      ctx.save();
-      ctx.shadowColor = 'rgba(255,255,255,.9)';
-      ctx.shadowBlur = 12;
-      ctx.strokeStyle = 'rgba(255,255,255,.9)';
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-      ctx.restore();
-      for (let i = 0; i < 120; i++) {
-        const x = ((i * 0.618034 + t * .01) % 1) * W;
-        const y = surfaceAt(x, base, t, impactX, splash) + 2 + ((i * .4142) % 1) * 7;
-        const r = 1 + ((i * .7071) % 1) * 2.6;
-        ctx.globalAlpha = .7;
-        ctx.drawImage(bubble, x - r, y - r, r * 2, r * 2);
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    // Spray where the stream hits the surface.
-    if (flow > 0 && level > 0 && solid < .95) {
-      const w = Math.max(12, H * .03);
-      for (const d of spray) {
-        const k = (t * 1.5 + d.phase) % 1;
-        const x = impactX + d.vx * w * 4 * k;
-        const y = impactY + d.vy * w * 4 * k + w * 5 * k * k;
-        ctx.globalAlpha = (1 - k) * .9 * (1 - solid);
-        const r = d.size * (1 - k * .4);
-        ctx.drawImage(bubble, x - r, y - r, r * 2, r * 2);
-      }
-      ctx.globalAlpha = 1;
+      splashClip.style.opacity = '0';
     }
   }
 
@@ -452,7 +306,6 @@ async function start() {
       tabOpen = tabTarget ? Math.min(1, tabOpen + dt / .38) : Math.max(0, tabOpen - dt / .25);
       dirty = true;
     }
-    if (s > POUR_FLOW - .02 && s < FILL_END + .06) dirty = true; // liquid keeps moving
     if (inHero && dirty) {
       dirty = false;
       const t = now / 1000;
@@ -493,7 +346,7 @@ async function start() {
       camera.position.set(0, 0, baseDistance);
       camera.lookAt(0, 0, 0);
       renderer.render(scene, camera);
-      drawLiquid(s, t);
+      placeClips(s);
     }
     requestAnimationFrame(frame);
   }

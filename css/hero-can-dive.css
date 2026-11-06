@@ -2,13 +2,16 @@
 #top .hero-can-webgl { position:absolute; inset:0; z-index:6; width:100%; height:100%; display:block; pointer-events:none; }
 #top.has-can-3d .hero-product-layer,
 #top.has-can-3d .hero-product-layer img { visibility:hidden; }
-#top .hero-dive-white { position:absolute; inset:0; z-index:7; background:#fff; opacity:var(--hero-white,0); pointer-events:none; }
+/* Soft white wash rising from the bottom — no hard edge. */
+#top .hero-dive-white { position:absolute; inset:0; z-index:8; pointer-events:none;
+  background:linear-gradient(to top, #fff 0%, #fff calc(var(--hero-wash,-.35) * 100%), rgba(255,255,255,0) calc(var(--hero-wash,-.35) * 100% + 35%)); }
 #top.has-can-dive .hero-type-top,
 #top.has-can-dive .hero-korean-title { opacity:var(--hero-type-fade,1); translate:0 var(--hero-type-lift,0px); }
 @media (prefers-reduced-motion:reduce) {
   #top .hero-can-webgl, #top .hero-dive-white { display:none; }
   #top.has-can-3d .hero-product-layer, #top.has-can-3d .hero-product-layer img { visibility:visible; }
 }
-#top .hero-pour-liquid { position:absolute; inset:0; z-index:7; width:100%; height:100%; display:block; pointer-events:none; }
-#top .hero-dive-white { z-index:8; }
-@media (prefers-reduced-motion:reduce) { #top .hero-pour-liquid { display:none; } }
+/* Real water footage, screen-blended so black drops out. */
+#top .hero-pour-clip { position:absolute; z-index:7; display:block; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:50% 0; }
+#top .hero-pour-splash { inset:0; width:100%; height:100%; object-fit:cover; }
+@media (prefers-reduced-motion:reduce) { #top .hero-pour-clip { display:none; } }
