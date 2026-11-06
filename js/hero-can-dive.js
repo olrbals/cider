@@ -42,7 +42,7 @@ function updateChrome(s, boundary) {
   hero.style.setProperty('--hero-outgoing-opacity', String(1 - smooth(s, 1.28, 1.34)));
   hero.classList.toggle('is-submerged', s >= 1.34);
   nextSection?.style.setProperty('--hero-principles-reveal',
-    s < .02 ? 1 : smooth(s, 1.34, 1.48));
+    s < .02 ? 1 : smooth(s, 1.46, 1.58)); // after PURE has pinned: no slide-in
   hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .2, .55)));
   hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .2, .55)).toFixed(1) + 'px');
   hero.style.setProperty('--hero-wash', s >= WAVE_END ? '1.05' : '-.35');
@@ -202,6 +202,9 @@ async function start() {
   front.setAttribute('playsinline', '');
   stage.append(front);
   let frontOn = false;
+  let waveGate = 0;       // the wave waits for the splash to bloom first
+  let gateClock = 0;
+  let last3D = '';
 
   // ⑤ The next page as a rolling wave (same language as the site's other
   // section transitions), drawn above everything in the hero.
@@ -212,7 +215,7 @@ async function start() {
   const waveCtx = wave.getContext('2d');
   // Real spray riding the crest: looping droplet footage, screen-blended,
   // fading upward so it reads as water thrown off the wave.
-  const sprays = [0, 1, 2, 3].map(i => {
+  const sprays = [0, 1, 2].map(i => {
     const v = document.createElement('video');
     v.className = 'hero-wave-spray';
     v.src = new URL('../media/hero-star-droplets.mp4', import.meta.url).href;
@@ -259,7 +262,7 @@ async function start() {
     const width = stage.clientWidth || innerWidth;
     const height = stage.clientHeight || innerHeight;
     renderer.setSize(width, height, false);
-    const ratio = Math.min(devicePixelRatio || 1, 1.5);
+    const ratio = Math.min(devicePixelRatio || 1, 1);
     wave.width = Math.round(width * ratio);
     wave.height = Math.round(height * ratio);
     waveCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -326,10 +329,10 @@ async function start() {
     if (drops.paused) drops.play().catch(() => {});
   }
 
-  function drawWave(s, t) {
+  function drawWave(s, t, gate) {
     const W = view.width, H = view.height, ctx = waveCtx;
     ctx.clearRect(0, 0, W, H);
-    const rise = smooth(s, WAVE_START, WAVE_END);
+    const rise = Math.min(smooth(s, WAVE_START, WAVE_END), gate);
     if (rise <= 0) {
       sprays.forEach(v => { if (!v.paused) v.pause(); v.style.opacity = '0'; });
       return false;
@@ -376,7 +379,7 @@ async function start() {
     const sprayAlpha = Math.sin(Math.min(1, rise) * Math.PI) * (1 - smooth(rise, .82, .97));
     sprays.forEach((v, i) => {
       if (sprayAlpha <= .01) { if (!v.paused) v.pause(); v.style.opacity = '0'; return; }
-      const w = W * .36, h = H * .34, left = -W * .04 + i * W * .27;
+      const w = W * .46, h = H * .34, left = -W * .06 + i * W * .37;
       let crest = H;
       for (let x = Math.max(0, left); x <= Math.min(W, left + w); x += 24) crest = Math.min(crest, edge(x, 0, 1));
       v.style.cssText = 'left:' + left.toFixed(1) + 'px;top:' + (crest - h * .78).toFixed(1) + 'px;width:' + w.toFixed(1)
@@ -416,7 +419,14 @@ async function start() {
       front.style.opacity = '0';
     }
     placeStar(s, surge);
-    if (drawWave(s, t)) dirty = true;
+    // Wave gate: opens once the splash has bloomed (or has finished), then
+    // eases open over ~0.9s so a fast scroll never makes the wave jump.
+    const dtGate = Math.min(.1, Math.max(0, t - gateClock));
+    gateClock = t;
+    const allow = s < FRONT_AT - .04 ? 0 : (surge >= .3 || front.ended || s >= WAVE_END + .04) ? 1 : 0;
+    if (!allow) waveGate = 0;
+    else if (waveGate < 1) { waveGate = Math.min(1, waveGate + dtGate / .9); dirty = true; }
+    if (drawWave(s, t, waveGate)) dirty = true;
   }
 
   function frame(now) {
@@ -472,7 +482,11 @@ async function start() {
       carrier.updateMatrixWorld(true);
       camera.position.set(0, 0, baseDistance);
       camera.lookAt(0, 0, 0);
-      renderer.render(scene, camera);
+      // Only redraw the can when something about it actually changed, and
+      // not at all once the wave has covered it.
+      const key = [spinner.rotation.y, carrier.position.y, carrier.rotation.x, carrier.rotation.z,
+        carrier.scale.x, lever.rotation.x, view.width, view.height].map(n => n.toFixed(4)).join();
+      if (key !== last3D && s < WAVE_END) { last3D = key; renderer.render(scene, camera); }
       placeClips(s, t);
     }
     requestAnimationFrame(frame);
