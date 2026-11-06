@@ -77,29 +77,31 @@
   function pose({side,pre,post,fruit},t){
     const delay=side*.055+(fruit?.06:0);
     const entry=reduce.matches?1:smooth(.025+delay,.51+delay,t);
-    const cross=reduce.matches?1:smooth(.65+(fruit?.04:0),1.25+(fruit?.04:0),t);
+    const cross=reduce.matches?1:smooth(.46+(fruit?.04:0),.98+(fruit?.04:0),t);
     const bend=fruit?mix(pre[0],post[0],cross):cubic(pre[0],side?700:750,side?450:950,post[0],cross);
-    const flight=reduce.matches?0:Math.sin(Math.PI*smooth(.70,1.60,t));
-    const drift=reduce.matches?0:smooth(1.28,1.60,t);
+    const flight=reduce.matches?0:Math.sin(Math.PI*smooth(.50,1.25,t));
+    const drift=reduce.matches?0:smooth(1.0,1.3,t);
     const x=bend+(side?760:-760)*(1-entry)+(fruit?(side?1:-1)*160*flight:0);
     const y=mix(pre[1],post[1],cross)+(side?1:-1)*(fruit?10:32)*Math.sin(Math.PI*cross)
       -(fruit?(side?190:145)*flight:0)+(fruit?Math.sin(t*5+pre[0]) * 20 * drift:0);
     let angle=mix(pre[4],post[4],cross)+(fruit?(side?1:-1)*48*flight+Math.sin(t*4)*9*drift:0);
-    let fy=y;
+    let fy=y,fx=x,sx=1;
     if(!fruit&&!reduce.matches){
       const b=Math.exp(-(((t-clinkT)/.07)**2));angle+=(side?-1:1)*16*b;
-      // Bobbing in water: rises up from below as it slides in, overshoots
-      // a little like buoyancy, then keeps a slow float.
-      const rise=1-entry, k=clamp(t/(.6+delay));
-      fy+=220*rise*rise - 26*Math.sin(Math.PI*k)*(1-k) + 9*Math.sin(t*3.1+side*2)*entry;
-      angle+=(side?1:-1)*10*rise + 3*Math.sin(t*2.6+side)*entry;
+      // '챠악': snaps in fast as if swept by a wave — rides up a crest and
+      // tumbles front → side → front → side → front on the way in.
+      const k=clamp((t-(.02+delay))/.42), e=1-(1-k)**4;
+      fx=bend+(side?760:-760)*(1-e);
+      fy+=230*(1-e)**2 - 70*Math.sin(Math.PI*e)*(1-e*.6);
+      sx=k>=1?1:.18+.82*Math.abs(Math.cos(e*Math.PI*2));
+      angle+=(side?1:-1)*(28*(1-e)+12*Math.sin(e*Math.PI*2)*(1-e));
     }
-    return {x,y:fy,angle};
+    return {x:fx,y:fy,angle,sx};
   }
   let clinkT=.95;
   function findClink(){
     const peach=slots.find(s=>s.key==='peach'),grape=slots.find(s=>s.key==='grape');
-    let best=1e9;for(let t=.55;t<=1.4;t+=.005){const d=Math.abs(pose(peach,t).x-pose(grape,t).x);if(d<best){best=d;clinkT=t;}}
+    let best=1e9;for(let t=.45;t<=1.2;t+=.005){const d=Math.abs(pose(peach,t).x-pose(grape,t).x);if(d<best){best=d;clinkT=t;}}
   }
   // Clink: no water. The bottles tap necks, the background blooms and the
   // fruits pop out from between the bottles toward the viewer.
@@ -108,10 +110,10 @@
     fxRaf=0;
     if(lastDuoT>=0)placeDepth(lastDuoT);
     // Juicy squash-and-pop on the bottles and fruits at the tap.
-    const k=clinked?Math.min(1,(now-clinkAt)/520):1;
+    const k=clinked?Math.min(1,(now-clinkAt)/360):1;
     const pop=Math.sin(k*Math.PI)*(1-k)*1.6;
     duo.style.setProperty('--rich-pop',pop.toFixed(4));
-    if(clinked&&now-clinkAt<1000)fxRaf=requestAnimationFrame(drawFx);
+    if(clinked&&now-clinkAt<600)fxRaf=requestAnimationFrame(drawFx);
     else duo.style.setProperty('--rich-pop','0');
   }
   // Background fruits pop out from the clink and fly toward the viewer:
@@ -121,7 +123,7 @@
   let lastDuoT=-1,clinkPt={x:720,y:420};
   const burstOut=k=>{const c=1.7,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/900):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/520):(t>=clinkT+.02?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
@@ -149,7 +151,7 @@
   }
   // One or two scrolls start the product scene; it then plays by itself
   // (no per-scroll recompute of the choreography). Scrolling back rewinds.
-  const DUO_END=1.75, DUO_SPEED=.62;          // duo-units per second (~2.8s)
+  const DUO_END=1.45, DUO_SPEED=1.45;         // duo-units per second (~1.2s, clink at ~0.65s)
   let duoClock=0,duoTarget=0,duoRaf=0,duoLast=0,scrollDuo=0;
   function tickDuo(now){
     duoRaf=0;
@@ -176,8 +178,8 @@
     const poses={};
     slots.forEach(slot=>{
       const {node,key,pre,fruit}=slot;
-      const {x,y,angle}=pose(slot,t);poses[key]={x,y};
-      Object.assign(node.style,{left:x.toFixed(3)+'px',top:y.toFixed(3)+'px',width:pre[2]+'px',height:pre[3]+'px',transform:'translate(-50%,-50%) rotate('+angle.toFixed(3)+'deg)',opacity:String(fruit?.88:1)});
+      const {x,y,angle,sx}=pose(slot,t);poses[key]={x,y};
+      Object.assign(node.style,{left:x.toFixed(3)+'px',top:y.toFixed(3)+'px',width:pre[2]+'px',height:pre[3]+'px',transform:'translate(-50%,-50%) rotate('+angle.toFixed(3)+'deg) scaleX('+sx.toFixed(4)+')',opacity:String(fruit?.88:1)});
     });
     lastDuoT=t;
     placeDepth(t);
