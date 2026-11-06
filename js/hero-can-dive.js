@@ -28,7 +28,7 @@ const faceYaw = u => -u * TAU;   // rotation.y that turns label-u toward +Z
 const SPIN_END = .40;        // ① spins in place
 const SETTLE_END = .50;      // ② stops logo-front
 const TAB_AT = .48;          // ③ tab cracks + water star bursts (clock-driven)
-const FRONT_AT = .56;        // ④ the star's burst carries on at the viewer (clock-chained)
+const FRONT_AT = .49;        // ④ scene starts the moment the can stops: star → 파앙 back-to-back
 const WAVE_START = .62;      // ⑤ next page rolls up from the bottom, PURE riding in it
 const WAVE_END = 1.30;       //    …covers the screen before the hero unpins (1.35)
 const HANDOFF = 1.58;        // real PURE section pins at 1.6 — crossfade from the clone
@@ -505,7 +505,7 @@ async function start() {
     // One continuous splash: the lens water only starts once the star's jets
     // have flown out (burst ≥55%), whatever the scroll speed.
     const burstK = burst.duration ? burst.currentTime / burst.duration : 0;
-    const burstReady = jetsFired && (burstK >= .55 || burst.ended);
+    const burstReady = jetsFired && (burstK >= .32 || burst.ended); // 파앙 hits while the jets are still flying
     const sceneOn = seq === 'playing' || (seq === 'scrub' && s >= FRONT_AT && s < WAVE_END + .04);
     if (sceneOn && (frontOn || burstReady)) {
       if (!frontOn) {
