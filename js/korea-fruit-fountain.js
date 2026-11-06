@@ -38,6 +38,7 @@
   let visible = false;
   let targetX = 0, targetY = 0, cursorX = 0, cursorY = 0;
   let pointerX = -1, pointerY = -1;
+  let knownX = -1, knownY = -1; // last mouse position anywhere on the page
   let lastPointerTime = 0, lastMoveTime = 0, lastSpawnTime = 0;
   let headingX = 1, headingY = 0, speed = 0;
   let lastFrameTime = 0, frame = 0;
@@ -170,6 +171,7 @@
     if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
     const now = performance.now();
     const px = event.clientX, py = event.clientY;
+    knownX = px; knownY = py;
     if (!containsPointer(px, py)) return stop();
     const dx = px - pointerX, dy = py - pointerY;
     const distance = Math.hypot(dx, dy);
@@ -183,19 +185,29 @@
     pointerX = px; pointerY = py;
     targetX = px; targetY = py;
     lastPointerTime = now;
-    if (!visible) {
-      visible = true;
-      cursorX = px;
-      cursorY = py;
-      lastSpawnTime = now - 200;
-      lastMoveTime = now - 200;
-      canvas.classList.add('is-visible');
-      if (!frame) frame = requestAnimationFrame(tick);
-    }
+    if (!visible) start(px, py, now);
   }
 
+  function start(px, py, now) {
+    visible = true;
+    pointerX = targetX = cursorX = px;
+    pointerY = targetY = cursorY = py;
+    lastSpawnTime = now - 200;
+    lastMoveTime = now - 200;
+    canvas.classList.add('is-visible');
+    if (!frame) frame = requestAnimationFrame(tick);
+  }
+
+  // Scrolling FEEL THE FIZZ under a resting mouse starts the fountain at the
+  // cursor right away, without waiting for the mouse to move.
   function recheck() {
     if (visible && !containsPointer(pointerX, pointerY)) stop();
+    else if (!visible && knownX >= 0 && containsPointer(knownX, knownY)) {
+      const now = performance.now();
+      start(knownX, knownY, now);
+      speed = 0; lastPointerTime = now;
+      emit(scaledEmission(8), 0); // a little welcome burst on arrival
+    }
   }
 
   resize();

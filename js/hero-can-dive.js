@@ -383,8 +383,8 @@ async function start() {
     const a = wavePts[i], b = wavePts[i + 1], f = (x - a[0]) / Math.max(1, b[0] - a[0]);
     return a[1] + (b[1] - a[1]) * Math.max(0, Math.min(1, f));
   }
-  function trace(ctx, pts) {
-    ctx.moveTo(pts[0][0], pts[0][1]);
+  function trace(ctx, pts, join = false) {
+    if (join) ctx.lineTo(pts[0][0], pts[0][1]); else ctx.moveTo(pts[0][0], pts[0][1]);
     for (let i = 0; i < pts.length - 1; i++) {
       const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
       ctx.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6,
@@ -442,8 +442,7 @@ async function start() {
     ctx.beginPath();
     trace(ctx, pts);
     const rev = [...inner].reverse();
-    ctx.lineTo(rev[0][0], rev[0][1]);
-    trace(ctx, rev);
+    trace(ctx, rev, true); // one continuous outline (a 2nd moveTo left a straight chord band)
     ctx.closePath();
     ctx.fillStyle = 'rgba(215,242,229,.75)';
     ctx.fill();
