@@ -14,7 +14,7 @@
   const mix=(a,b,t)=>a+(b-a)*t;
   const cubic=(a,b,c,d,t)=>(1-t)**3*a+3*(1-t)**2*t*b+3*(1-t)*t*t*c+t*t*t*d;
   let width=innerWidth,height=innerHeight,designScale=1,raf=0,anchor=null;
-  const productStart=1.98,signoffStart=4.03; // V8: copy reel, then the '건배' product scene
+  const productStart=1.98,signoffStart=3.30; // V8.4: product scene plays itself; short scroll span
   const slots=[
     {key:'slice',side:0,pre:[246.695,388.8275,180,143.59,29.53],post:[465.426,394.34,180,143.59,29.53]},
     {key:'peach',side:0,pre:[376.854,438.017,212,530.134,7],post:[591.7145,417.862,212,530.134,-8]},
@@ -37,7 +37,7 @@
   function geometry(){
     width=viewport.clientWidth;height=innerHeight;
     designScale=Math.min(width/1440,height/900);
-    root.style.height=(height*5.65).toFixed(2)+'px';
+    root.style.height=(height*4.95).toFixed(2)+'px';
     root.style.setProperty('--rich-design-scale',designScale.toFixed(6));
     root.style.setProperty('--rich-duo-scale',Math.min(innerWidth/(innerWidth<750?1100:1440),height/900).toFixed(6));
     captureAnchor();
@@ -85,8 +85,16 @@
     const y=mix(pre[1],post[1],cross)+(side?1:-1)*(fruit?10:32)*Math.sin(Math.PI*cross)
       -(fruit?(side?190:145)*flight:0)+(fruit?Math.sin(t*5+pre[0]) * 20 * drift:0);
     let angle=mix(pre[4],post[4],cross)+(fruit?(side?1:-1)*48*flight+Math.sin(t*4)*9*drift:0);
-    if(!fruit&&!reduce.matches){const b=Math.exp(-(((t-clinkT)/.07)**2));angle+=(side?-1:1)*16*b;}
-    return {x,y,angle};
+    let fy=y;
+    if(!fruit&&!reduce.matches){
+      const b=Math.exp(-(((t-clinkT)/.07)**2));angle+=(side?-1:1)*16*b;
+      // Bobbing in water: rises up from below as it slides in, overshoots
+      // a little like buoyancy, then keeps a slow float.
+      const rise=1-entry, k=clamp(t/(.6+delay));
+      fy+=220*rise*rise - 26*Math.sin(Math.PI*k)*(1-k) + 9*Math.sin(t*3.1+side*2)*entry;
+      angle+=(side?1:-1)*10*rise + 3*Math.sin(t*2.6+side)*entry;
+    }
+    return {x,y:fy,angle};
   }
   let clinkT=.95;
   function findClink(){
@@ -139,10 +147,30 @@
     }
     lastT=t;
   }
+  // One or two scrolls start the product scene; it then plays by itself
+  // (no per-scroll recompute of the choreography). Scrolling back rewinds.
+  const DUO_END=1.75, DUO_SPEED=.62;          // duo-units per second (~2.8s)
+  let duoClock=0,duoTarget=0,duoRaf=0,duoLast=0,scrollDuo=0;
+  function tickDuo(now){
+    duoRaf=0;
+    const dt=Math.min(.05,(now-(duoLast||now))/1000);duoLast=now;
+    const dir=Math.sign(duoTarget-duoClock);
+    if(dir){duoClock+=dir*dt*DUO_SPEED*(dir<0?2.2:1);if((duoTarget-duoClock)*dir<0)duoClock=duoTarget;}
+    paintDuo(duoClock,scrollDuo);
+    if(duoClock!==duoTarget)duoRaf=requestAnimationFrame(tickDuo);else duoLast=0;
+  }
   function updateDuo(t){
-    const alpha=smooth(0,.10,t)*(1-smooth(1.75,2.05,t));
+    scrollDuo=t;
+    duoTarget=reduce.matches?(t>0?DUO_END:0):(t>-.02?DUO_END:0);
+    if(t<-.3)duoClock=0;
+    if(duoClock!==duoTarget&&!duoRaf)duoRaf=requestAnimationFrame(tickDuo);
+    paintDuo(duoClock,t);
+  }
+  function paintDuo(t,st){
+    const exit=smooth(signoffStart-productStart-.3,signoffStart-productStart,st);
+    const alpha=smooth(0,.10,t)*(st>-.05?1:0)*(1-exit);
     duo.style.visibility=alpha>0?'visible':'hidden';duo.style.opacity=alpha.toFixed(4);
-    duo.style.transform='translate3d(0,'+(-14*smooth(1.75,2.05,t)).toFixed(2)+'px,0)';
+    duo.style.transform='translate3d(0,'+(-14*exit).toFixed(2)+'px,0)';
     // Background blooms pink/lime right at the clink.
     duo.style.setProperty('--rich-bloom',smooth(clinkT-.04,clinkT+.28,t).toFixed(4));
     const poses={};
@@ -168,8 +196,8 @@
     // Also restore the archive on a fast reverse jump beyond the RICH viewport.
     if(r.top>height||r.bottom<0){history?.classList.toggle('rich-year-handoff',r.bottom<0);return;}
     updateStory(s);updateDuo(s-productStart);updateEnding(s);
-    root.dataset.richProgress=clamp(s/4.65).toFixed(5);
-    root.dataset.richScene=s>=4.48?'logo':s>=signoffStart?'signoff':s>=productStart?'products':s>=1.40?'message':s>=1.02?'copy-roll':s>=.83?'new':s>=.55?'year-change':'year-move';
+    root.dataset.richProgress=clamp(s/3.95).toFixed(5);
+    root.dataset.richScene=s>=3.75?'logo':s>=signoffStart?'signoff':s>=productStart?'products':s>=1.40?'message':s>=1.02?'copy-roll':s>=.83?'new':s>=.55?'year-change':'year-move';
   }
   function queue(){if(!raf)raf=requestAnimationFrame(render);}
   function resize(){geometry();queue();}

@@ -1,5 +1,5 @@
 /* RICH handoff and ending. Earlier archive scenes retain their source files. */
-.rich-flavors{position:relative;z-index:5;height:565svh;margin-top:-100svh;background:transparent;isolation:isolate}
+.rich-flavors{position:relative;z-index:5;height:495svh;margin-top:-100svh;background:transparent;isolation:isolate}
 .rich-flavors__viewport{position:sticky;top:0;left:0;width:100vw;max-width:100vw;height:100svh;overflow:hidden;isolation:isolate;background:transparent}
 .rich-copy{position:absolute;inset:0;z-index:0;overflow:hidden;isolation:isolate;pointer-events:none;background:rgba(255,255,255,var(--rich-paper,0));opacity:var(--rich-copy-opacity,1)}
 .rich-year{position:absolute;left:50%;top:45%;color:#149f5c;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
