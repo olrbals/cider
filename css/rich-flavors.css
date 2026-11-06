@@ -39,7 +39,4 @@
    and the lens splash over the whole scene (high-pass footage, hard-light). */
 .rich-cheers-burst{position:absolute;z-index:6;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;width:860px;height:860px;transform:translate(-50%,-50%)}
 .rich-cheers-front{position:absolute;inset:0;z-index:3;width:100%;height:100%;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;object-fit:cover;will-change:transform,opacity}
-.rich-cheers-ribbon{position:absolute;z-index:1;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;width:760px;height:900px;
-  transform:translate(-50%,-50%) rotate(var(--rib-rot,0deg)) scaleX(var(--rib-flip,1));
-  -webkit-mask:linear-gradient(to bottom,transparent 0,#000 18%,#000 82%,transparent 100%);mask:linear-gradient(to bottom,transparent 0,#000 18%,#000 82%,transparent 100%)}
-@media(prefers-reduced-motion:reduce){.rich-cheers-burst,.rich-cheers-front,.rich-cheers-ribbon{display:none}}
+@media(prefers-reduced-motion:reduce){.rich-cheers-burst,.rich-cheers-front{display:none}}
