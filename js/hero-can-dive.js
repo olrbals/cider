@@ -212,6 +212,22 @@ async function start() {
   const streamClip = makeClip('stream', true);
   const splashClip = makeClip('splash', false);
   let splashOn = false;
+
+  // Water star: bursts behind the can as the tab cracks open. The original
+  // bubble-star artwork + real droplet footage cut to the same silhouette,
+  // the whole group screen-blended so only the lit water shows.
+  const star = document.createElement('div');
+  star.className = 'hero-pop-star';
+  star.setAttribute('aria-hidden', 'true');
+  star.innerHTML = '<span class="hero-pop-star__glow"></span><span class="hero-pop-star__body"></span>'
+    + '<video class="hero-pop-star__drops" muted loop playsinline preload="auto"></video>'
+    + '<img class="hero-pop-star__art" alt="" src="' + new URL('../img/hero-star/finalstarforgreen.png', import.meta.url).href + '">';
+  const drops = star.querySelector('video');
+  drops.muted = true;
+  drops.src = new URL('../media/hero-star-droplets.mp4', import.meta.url).href;
+  star.style.setProperty('--star-mask', 'url("' + new URL('../img/hero-star/star-mask.png', import.meta.url).href + '")');
+  stage.append(star);
+  let starT = 0;
   let tabOpen = 0;        // 0 → 1, played on a clock once triggered
   let tabTarget = 0;
 
@@ -253,8 +269,34 @@ async function start() {
   const bottomLocal = new THREE.Vector3(0, -rimCenter, 0);
   const mouth = {}, top = {}, bottom = {};
 
+  const centerLocal = new THREE.Vector3(0, 0, 0);
+  const center = {};
+  const springOut = t => { const k = 1.9, u = Math.min(1, Math.max(0, t)) - 1; return 1 + (k + 1) * u * u * u + k * u * u; };
+  function placeStar(s) {
+    // ③ "팡": spring pop on a clock; ④ breaks apart as the pour begins (scroll).
+    const opening = tabTarget === 1;
+    const pop = opening ? springOut(Math.min(1, starT / .8)) : starT;
+    const breakUp = smooth(s, POUR_START, POUR_START + .12);
+    const opacity = (opening ? Math.min(1, starT / .12) : starT) * (1 - breakUp);
+    if (opacity <= .001) {
+      if (star.style.opacity !== '0') { star.style.opacity = '0'; drops.pause(); }
+      return;
+    }
+    toScreen(centerLocal, center);
+    const layout = Math.min(view.width / 1440, view.height / 900);
+    const width = 1030 * layout * 1.05;
+    const scale = (.28 + .72 * pop) * (1 + .22 * breakUp);
+    const flash = opening ? 1 - smooth(starT, .05, .55) : 0;
+    star.style.cssText = 'left:' + (center.x - width / 2).toFixed(1) + 'px;top:' + (center.y - width * 900 / 1030 / 2).toFixed(1)
+      + 'px;width:' + width.toFixed(1) + 'px;height:' + (width * 900 / 1030).toFixed(1) + 'px;opacity:' + opacity.toFixed(3)
+      + ';transform:scale(' + scale.toFixed(4) + ') rotate(' + (-9 * (1 - pop)).toFixed(2) + 'deg);--star-flash:' + flash.toFixed(3)
+      + ';--star-mask:' + star.style.getPropertyValue('--star-mask');
+    if (drops.paused) drops.play().catch(() => {});
+  }
+
   function placeClips(s) {
     const W = view.width, H = view.height;
+    placeStar(s);
     // ④ Stream: hangs from the lowest lip, leaning with the can, revealed top→down.
     const flow = smooth(s, POUR_FLOW, POUR_FLOW + .09);
     if (flow > 0 && s < WASH_END + .04) {
@@ -302,6 +344,11 @@ async function start() {
     // ③ Crack the tab on a clock once the can has tipped forward.
     if (s >= TAB_AT) tabTarget = 1;
     else if (s < TAB_AT - .05) tabTarget = 0;
+    const starGoal = tabTarget;
+    if (starT !== starGoal) {
+      starT = starGoal ? Math.min(1, starT + dt / .75) : Math.max(0, starT - dt / .32);
+      dirty = true;
+    }
     if (tabOpen !== tabTarget) {
       tabOpen = tabTarget ? Math.min(1, tabOpen + dt / .38) : Math.max(0, tabOpen - dt / .25);
       dirty = true;

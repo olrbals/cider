@@ -15,3 +15,11 @@
 #top .hero-pour-clip { position:absolute; z-index:7; display:block; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:50% 0; }
 #top .hero-pour-splash { inset:0; width:100%; height:100%; object-fit:cover; }
 @media (prefers-reduced-motion:reduce) { #top .hero-pour-clip { display:none; } }
+/* Water star behind the can (z below the WebGL can). Screen-blended group. */
+#top .hero-pop-star { position:absolute; z-index:5; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:50% 55%; }
+#top .hero-pop-star > * { position:absolute; inset:0; width:100%; height:100%; display:block; }
+#top .hero-pop-star__drops { object-fit:cover; -webkit-mask:var(--star-mask) center/100% 100% no-repeat; mask:var(--star-mask) center/100% 100% no-repeat; opacity:1; filter:brightness(1.9) contrast(1.15); }
+#top .hero-pop-star__art { object-fit:contain; filter:brightness(2); }
+#top .hero-pop-star__body { -webkit-mask:var(--star-mask) center/100% 100% no-repeat; mask:var(--star-mask) center/100% 100% no-repeat; background:radial-gradient(ellipse at 50% 55%, rgba(255,255,255,.06), rgba(255,255,255,.17) 70%, rgba(255,255,255,.22)); }
+#top .hero-pop-star__glow { background:radial-gradient(closest-side, rgba(255,255,255,.55), rgba(255,255,255,0)); opacity:var(--star-flash,0); transform:scale(.8); }
+@media (prefers-reduced-motion:reduce) { #top .hero-pop-star { display:none; } }
