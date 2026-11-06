@@ -300,7 +300,7 @@ async function start() {
     const layout = Math.min(width / 1440, height / 900);
     // Render only the box the can can occupy (spin sway, tip, recoil), not the
     // whole screen: a camera view offset keeps the framing pixel-identical.
-    const cx = width / 2 + (722 - 720) * layout, cy = height / 2 + (620 - 450) * layout;
+    const cx = width / 2 + (722 - 720) * layout, cy = height / 2 + (590 - 450) * layout;
     view.bw = Math.min(width, Math.round(620 * layout));
     view.bh = Math.min(height, Math.round(760 * layout));
     view.bx = Math.round(cx - view.bw / 2);
@@ -314,8 +314,8 @@ async function start() {
     view.width = width;
     view.height = height;
     view.unit = unit;
-    view.home.set((722 - 720) * layout * unit, -(620 - 450) * layout * unit, 0);
-    view.scale = .8 * 470 * layout * unit / (canLength + .16); // V8.8: can at 0.8x
+    view.home.set((722 - 720) * layout * unit, -(590 - 450) * layout * unit, 0); // lifted so the larger can clears the bottom edge
+    view.scale = 466 * layout * unit / (canLength + .16); // V9: matches the Brand History can on screen (~520px incl. lid at 1440×900)
     if (ghost) { ghost.remove(); ghost = null; }
     dirty = true;
   }
@@ -361,7 +361,7 @@ async function start() {
     }
     toScreen(centerLocal, center);
     const layout = Math.min(view.width / 1440, view.height / 900);
-    const width = 1030 * layout * 1.05 * .85; // star follows the smaller can
+    const width = 1030 * layout * 1.05 * 1.06; // star follows the can size
     const scale = (.18 + .82 * pop) * (1 + 1.6 * (1 - (1 - smooth(surge, 0, .45)) ** 2));
     const flash = opening ? 1 - smooth(starT, .02, .45) : 0;
     star.style.cssText = 'left:' + (center.x - width / 2).toFixed(1) + 'px;top:' + (center.y - width * 900 / 1030 / 2).toFixed(1)
