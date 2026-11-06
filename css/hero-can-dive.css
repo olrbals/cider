@@ -34,3 +34,12 @@
   #top .hero-front-splash, #top .hero-next-wave, #top .hero-wave-spray { display:none; }
   #top.has-can-3d .hero-product-layer, #top.has-can-3d .hero-product-layer img { visibility:visible; }
 }
+
+/* V6.5 청량 punch: white flash + short jolt when the splash hits. */
+#top .hero-splash-flash { position:absolute; inset:0; z-index:7; pointer-events:none; opacity:0;
+  background:radial-gradient(ellipse at 50% 55%, rgba(255,255,255,.75), rgba(255,255,255,.25) 45%, rgba(255,255,255,0) 75%); }
+#top .hero-splash-flash.is-on { animation:hero-flash .55s ease-out; }
+@keyframes hero-flash { 0% { opacity:0 } 12% { opacity:1 } 100% { opacity:0 } }
+#top .hero-splash-stage.is-jolt { animation:hero-jolt .32s cubic-bezier(.2,.8,.3,1); }
+@keyframes hero-jolt { 0% { transform:none } 18% { transform:translate3d(-5px,4px,0) scale(1.012) } 40% { transform:translate3d(4px,-3px,0) scale(1.008) } 65% { transform:translate3d(-2px,1px,0) } 100% { transform:none } }
+@media (prefers-reduced-motion:reduce) { #top .hero-splash-flash { display:none; } #top .hero-splash-stage.is-jolt { animation:none; } }

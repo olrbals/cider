@@ -40,13 +40,8 @@ function setLayoutScale() {
 
 function updateChrome(s, boundary) {
   // Shared hooks from hero-carbonation-star.css: section overlap + PURE reveal.
-  hero.style.setProperty('--hero-outgoing-opacity', String(1 - smooth(s, HANDOFF, HANDOFF + .06)));
-  hero.classList.toggle('is-submerged', s >= HANDOFF + .06);
-  nextSection?.style.setProperty('--hero-principles-reveal',
-    s < .02 ? 1 : smooth(s, HANDOFF, HANDOFF + .06)); // same spot as the clone: invisible swap
   hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .2, .55)));
   hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .2, .55)).toFixed(1) + 'px');
-  hero.style.setProperty('--hero-wash', s >= WAVE_END ? '1.05' : '-.35');
   if (header) {
     const offHero = nextSection ? boundary <= .08 : s > 1.5;
     header.classList.toggle('is-off-hero', offHero);
@@ -211,6 +206,23 @@ async function start() {
   let looping = false;
   let waveDrawn = false;
   let waveTop = 1e5;
+  // ④⑤ play as one timed scene once triggered, so scroll speed can't skip
+  // or cut it: 'idle' → 'playing' (scroll held) → 'done' → 'scrub' (reverse).
+  let seq = 'idle', seqStart = 0, seqFrontAt = 0, seqWave = 0, seqLand = 0, lastScrollY = scrollY;
+  let lockY = null, lockY0 = null, rush = 0;
+  let revealT = 0, pinned = false;
+  const WAVE_SECS = 1.05, LEAD_SECS = .42, LAND_SECS = .6;
+  const blockInput = e => { if (lockY !== null) { e.preventDefault(); rush = performance.now(); } };
+  const blockKeys = e => { if (lockY !== null && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(e.key)) { e.preventDefault(); rush = performance.now(); } };
+  addEventListener('wheel', blockInput, { passive: false });
+  addEventListener('touchmove', blockInput, { passive: false });
+  addEventListener('keydown', blockKeys);
+  addEventListener('scroll', () => { if (lockY !== null && Math.abs(scrollY - lockY) > 1) scrollTo(0, lockY); }, { passive: true });
+  // 청량 punch: a quick white flash and a short stage jolt as the splash hits.
+  const flash = document.createElement('div');
+  flash.className = 'hero-splash-flash';
+  flash.setAttribute('aria-hidden', 'true');
+  stage.append(flash);
 
   // ⑤ The next page as a rolling wave (same language as the site's other
   // section transitions), drawn above everything in the hero.
@@ -345,9 +357,9 @@ async function start() {
   }
 
   function drawWave(s, t, gate) {
-    if (gate <= 0 && !waveDrawn) { if (!spray.paused) spray.pause(); spray.style.opacity = '0'; return false; }
+    if (gate <= 0 && !waveDrawn && seq !== 'playing' && seq !== 'done') { if (!spray.paused) spray.pause(); spray.style.opacity = '0'; return false; }
     const W = view.width, H = view.height, ctx = waveCtx;
-    const rise = Math.min(smooth(s, WAVE_START, WAVE_END), gate);
+    const rise = seq === 'playing' ? seqWave : seq === 'done' ? 1 : Math.min(smooth(s, WAVE_START, WAVE_END), gate);
     waveTop = rise <= 0 ? view.height * 2 : view.height * (1.12 - 1.30 * rise) - view.height * .085;
     if (rise <= 0) {
       if (waveDrawn) { waveCtx.clearRect(0, 0, W, H); waveDrawn = false; }
@@ -437,14 +449,14 @@ async function start() {
   function placeGhost(s) {
     hero.dataset.waveTop = Math.round(waveTop);
     if (!realWord) return;
-    if (s < WAVE_START || s >= HANDOFF + .08) { if (ghost && ghost.style.opacity !== '0') ghost.style.opacity = '0'; return; }
+    if ((s < WAVE_START && seq !== 'playing' && seq !== 'done') || s >= 1.75 || (pinned && revealT >= 1)) { if (ghost && ghost.style.opacity !== '0') ghost.style.opacity = '0'; return; }
     if (!ghost) buildGhost();
     const cut = Math.max(0, Math.min(ghostBox.height, waveTop + view.height * .06 - ghostBox.top));
     const shown = 1 - cut / ghostBox.height;
     ghost.style.clipPath = 'inset(' + cut.toFixed(1) + 'px -40px -40px -40px)';
     ghost.style.transform = 'translate3d(0,' + (36 * (1 - shown)).toFixed(1) + 'px,0)';
     // Stay fully opaque under the fading-in real word, then drop: no alpha dip.
-    ghost.style.opacity = s >= HANDOFF + .06 ? '0' : '1';
+    ghost.style.opacity = '1';
   }
 
   function placeClips(s, t) {
@@ -455,11 +467,17 @@ async function start() {
     // have flown out (burst ≥55%), whatever the scroll speed.
     const burstK = burst.duration ? burst.currentTime / burst.duration : 0;
     const burstReady = jetsFired && (burstK >= .55 || burst.ended);
-    if (s >= FRONT_AT && s < WAVE_END + .04 && (frontOn || burstReady)) {
+    const sceneOn = seq === 'playing' || (seq === 'scrub' && s >= FRONT_AT && s < WAVE_END + .04);
+    if (sceneOn && (frontOn || burstReady)) {
       if (!frontOn) {
         frontOn = true;
         front.currentTime = 0;
         front.play().catch(() => {});
+        if (seq === 'playing') {
+          seqFrontAt = t;
+          flash.classList.remove('is-on'); void flash.offsetWidth; flash.classList.add('is-on');
+          stage.classList.remove('is-jolt'); void stage.offsetWidth; stage.classList.add('is-jolt');
+        }
       }
       const k = front.duration ? front.currentTime / front.duration : 0;
       surge = Math.max(.001, k);
@@ -472,7 +490,7 @@ async function start() {
       if (!front.ended) dirty = true;
     } else {
       if (!burstReady && jetsFired && s >= FRONT_AT) dirty = true; // wait for the jets
-      if (s < FRONT_AT - .04 || s >= WAVE_END + .04) {
+      if (!sceneOn) {
         frontOn = false;
         front.pause();
       }
@@ -483,11 +501,10 @@ async function start() {
     // eases open over ~0.9s so a fast scroll never makes the wave jump.
     const dtGate = Math.min(.1, Math.max(0, t - gateClock));
     gateClock = t;
-    const allow = s < FRONT_AT - .04 ? 0 : (surge >= .3 || front.ended || s >= WAVE_END + .04) ? 1 : 0;
+    const allow = seq === 'scrub' && s >= WAVE_START ? 1 : 0;
     if (!allow) waveGate = 0;
-    else if (waveGate < 1) { waveGate = Math.min(1, waveGate + dtGate / .9); dirty = true; }
+    else waveGate = 1;
     if (drawWave(s, t, waveGate)) dirty = true;
-    placeGhost(s);
   }
 
   function frame(now) {
@@ -514,6 +531,40 @@ async function start() {
       tabOpen = tabTarget ? Math.min(1, tabOpen + dt / .38) : Math.max(0, tabOpen - dt / .25);
       dirty = true;
     }
+    // Scene driver.
+    const down = scrollY > lastScrollY + .5, up = scrollY < lastScrollY - .5;
+    lastScrollY = scrollY;
+    if (seq === 'idle' && s >= FRONT_AT && s < HANDOFF && down && !reduced.matches) {
+      seq = 'playing'; seqStart = now / 1000; seqFrontAt = 0; seqWave = 0; seqLand = 0;
+      lockY = scrollY; tabTarget = 1;
+    } else if (seq === 'idle' && s >= FRONT_AT) seq = 'scrub';           // loaded mid-way
+    if ((seq === 'done' || seq === 'scrub') && up && s < HANDOFF) seq = 'scrub';
+    if (seq !== 'playing' && s < TAB_AT - .06) seq = 'idle';             // back at the top: replayable
+    if (seq === 'playing') {
+      const tt = now / 1000;
+      const speed = now - rush < 350 ? 1.7 : 1;                          // eager scrollers get it faster
+      if (seqFrontAt) seqWave = Math.min(1, seqWave + Math.min(.05, dt) * speed / WAVE_SECS * (tt - seqFrontAt > LEAD_SECS ? 1 : 0));
+      if (seqWave >= 1) {
+        // Glide to where PURE pins; the copy of PURE rides the water there.
+        seqLand = Math.min(1, seqLand + Math.min(.05, dt) * speed / LAND_SECS);
+        const from = lockY0 ?? (lockY0 = scrollY), target = innerHeight * 1.6;
+        const e = seqLand < .5 ? 2 * seqLand * seqLand : 1 - (-2 * seqLand + 2) ** 2 / 2;
+        lockY = from + (target - from) * e;
+        scrollTo(0, lockY);
+        if (seqLand >= 1) { seq = 'done'; lockY = null; lockY0 = null; }
+      }
+      if (tt - seqStart > 6) { seq = 'done'; lockY = null; lockY0 = null; } // safety
+      dirty = true;
+    }
+    // PURE handoff: once the real section is pinned (exactly where the copy
+    // sits), fade its stage in on a short clock, then drop the copy.
+    pinned = s >= 1.597;
+    revealT = pinned ? Math.min(1, revealT + dt / .35) : 0;
+    nextSection?.style.setProperty('--hero-principles-reveal', s < .02 ? '1' : (s >= 1.75 ? '1' : revealT.toFixed(3)));
+    const gone = s >= 1.75 || (pinned && revealT >= 1);
+    hero.style.setProperty('--hero-outgoing-opacity', gone ? '0' : pinned ? (1 - revealT).toFixed(3) : '1');
+    hero.classList.toggle('is-submerged', gone);
+    placeGhost(s);
     if (inHero && dirty) {
       dirty = false;
       const t = now / 1000;
@@ -552,8 +603,8 @@ async function start() {
     }
     // Keep looping only while something is moving; otherwise sleep until
     // the next scroll/resize. (Was: every frame, forever.)
-    const clocks = starT !== tabTarget || tabOpen !== tabTarget;
-    if (inHero && (dirty || idle > 0 || clocks)) requestAnimationFrame(frame);
+    const clocks = starT !== tabTarget || tabOpen !== tabTarget || seq === 'playing';
+    if ((inHero && (dirty || idle > 0 || clocks)) || (pinned && revealT < 1)) requestAnimationFrame(frame);
     else looping = false;
   }
   function wake() {
