@@ -3,7 +3,7 @@
 #top.has-can-3d .hero-product-layer,
 #top.has-can-3d .hero-product-layer img { visibility:hidden; }
 /* Soft white wash rising from the bottom — no hard edge. */
-#top .hero-dive-white { position:absolute; inset:0; z-index:8; pointer-events:none;
+#top .hero-dive-white { position:absolute; inset:0; z-index:9; pointer-events:none;
   background:linear-gradient(to top, #fff 0%, #fff calc(var(--hero-wash,-.35) * 100%), rgba(255,255,255,0) calc(var(--hero-wash,-.35) * 100% + 35%)); }
 #top.has-can-dive .hero-type-top,
 #top.has-can-dive .hero-korean-title { opacity:var(--hero-type-fade,1); translate:0 var(--hero-type-lift,0px); }
@@ -27,3 +27,7 @@
 #top .hero-pop-star > .hero-pop-star__jet { inset:auto; left:20%; top:-14%; width:60%; height:auto; aspect-ratio:1; object-fit:cover;
   transform-origin:50% 100%; transform:rotate(var(--a)) scale(1.05); filter:brightness(1.4); opacity:0; }
 #top .hero-pop-star__glow { transform:scale(1.05); }
+/* V6: water at the lens (above the can) and the next-page wave above it. */
+#top .hero-front-splash { position:absolute; inset:0; z-index:7; width:100%; height:100%; object-fit:cover; pointer-events:none; opacity:0; mix-blend-mode:screen; }
+#top .hero-next-wave { position:absolute; inset:0; z-index:8; width:100%; height:100%; display:block; pointer-events:none; }
+@media (prefers-reduced-motion:reduce) { #top .hero-front-splash, #top .hero-next-wave { display:none; } }

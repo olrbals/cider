@@ -1,10 +1,9 @@
-/* HERO V5.1 — "Can Pour".
- * ① The real 3D 2024 can idles with a slow spin in the Figma position.
- * ② Scrolling spins it fast while it drops and rocks.
- * ③ It lands logo-front, tips toward the viewer and the tab cracks open.
- * ④ It tips over and pours; ⑤ the soda pools and rises until the screen
- *    is the solid white of PURE.
- * Reuses the History can's geometry, label and studio lighting recipe.
+/* HERO V6 — "Spin · Burst · Splash · Wave".
+ * ① The real 3D 2024 can idles, then spins in place with the scroll.
+ * ② It stops logo-front; ③ the tab cracks and a water star bursts behind it
+ *    (five real jets + droplet-filled star).
+ * ④ Real water rushes at the viewer; ⑤ the next page rolls up from the
+ *    bottom as a wave and becomes PURE.
  * The original PNG can stays as the fallback (no WebGL / reduced motion).
  */
 import * as THREE from './vendor/three.module.js';
@@ -26,15 +25,12 @@ const LOGO_U = 0.5 + UV_SHIFT;   // star logo + "Chilsung"
 const faceYaw = u => -u * TAU;   // rotation.y that turns label-u toward +Z
 
 // Scroll timeline in viewport heights (PURE reaches the top at 1.6).
-const SPIN_END = .42;
-const SETTLE_END = .62;      // landed logo-front, tipped toward the viewer
-const TAB_AT = .60;          // the tab cracks open + water star bursts (clock-driven)
-const POUR_START = .88;      // star holds on screen from .60 to here
-const POUR_END = 1.06;       // fully tipped
-const POUR_FLOW = .94;       // stream leaves the can
-const SPLASH_AT = 1.04;      // real droplet burst
-const WASH_END = 1.30;       // soft white wash complete → PURE
-const POUR_SPOT = { x: .40, y: .36 }; // can center while pouring (viewport)
+const SPIN_END = .40;        // ① spins in place
+const SETTLE_END = .50;      // ② stops logo-front
+const TAB_AT = .48;          // ③ tab cracks + water star bursts (clock-driven)
+const FRONT_AT = .80;        // ④ water rushes at the viewer (clock-driven)
+const WAVE_START = .86;      // ⑤ next page rolls up from the bottom
+const WAVE_END = 1.30;       //    …and covers the screen → PURE
 
 function setLayoutScale() {
   hero.style.setProperty('--hero-layout-scale',
@@ -49,11 +45,11 @@ function updateChrome(s, boundary) {
     s < .02 ? 1 : smooth(s, 1.34, 1.48));
   hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .2, .55)));
   hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .2, .55)).toFixed(1) + 'px');
-  hero.style.setProperty('--hero-wash', (smooth(s, 1.07, WASH_END) * 1.4 - .35).toFixed(4));
+  hero.style.setProperty('--hero-wash', s >= WAVE_END ? '1.05' : '-.35');
   if (header) {
     const offHero = nextSection ? boundary <= .08 : s > 1.5;
     header.classList.toggle('is-off-hero', offHero);
-    header.classList.toggle('is-on-light', !offHero && s >= 1.18);
+    header.classList.toggle('is-on-light', !offHero && s >= 1.2);
   }
 }
 
@@ -193,25 +189,27 @@ async function start() {
   tab.add(opening);
   renderer.initTexture(labelTexture);
 
-  // Real footage (Pexels, free licence) composited with screen blend:
-  // black disappears, only the lit water remains over the green.
-  const makeClip = (name, loop) => {
-    const video = document.createElement('video');
-    video.className = 'hero-pour-clip hero-pour-' + name;
-    video.src = new URL('../media/hero-pour-' + name + '.mp4', import.meta.url).href;
-    video.muted = true;
-    video.loop = loop;
-    video.playsInline = true;
-    video.preload = 'auto';
-    video.setAttribute('aria-hidden', 'true');
-    video.setAttribute('muted', '');
-    video.setAttribute('playsinline', '');
-    stage.append(video);
-    return video;
-  };
-  const streamClip = makeClip('stream', true);
-  const splashClip = makeClip('splash', false);
-  let splashOn = false;
+  // ④ Real footage (Pexels, free licence): water rushing at the lens,
+  // screen-blended so black drops out and only lit water remains.
+  const front = document.createElement('video');
+  front.className = 'hero-front-splash';
+  front.src = new URL('../media/hero-front-splash.mp4', import.meta.url).href;
+  front.muted = true;
+  front.playsInline = true;
+  front.preload = 'auto';
+  front.setAttribute('aria-hidden', 'true');
+  front.setAttribute('muted', '');
+  front.setAttribute('playsinline', '');
+  stage.append(front);
+  let frontOn = false;
+
+  // ⑤ The next page as a rolling wave (same language as the site's other
+  // section transitions), drawn above everything in the hero.
+  const wave = document.createElement('canvas');
+  wave.className = 'hero-next-wave';
+  wave.setAttribute('aria-hidden', 'true');
+  stage.append(wave);
+  const waveCtx = wave.getContext('2d');
 
   // Water star: bursts behind the can as the tab cracks open. The original
   // bubble-star artwork + real droplet footage cut to the same silhouette,
@@ -244,6 +242,10 @@ async function start() {
     const width = stage.clientWidth || innerWidth;
     const height = stage.clientHeight || innerHeight;
     renderer.setSize(width, height, false);
+    const ratio = Math.min(devicePixelRatio || 1, 1.5);
+    wave.width = Math.round(width * ratio);
+    wave.height = Math.round(height * ratio);
+    waveCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     const layout = Math.min(width / 1440, height / 900);
@@ -269,16 +271,12 @@ async function start() {
     out.y = (1 - v.y) / 2 * view.height;
     return out;
   };
-  const mouthLocal = new THREE.Vector3(mouthDir.x * .36, rimCenter, mouthDir.z * .36);
-  const topLocal = new THREE.Vector3(0, rimCenter, 0);
-  const bottomLocal = new THREE.Vector3(0, -rimCenter, 0);
-  const mouth = {}, top = {}, bottom = {};
 
   const centerLocal = new THREE.Vector3(0, 0, 0);
   const center = {};
   const springOut = t => { const k = 2.6, u = Math.min(1, Math.max(0, t)) - 1; return 1 + (k + 1) * u * u * u + k * u * u; };
   function placeStar(s) {
-    // ③ "팡": spring pop on a clock; ④ breaks apart as the pour begins (scroll).
+    // ③ "팡": spring pop on a clock; ④ breaks apart as the water rushes forward.
     const opening = tabTarget === 1;
     const pop = opening ? springOut(Math.min(1, starT / .8)) : starT;
     if (opening && !jetsFired) {
@@ -291,7 +289,7 @@ async function start() {
       jet.style.opacity = jetsFired && !jet.ended ? (1 - smooth(k, .55, .95)).toFixed(3) : '0';
     });
     if (jetsFired && !jets[0].ended) dirty = true;
-    const breakUp = smooth(s, POUR_START, POUR_START + .10);
+    const breakUp = smooth(s, FRONT_AT, FRONT_AT + .08);
     const opacity = (opening ? Math.min(1, starT / .12) : starT) * (1 - breakUp);
     if (opacity <= .001) {
       if (star.style.opacity !== '0') { star.style.opacity = '0'; drops.pause(); }
@@ -309,39 +307,72 @@ async function start() {
     if (drops.paused) drops.play().catch(() => {});
   }
 
-  function placeClips(s) {
-    const W = view.width, H = view.height;
+  function drawWave(s, t) {
+    const W = view.width, H = view.height, ctx = waveCtx;
+    ctx.clearRect(0, 0, W, H);
+    const rise = smooth(s, WAVE_START, WAVE_END);
+    if (rise <= 0) return false;
+    // Swell grows in the middle of the climb and calms as it fills.
+    const swell = H * (.035 + .05 * Math.sin(Math.min(1, rise) * Math.PI));
+    const base = H * (1.12 - 1.30 * rise);
+    const edge = (x, lag, k) => {
+      const u = x / W * TAU;
+      return base + lag + swell * (Math.sin(u * 1.1 + t * 1.6 * k + rise * 5) * .55
+        + Math.sin(u * 2.3 - t * 2.1 * k + 1.3) * .3 + Math.sin(u * 4.7 + t * 3.2) * .15);
+    };
+    const fillUnder = (lag, k, style) => {
+      ctx.beginPath();
+      ctx.moveTo(0, H + 2);
+      for (let x = 0; x <= W + 16; x += 16) ctx.lineTo(x, edge(x, lag, k));
+      ctx.lineTo(W + 16, H + 2);
+      ctx.closePath();
+      ctx.fillStyle = style;
+      ctx.fill();
+    };
+    // Back swell (translucent), then the main body with a soft shaded crest.
+    fillUnder(-H * .05, 1.35, 'rgba(255,255,255,.38)');
+    const body = ctx.createLinearGradient(0, base - swell, 0, base + H * .22);
+    body.addColorStop(0, '#f4fbf8');
+    body.addColorStop(.18, '#ffffff');
+    body.addColorStop(1, '#ffffff');
+    fillUnder(0, 1, body);
+    // Glossy rim light along the crest.
+    ctx.beginPath();
+    for (let x = 0; x <= W + 16; x += 16) {
+      const y = edge(x, 0, 1);
+      if (x) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+    }
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,255,255,.95)';
+    ctx.shadowBlur = 18;
+    ctx.strokeStyle = 'rgba(255,255,255,.95)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+    return true;
+  }
+
+  function placeClips(s, t) {
     placeStar(s);
-    // ④ Stream: hangs from the lowest lip, leaning with the can, revealed top→down.
-    const flow = smooth(s, POUR_FLOW, POUR_FLOW + .09);
-    if (flow > 0 && s < WASH_END + .04) {
-      const height = Math.max(120, H - mouth.y + 60);
-      const width = height * 240 / 810;
-      let dx = top.x - bottom.x, dy = top.y - bottom.y;
-      const lean = Math.max(-.42, Math.min(.42, Math.atan2(dx, Math.max(1, dy)) * .3));
-      streamClip.style.cssText = 'left:' + (mouth.x - width / 2).toFixed(1) + 'px;top:' + (mouth.y - 6).toFixed(1)
-        + 'px;width:' + width.toFixed(1) + 'px;height:' + height.toFixed(1) + 'px;opacity:' + Math.min(1, flow * 1.4).toFixed(3)
-        + ';transform:rotate(' + (-lean).toFixed(4) + 'rad);clip-path:inset(0 0 ' + ((1 - flow) * 100).toFixed(1) + '% 0)';
-      if (streamClip.paused) streamClip.play().catch(() => {});
-    } else if (!streamClip.paused || streamClip.style.opacity !== '0') {
-      streamClip.pause();
-      streamClip.style.opacity = '0';
-    }
-    // ⑤ Splash: a real burst of droplets fills the screen (plays once).
-    if (s >= SPLASH_AT && s < WASH_END + .04) {
-      if (!splashOn) {
-        splashOn = true;
-        splashClip.currentTime = 0;
-        splashClip.play().catch(() => {});
+    // ④ Water rushes at the viewer (plays once, slight push-in for depth).
+    if (s >= FRONT_AT && s < WAVE_END + .04) {
+      if (!frontOn) {
+        frontOn = true;
+        front.currentTime = 0;
+        front.play().catch(() => {});
       }
-      splashClip.style.opacity = '1';
+      const k = front.duration ? front.currentTime / front.duration : 0;
+      front.style.opacity = (smooth(k, 0, .08) * (1 - smooth(k, .7, 1))).toFixed(3);
+      front.style.transform = 'scale(' + (1 + .35 * k).toFixed(4) + ')';
+      if (!front.ended) dirty = true;
     } else {
-      if (s < SPLASH_AT - .04 || s >= WASH_END + .04) {
-        splashOn = false;
-        splashClip.pause();
+      if (s < FRONT_AT - .04 || s >= WAVE_END + .04) {
+        frontOn = false;
+        front.pause();
       }
-      splashClip.style.opacity = '0';
+      front.style.opacity = '0';
     }
+    if (drawWave(s, t)) dirty = true;
   }
 
   function frame(now) {
@@ -373,28 +404,21 @@ async function start() {
       const t = now / 1000;
       const spin = smooth(s, 0, SPIN_END);
       const settle = smooth(s, SPIN_END, SETTLE_END);
-      const pour = smooth(s, POUR_START, POUR_END);
 
-      // ① spin (≈1.75 turns) → ② land logo-front, tipped toward the viewer.
+      // ① spin in place (≈1.75 turns) → ② stop logo-front.
       const freeYaw = idleYaw + spin * 3.5 * Math.PI;
       const landingFrom = idleYaw + 3.5 * Math.PI;
       const landingYaw = pourYaw + TAU * Math.ceil((landingFrom - pourYaw) / TAU);
       spinner.rotation.y = lerp(freeYaw, landingYaw, settle);
 
-      const drop = Math.sin(spin * Math.PI) * (1 - settle);
       const bob = Math.sin(t * 1.6) * .045 * idle;
-      const pourX = (POUR_SPOT.x - .5) * view.width * view.unit;
-      const pourY = (.5 - POUR_SPOT.y) * view.height * view.unit;
-      carrier.scale.setScalar(view.scale);
-      carrier.position.set(
-        lerp(view.home.x, pourX, settle),
-        lerp(view.home.y, pourY, settle) + bob - drop * view.height * view.unit * .16,
-        0);
-      // Euler XYZ: tip sideways (Z) first, then toward the viewer (X).
-      const forward = .42 * settle * (1 - .45 * pour);
-      const sideways = (-.10 * (1 - spin) + Math.sin(spin * TAU * 1.5) * .32 * drop) * (1 - settle)
-        - 1.95 * pour;
-      carrier.rotation.set(drop * .32 * (1 - settle) + forward, 0, sideways);
+      // A small recoil when the star bursts sells the "팡".
+      const kick = Math.sin(Math.min(1, starT * 2.2) * Math.PI) * (tabTarget ? 1 : 0);
+      carrier.scale.setScalar(view.scale * (1 + .05 * settle + .04 * kick));
+      carrier.position.set(view.home.x, view.home.y + bob + view.height * view.unit * .04 * settle, 0);
+      // Slight tip toward the viewer once stopped, so the tab is visible.
+      const sway = Math.sin(spin * Math.PI) * (1 - settle);
+      carrier.rotation.set(.18 * settle + sway * .12, 0, (-.10 * (1 - spin) + Math.sin(spin * TAU * 1.5) * .18 * sway) * (1 - settle));
 
       // Tab lifts (ring end up), the opening appears under its nose.
       const pop = 1 - (1 - tabOpen) ** 3;
@@ -402,13 +426,10 @@ async function start() {
       opening.scale.set(.13 * pop + .0001, .085 * pop + .0001, 1);
 
       carrier.updateMatrixWorld(true);
-      toScreen(mouthLocal, mouth);
-      toScreen(topLocal, top);
-      toScreen(bottomLocal, bottom);
       camera.position.set(0, 0, baseDistance);
       camera.lookAt(0, 0, 0);
       renderer.render(scene, camera);
-      placeClips(s);
+      placeClips(s, t);
     }
     requestAnimationFrame(frame);
   }
