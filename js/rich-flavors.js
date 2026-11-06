@@ -85,18 +85,18 @@
     const y=mix(pre[1],post[1],cross)+(side?1:-1)*(fruit?10:32)*Math.sin(Math.PI*cross)
       -(fruit?(side?190:145)*flight:0)+(fruit?Math.sin(t*5+pre[0]) * 20 * drift:0);
     let angle=mix(pre[4],post[4],cross)+(fruit?(side?1:-1)*48*flight+Math.sin(t*4)*9*drift:0);
-    let fy=y,fx=x,sx=1;
+    let fy=y,fx=x,spin=0;
     if(!fruit&&!reduce.matches){
       const b=Math.exp(-(((t-clinkT)/.07)**2));angle+=(side?-1:1)*16*b;
       // '챠악': snaps in fast as if swept by a wave — rides up a crest and
-      // tumbles front → side → front → side → front on the way in.
+      // the 3D PET spins on its own axis (1.5 turns) to land label-front.
       const k=clamp((t-(.02+delay))/.42), e=1-(1-k)**4;
       fx=bend+(side?760:-760)*(1-e);
       fy+=230*(1-e)**2 - 70*Math.sin(Math.PI*e)*(1-e*.6);
-      sx=k>=1?1:.18+.82*Math.abs(Math.cos(e*Math.PI*2));
+      spin=(side?-1:1)*(1-e)*Math.PI*3;
       angle+=(side?1:-1)*(28*(1-e)+12*Math.sin(e*Math.PI*2)*(1-e));
     }
-    return {x:fx,y:fy,angle,sx};
+    return {x:fx,y:fy,angle,spin};
   }
   let clinkT=.95;
   function findClink(){
@@ -178,8 +178,9 @@
     const poses={};
     slots.forEach(slot=>{
       const {node,key,pre,fruit}=slot;
-      const {x,y,angle,sx}=pose(slot,t);poses[key]={x,y};
-      Object.assign(node.style,{left:x.toFixed(3)+'px',top:y.toFixed(3)+'px',width:pre[2]+'px',height:pre[3]+'px',transform:'translate(-50%,-50%) rotate('+angle.toFixed(3)+'deg) scaleX('+sx.toFixed(4)+')',opacity:String(fruit?.88:1)});
+      const {x,y,angle,spin}=pose(slot,t);poses[key]={x,y};
+      if(!fruit){node.richSpin=spin;node.richAngle=angle;}
+      Object.assign(node.style,{left:x.toFixed(3)+'px',top:y.toFixed(3)+'px',width:pre[2]+'px',height:pre[3]+'px',transform:'translate(-50%,-50%) rotate('+angle.toFixed(3)+'deg)',opacity:String(fruit?.88:1)});
     });
     lastDuoT=t;
     placeDepth(t);
