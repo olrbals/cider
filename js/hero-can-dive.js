@@ -315,7 +315,7 @@ async function start() {
     view.height = height;
     view.unit = unit;
     view.home.set((722 - 720) * layout * unit, -(620 - 450) * layout * unit, 0);
-    view.scale = 470 * layout * unit / (canLength + .16);
+    view.scale = .8 * 470 * layout * unit / (canLength + .16); // V8.8: can at 0.8x
     if (ghost) { ghost.remove(); ghost = null; }
     dirty = true;
   }
@@ -361,7 +361,7 @@ async function start() {
     }
     toScreen(centerLocal, center);
     const layout = Math.min(view.width / 1440, view.height / 900);
-    const width = 1030 * layout * 1.05;
+    const width = 1030 * layout * 1.05 * .85; // star follows the smaller can
     const scale = (.18 + .82 * pop) * (1 + 1.6 * (1 - (1 - smooth(surge, 0, .45)) ** 2));
     const flash = opening ? 1 - smooth(starT, .02, .45) : 0;
     star.style.cssText = 'left:' + (center.x - width / 2).toFixed(1) + 'px;top:' + (center.y - width * 900 / 1030 / 2).toFixed(1)
