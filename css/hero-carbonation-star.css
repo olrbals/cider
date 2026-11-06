@@ -45,3 +45,9 @@
 .site-header .header-utils__search { display:block; }
 .site-header .header-utils__mall { font-size:15px; letter-spacing:0; }
 @media (max-width:900px){ .site-header .header-utils { display:none; } .site-header nav { gap:12px; } .site-header nav span { font-size:12px; } }
+/* Header logo: the 2024 wordmark (tall stars + CIDER) never fit inside the
+   55px white ellipse, so it overflowed and clipped. Show it as a clean
+   white wordmark instead, like the footer. */
+.site-header .header-logo { width:auto; height:auto; background:none; border-radius:0; transform:none; justify-self:start; }
+.site-header .header-logo img { width:112px; height:auto; filter:brightness(0) invert(1); }
+.site-header.is-on-light .header-logo img { filter:none; }
