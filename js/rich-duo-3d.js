@@ -65,8 +65,11 @@ async function boot() {
       const height = node.offsetHeight * scale * .792 * (1 + .07 * pop);
       pet.position.set((r.left + r.width / 2 - v.left - W / 2) * units, (H / 2 - (r.top + r.height / 2 - v.top)) * units, 0);
       pet.scale.setScalar(height * units / 4.305);
-      pet.rotation.z = -(node.richAngle || 0) * Math.PI / 180;
-      pet.rotation.y = node.richSpin || 0;
+      // Afloat: slow bob and a lazy sway around the axis, always on.
+      const tt = performance.now() / 1000 + i * 1.7;
+      pet.position.y += Math.sin(tt * 1.3) * .045;
+      pet.rotation.z = -(node.richAngle || 0) * Math.PI / 180 + Math.sin(tt * .9) * .03;
+      pet.rotation.y = (node.richSpin || 0) + Math.sin(tt * .8) * .16;
       key += pet.position.x.toFixed(3) + pet.position.y.toFixed(3) + pet.scale.x.toFixed(4) + pet.rotation.z.toFixed(3) + pet.rotation.y.toFixed(3);
     });
     if (key !== last) { last = key; renderer.render(scene, camera); }

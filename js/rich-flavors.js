@@ -90,11 +90,14 @@
       const b=Math.exp(-(((t-clinkT)/.07)**2));angle+=(side?-1:1)*16*b;
       // '챠악': snaps in fast as if swept by a wave — rides up a crest and
       // the 3D PET spins on its own axis (1.5 turns) to land label-front.
-      const k=clamp((t-(.02+delay))/.42), e=1-(1-k)**4;
+      // Flowing entry: one long, soft ease (no snap), riding a gentle swell
+      // up from below while the PET turns once on its axis like it's carried
+      // by water, landing label-front.
+      const k=clamp((t-(.02+delay))/.62), e=k*k*k*(k*(6*k-15)+10);   // smootherstep
       fx=bend+(side?760:-760)*(1-e);
-      fy+=230*(1-e)**2 - 70*Math.sin(Math.PI*e)*(1-e*.6);
-      spin=(side?-1:1)*(1-e)*Math.PI*3;
-      angle+=(side?1:-1)*(28*(1-e)+12*Math.sin(e*Math.PI*2)*(1-e));
+      fy+=200*(1-e)**2 - 46*Math.sin(Math.PI*e)*(1-e*.5);
+      spin=(side?-1:1)*(1-e)*Math.PI*2;
+      angle+=(side?1:-1)*(22*(1-e)+8*Math.sin(e*Math.PI*1.5)*(1-e));
     }
     return {x:fx,y:fy,angle,spin};
   }
@@ -110,10 +113,10 @@
     fxRaf=0;
     if(lastDuoT>=0)placeDepth(lastDuoT);
     // Juicy squash-and-pop on the bottles and fruits at the tap.
-    const k=clinked?Math.min(1,(now-clinkAt)/360):1;
+    const k=clinked?Math.min(1,(now-clinkAt)/480):1;
     const pop=Math.sin(k*Math.PI)*(1-k)*1.6;
     duo.style.setProperty('--rich-pop',pop.toFixed(4));
-    if(clinked&&now-clinkAt<600)fxRaf=requestAnimationFrame(drawFx);
+    if(clinked&&now-clinkAt<800)fxRaf=requestAnimationFrame(drawFx);
     else duo.style.setProperty('--rich-pop','0');
   }
   // Background fruits pop out from the clink and fly toward the viewer:
@@ -123,7 +126,7 @@
   let lastDuoT=-1,clinkPt={x:720,y:420};
   const burstOut=k=>{const c=1.7,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/520):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/750):(t>=clinkT+.02?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
@@ -141,7 +144,7 @@
   function cheers(t,poses){
     // Fire once when scrolling down through the clink; re-arm when scrolling back.
     if(t<clinkT-.05)clinked=false;
-    if(!clinked&&t>=clinkT&&lastT<clinkT&&lastT>=0&&t-clinkT<.4&&!reduce.matches){
+    if(!clinked&&t>=clinkT&&lastT<clinkT&&lastT>=0&&t-clinkT<.5&&!reduce.matches){
       clinked=true;clinkAt=performance.now();
       const p=poses.peach,g=poses.grape;
       clinkPt={x:(p.x+g.x)/2,y:(p.y+g.y)/2-90};
@@ -149,21 +152,22 @@
     }
     lastT=t;
   }
-  // One or two scrolls start the product scene; it then plays by itself
-  // (no per-scroll recompute of the choreography). Scrolling back rewinds.
-  const DUO_END=1.45, DUO_SPEED=1.45;         // duo-units per second (~1.2s, clink at ~0.65s)
+  // Scroll-driven again, but fluid: the scene time glides toward the
+  // scroll position (critically damped follow) instead of jumping with
+  // each wheel step, so it reacts to scroll and still moves like water.
+  const DUO_END=1.45, DUO_PER_SCREEN=1.6;
   let duoClock=0,duoTarget=0,duoRaf=0,duoLast=0,scrollDuo=0;
   function tickDuo(now){
     duoRaf=0;
     const dt=Math.min(.05,(now-(duoLast||now))/1000);duoLast=now;
-    const dir=Math.sign(duoTarget-duoClock);
-    if(dir){duoClock+=dir*dt*DUO_SPEED*(dir<0?2.2:1);if((duoTarget-duoClock)*dir<0)duoClock=duoTarget;}
+    duoClock+=(duoTarget-duoClock)*(1-Math.exp(-dt*5.5));
+    if(Math.abs(duoTarget-duoClock)<.0008)duoClock=duoTarget;
     paintDuo(duoClock,scrollDuo);
     if(duoClock!==duoTarget)duoRaf=requestAnimationFrame(tickDuo);else duoLast=0;
   }
   function updateDuo(t){
     scrollDuo=t;
-    duoTarget=reduce.matches?(t>0?DUO_END:0):(t>-.02?DUO_END:0);
+    duoTarget=reduce.matches?(t>0?DUO_END:0):Math.max(0,Math.min(DUO_END,t*DUO_PER_SCREEN));
     if(t<-.3)duoClock=0;
     if(duoClock!==duoTarget&&!duoRaf)duoRaf=requestAnimationFrame(tickDuo);
     paintDuo(duoClock,t);

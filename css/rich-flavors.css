@@ -40,3 +40,4 @@
 /* V8.6 real 3D PET bottles (rich-duo-3d.js) replace the flat bottle PNGs. */
 .rich-duo-3d{position:absolute;inset:0;z-index:3;width:100%;height:100%;display:block;pointer-events:none}
 .rich-duo-3d-ready .rich-duo__slot[data-rich-slot="peach"] img,.rich-duo-3d-ready .rich-duo__slot[data-rich-slot="grape"] img{visibility:hidden}
+.rich-duo-bubbles{position:absolute;inset:0;z-index:2;width:100%;height:100%;display:block;pointer-events:none}
