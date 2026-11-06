@@ -168,9 +168,13 @@
     frame = window.requestAnimationFrame(step);
   }
 
-  // Show ambient carbonation after HERO has fully left the viewport.
+  // V5.2: fade the carbonation in as soon as the hero can starts spinning
+  // (first ~third of a screen of scroll) and keep it running from then on.
   function syncHeroBoundary() {
-    const beyondHero = !hero || hero.getBoundingClientRect().bottom <= 0;
+    const heroScroll = hero ? -hero.getBoundingClientRect().top / Math.max(1, innerHeight) : 1;
+    const h = Math.max(0, Math.min(1, (heroScroll - .02) / .33));
+    const heroFade = h * h * (3 - 2 * h);
+    const beyondHero = heroFade > 0;
     const rich = document.querySelector('#rich-flavors');
     const rect = rich?.getBoundingClientRect();
     const progress = rect ? clamp(-rect.top / Math.max(1, rich.offsetHeight - innerHeight), 0, 1) : 0;
@@ -178,7 +182,7 @@
     const t = Math.max(0, Math.min(1, story / .38));
     const fade = t * t * (3 - 2 * t);
     richProductsActive = story >= 2.65 && story < 4.70 && rect.bottom > innerHeight;
-    canvas.style.opacity = String(richProductsActive ? .40 : .84 * (1 - fade));
+    canvas.style.opacity = String((richProductsActive ? .40 : .84 * (1 - fade)) * heroFade);
     const show = beyondHero && (fade < 1 || richProductsActive) && !document.hidden && !reducedMotion.matches;
     canvas.classList.toggle('is-active', show);
     if (show) resume();

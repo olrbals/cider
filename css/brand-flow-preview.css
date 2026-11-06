@@ -172,3 +172,9 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 #brand-values .brand-values__stage { z-index:1; }
 .brand-star-flight { z-index:90; }
 @media (prefers-reduced-motion: reduce) { #identity.identity.experience-02 { height:100svh; min-height:700px; } }
+
+/* V5.2 — one color per principle (Figma 1431:33 / 1456:2; navy replaces
+   yellow so CAFFEINE FREE reads on white and pairs with the yellow FIZZ). */
+#brand-values .brand-values__word[data-brand-value="0"] { color: #149f5c; }
+#brand-values .brand-values__word[data-brand-value="1"] { color: #3271e5; }
+#brand-values .brand-values__word[data-brand-value="2"] { color: #1d2b64; }
