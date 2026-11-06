@@ -70,7 +70,7 @@ async function start() {
 
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: 'high-performance' });
   } catch (error) {
     console.warn('Hero can dive: WebGL unavailable, keeping the PNG can.', error);
   }
@@ -110,7 +110,7 @@ async function start() {
   // --- Scene / camera / studio light ---
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, .01, 60);
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.25));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
@@ -147,8 +147,9 @@ async function start() {
   const spinner = new THREE.Group();   // yaw only
   carrier.add(spinner);
   scene.add(carrier);
-  const label = new THREE.Mesh(new THREE.CylinderGeometry(.68, .68, canLength, 160, 1, true),
-    new THREE.MeshPhysicalMaterial({ map: labelTexture, metalness: .36, roughness: .36, clearcoat: .35, clearcoatRoughness: .25 }));
+  const label = new THREE.Mesh(new THREE.CylinderGeometry(.68, .68, canLength, 112, 1, true),
+    // Standard (not Physical + clearcoat): far cheaper per pixel, near-identical look.
+    new THREE.MeshStandardMaterial({ map: labelTexture, metalness: .36, roughness: .32 }));
   spinner.add(label);
   const metal = new THREE.MeshStandardMaterial({ color: 0xd4dade, metalness: 1, roughness: .23 });
   const inset = new THREE.MeshStandardMaterial({ color: 0xc6ced0, metalness: .9, roughness: .29 });
@@ -205,6 +206,9 @@ async function start() {
   let waveGate = 0;       // the wave waits for the splash to bloom first
   let gateClock = 0;
   let last3D = '';
+  let lastS = -1;
+  let looping = false;
+  let waveDrawn = false;
 
   // ⑤ The next page as a rolling wave (same language as the site's other
   // section transitions), drawn above everything in the hero.
@@ -213,23 +217,19 @@ async function start() {
   wave.setAttribute('aria-hidden', 'true');
   stage.append(wave);
   const waveCtx = wave.getContext('2d');
-  // Real spray riding the crest: looping droplet footage, screen-blended,
-  // fading upward so it reads as water thrown off the wave.
-  const sprays = [0, 1, 2].map(i => {
-    const v = document.createElement('video');
-    v.className = 'hero-wave-spray';
-    v.src = new URL('../media/hero-star-droplets.mp4', import.meta.url).href;
-    v.muted = true;
-    v.loop = true;
-    v.playsInline = true;
-    v.preload = 'auto';
-    v.setAttribute('aria-hidden', 'true');
-    v.setAttribute('muted', '');
-    v.setAttribute('playsinline', '');
-    v.style.setProperty('--flip', i % 2 ? '-1' : '1');
-    stage.append(v);
-    return v;
-  });
+  // Real spray riding the crest: one pre-composited strip (three time-offset
+  // droplet slices with the upward fade baked in), screen-blended.
+  const spray = document.createElement('video');
+  spray.className = 'hero-wave-spray';
+  spray.src = new URL('../media/hero-wave-spray.mp4', import.meta.url).href;
+  spray.muted = true;
+  spray.loop = true;
+  spray.playsInline = true;
+  spray.preload = 'auto';
+  spray.setAttribute('aria-hidden', 'true');
+  spray.setAttribute('muted', '');
+  spray.setAttribute('playsinline', '');
+  stage.append(spray);
 
   // Water star: bursts behind the can as the tab cracks open. The original
   // bubble-star artwork + real droplet footage cut to the same silhouette,
@@ -239,15 +239,17 @@ async function start() {
   star.setAttribute('aria-hidden', 'true');
   star.innerHTML = '<span class="hero-pop-star__glow"></span><span class="hero-pop-star__body"></span>'
     + '<video class="hero-pop-star__drops" muted loop playsinline preload="auto"></video>'
-    + [0, 72, 144, 216, 288].map(a => '<video class="hero-pop-star__jet" style="--a:' + a + 'deg" muted playsinline preload="auto"></video>').join('')
+    + '<video class="hero-pop-star__burst" muted playsinline preload="auto"></video>'
     + '<img class="hero-pop-star__art" alt="" src="' + new URL('../img/hero-star/finalstarforgreen.png', import.meta.url).href + '">';
   const drops = star.querySelector('video');
   drops.muted = true;
   drops.src = new URL('../media/hero-star-droplets.mp4', import.meta.url).href;
   star.style.setProperty('--star-mask', 'url("' + new URL('../img/hero-star/star-mask.png', import.meta.url).href + '")');
-  const jets = [...star.querySelectorAll('.hero-pop-star__jet')];
-  const jetSrc = new URL('../media/hero-star-jet.mp4', import.meta.url).href;
-  jets.forEach(jet => { jet.muted = true; jet.src = jetSrc; });
+  // Five real jets, pre-composited into one clip (one decoder instead of five).
+  const burst = star.querySelector('.hero-pop-star__burst');
+  burst.muted = true;
+  burst.src = new URL('../media/hero-star-burst.mp4', import.meta.url).href;
+  const jets = [burst];
   stage.append(star);
   let starT = 0;
   let jetsFired = false;
@@ -256,19 +258,28 @@ async function start() {
 
   // --- Placement matching the Figma PNG can (center ≈ 722,620; ≈470px tall) ---
   const baseDistance = 11;
-  const view = { width: 1, height: 1, unit: 1, home: new THREE.Vector3(), scale: 1 };
+  const view = { width: 1, height: 1, unit: 1, home: new THREE.Vector3(), scale: 1, bx: 0, by: 0, bw: 1, bh: 1 };
   function resize() {
     setLayoutScale();
     const width = stage.clientWidth || innerWidth;
     const height = stage.clientHeight || innerHeight;
-    renderer.setSize(width, height, false);
     const ratio = Math.min(devicePixelRatio || 1, 1);
     wave.width = Math.round(width * ratio);
     wave.height = Math.round(height * ratio);
     waveCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
     camera.aspect = width / height;
-    camera.updateProjectionMatrix();
     const layout = Math.min(width / 1440, height / 900);
+    // Render only the box the can can occupy (spin sway, tip, recoil), not the
+    // whole screen: a camera view offset keeps the framing pixel-identical.
+    const cx = width / 2 + (722 - 720) * layout, cy = height / 2 + (620 - 450) * layout;
+    view.bw = Math.min(width, Math.round(620 * layout));
+    view.bh = Math.min(height, Math.round(760 * layout));
+    view.bx = Math.round(cx - view.bw / 2);
+    view.by = Math.round(cy - view.bh / 2 - 40 * layout);
+    camera.setViewOffset(width, height, view.bx, view.by, view.bw, view.bh);
+    camera.updateProjectionMatrix();
+    renderer.setSize(view.bw, view.bh, false);
+    Object.assign(renderer.domElement.style, { left: view.bx + 'px', top: view.by + 'px', width: view.bw + 'px', height: view.bh + 'px' });
     const worldHeight = 2 * baseDistance * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     const unit = worldHeight / height; // world units per CSS px at the can plane
     view.width = width;
@@ -287,8 +298,8 @@ async function start() {
   const v = new THREE.Vector3();
   const toScreen = (local, out) => {
     v.copy(local).applyMatrix4(spinner.matrixWorld).project(camera);
-    out.x = (v.x + 1) / 2 * view.width;
-    out.y = (1 - v.y) / 2 * view.height;
+    out.x = view.bx + (v.x + 1) / 2 * view.bw;
+    out.y = view.by + (1 - v.y) / 2 * view.bh;
     return out;
   };
 
@@ -306,7 +317,8 @@ async function start() {
     // Jets fade as their burst settles, so no frozen last frame lingers.
     jets.forEach(jet => {
       const k = jet.duration ? jet.currentTime / jet.duration : 1;
-      jet.style.opacity = jetsFired && !jet.ended ? (1 - smooth(k, .55, .95)).toFixed(3) : '0';
+      const o = jetsFired && !jet.ended ? (1 - smooth(k, .55, .95)).toFixed(2) : '0';
+      if (jet.style.opacity !== o) jet.style.opacity = o;
     });
     if (jetsFired && !jets[0].ended) dirty = true;
     // ④ The star bursts again and surges at the viewer, handing over to
@@ -330,13 +342,17 @@ async function start() {
   }
 
   function drawWave(s, t, gate) {
+    if (gate <= 0 && !waveDrawn) { if (!spray.paused) spray.pause(); spray.style.opacity = '0'; return false; }
     const W = view.width, H = view.height, ctx = waveCtx;
-    ctx.clearRect(0, 0, W, H);
     const rise = Math.min(smooth(s, WAVE_START, WAVE_END), gate);
     if (rise <= 0) {
-      sprays.forEach(v => { if (!v.paused) v.pause(); v.style.opacity = '0'; });
+      if (waveDrawn) { waveCtx.clearRect(0, 0, W, H); waveDrawn = false; }
+      if (!spray.paused) spray.pause();
+      spray.style.opacity = '0';
       return false;
     }
+    waveDrawn = true;
+    ctx.clearRect(0, 0, W, H);
     // Swell grows in the middle of the climb and calms as it fills.
     const swell = H * (.035 + .05 * Math.sin(Math.min(1, rise) * Math.PI));
     const base = H * (1.12 - 1.30 * rise);
@@ -374,18 +390,21 @@ async function start() {
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.restore();
-    // Spray: four overlapping bands anchored to the highest crest point in
-    // their span; strongest mid-climb, gone once the page has filled.
+    // Spray: one strip across the width, riding the highest crest point;
+    // strongest mid-climb, gone once the page has filled.
     const sprayAlpha = Math.sin(Math.min(1, rise) * Math.PI) * (1 - smooth(rise, .82, .97));
-    sprays.forEach((v, i) => {
-      if (sprayAlpha <= .01) { if (!v.paused) v.pause(); v.style.opacity = '0'; return; }
-      const w = W * .46, h = H * .34, left = -W * .06 + i * W * .37;
+    if (sprayAlpha <= .01) {
+      if (!spray.paused) spray.pause();
+      if (spray.style.opacity !== '0') spray.style.opacity = '0';
+    } else {
       let crest = H;
-      for (let x = Math.max(0, left); x <= Math.min(W, left + w); x += 24) crest = Math.min(crest, edge(x, 0, 1));
-      v.style.cssText = 'left:' + left.toFixed(1) + 'px;top:' + (crest - h * .78).toFixed(1) + 'px;width:' + w.toFixed(1)
-        + 'px;height:' + h.toFixed(1) + 'px;opacity:' + (sprayAlpha * .95).toFixed(3) + ';--flip:' + (i % 2 ? '-1' : '1');
-      if (v.paused) { v.currentTime = (i * .37) % 1.5; v.play().catch(() => {}); }
-    });
+      for (let x = 0; x <= W; x += 32) crest = Math.min(crest, edge(x, 0, 1));
+      const h = W / 3; // strip is 3:1 and spans the full width
+      spray.style.transform = 'translate3d(0,' + (crest - h * .74).toFixed(1) + 'px,0)';
+      spray.style.height = h.toFixed(1) + 'px';
+      spray.style.opacity = (sprayAlpha * .95).toFixed(2);
+      if (spray.paused) spray.play().catch(() => {});
+    }
     return true;
   }
 
@@ -406,9 +425,6 @@ async function start() {
       const grow = 1 - (1 - smooth(k, 0, .5)) ** 3;
       front.style.transformOrigin = center.x.toFixed(1) + 'px ' + center.y.toFixed(1) + 'px';
       front.style.transform = 'scale(' + (1 + .35 * grow).toFixed(4) + ')'; // never smaller than the screen: no visible frame edge
-      front.style.setProperty('--reveal-x', center.x.toFixed(1) + 'px');
-      front.style.setProperty('--reveal-y', center.y.toFixed(1) + 'px');
-      front.style.setProperty('--reveal-r', (5 + 150 * grow).toFixed(1) + 'vmax');
       front.style.opacity = (smooth(k, 0, .06) * (1 - smooth(k, .72, 1))).toFixed(3);
       if (!front.ended) dirty = true;
     } else {
@@ -434,7 +450,7 @@ async function start() {
     lastTime = now;
     const s = Math.max(0, scrollY / Math.max(1, innerHeight));
     const boundary = nextSection ? nextSection.getBoundingClientRect().top / innerHeight : 0;
-    updateChrome(s, boundary);
+    if (s !== lastS) { lastS = s; updateChrome(s, boundary); }
     const inHero = s < 1.62;
     const idle = 1 - smooth(s, 0, .06);
     if (idle > 0) {
@@ -485,18 +501,26 @@ async function start() {
       // Only redraw the can when something about it actually changed, and
       // not at all once the wave has covered it.
       const key = [spinner.rotation.y, carrier.position.y, carrier.rotation.x, carrier.rotation.z,
-        carrier.scale.x, lever.rotation.x, view.width, view.height].map(n => n.toFixed(4)).join();
+        carrier.scale.x, lever.rotation.x, view.bw, view.bh].map(n => n.toFixed(4)).join();
       if (key !== last3D && s < WAVE_END) { last3D = key; renderer.render(scene, camera); }
       placeClips(s, t);
     }
-    requestAnimationFrame(frame);
+    // Keep looping only while something is moving; otherwise sleep until
+    // the next scroll/resize. (Was: every frame, forever.)
+    const clocks = starT !== tabTarget || tabOpen !== tabTarget;
+    if (inHero && (dirty || idle > 0 || clocks)) requestAnimationFrame(frame);
+    else looping = false;
+  }
+  function wake() {
+    dirty = true;
+    if (!looping) { looping = true; lastTime = performance.now(); requestAnimationFrame(frame); }
   }
 
-  addEventListener('scroll', () => { dirty = true; }, { passive: true });
-  addEventListener('resize', resize, { passive: true });
+  addEventListener('scroll', wake, { passive: true });
+  addEventListener('resize', () => { resize(); wake(); }, { passive: true });
   resize();
   hero.classList.add('has-can-3d');
-  requestAnimationFrame(frame);
+  wake();
 }
 
 start().catch(error => {

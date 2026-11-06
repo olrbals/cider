@@ -1,45 +1,36 @@
-/* HERO V5 — 3D can dive. Layered inside the sticky hero stage. */
-#top .hero-can-webgl { position:absolute; inset:0; z-index:6; width:100%; height:100%; display:block; pointer-events:none; }
+/* HERO V6 — 3D can · water star · lens splash · wave. Layered inside the
+   sticky hero stage. Perf rules: no runtime filters on video, masks only
+   where static, every moving layer animates transform/opacity only. */
+#top .hero-can-webgl { position:absolute; z-index:6; display:block; pointer-events:none; } /* sized to the can's box by JS */
 #top.has-can-3d .hero-product-layer,
 #top.has-can-3d .hero-product-layer img { visibility:hidden; }
-/* Soft white wash rising from the bottom — no hard edge. */
-#top .hero-dive-white { position:absolute; inset:0; z-index:9; pointer-events:none;
-  background:linear-gradient(to top, #fff 0%, #fff calc(var(--hero-wash,-.35) * 100%), rgba(255,255,255,0) calc(var(--hero-wash,-.35) * 100% + 35%)); }
 #top.has-can-dive .hero-type-top,
 #top.has-can-dive .hero-korean-title { opacity:var(--hero-type-fade,1); translate:0 var(--hero-type-lift,0px); }
+
+/* Safety white veil (only fully on once the wave has finished). */
+#top .hero-dive-white { position:absolute; inset:0; z-index:10; pointer-events:none;
+  background:linear-gradient(to top, #fff 0%, #fff calc(var(--hero-wash,-.35) * 100%), rgba(255,255,255,0) calc(var(--hero-wash,-.35) * 100% + 35%)); }
+
+/* ③ Water star behind the can (below the WebGL can), screen-blended group. */
+#top .hero-pop-star { position:absolute; z-index:5; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:50% 55%; will-change:transform, opacity; }
+#top .hero-pop-star > * { position:absolute; inset:0; width:100%; height:100%; display:block; }
+#top .hero-pop-star__glow { background:radial-gradient(closest-side, rgba(255,255,255,.55), rgba(255,255,255,0)); opacity:var(--star-flash,0); transform:scale(1.05); }
+#top .hero-pop-star__body { -webkit-mask:var(--star-mask) center/100% 100% no-repeat; mask:var(--star-mask) center/100% 100% no-repeat;
+  background:radial-gradient(ellipse at 50% 55%, rgba(255,255,255,.06), rgba(255,255,255,.17) 70%, rgba(255,255,255,.22)); }
+#top .hero-pop-star__drops { object-fit:cover; -webkit-mask:var(--star-mask) center/100% 100% no-repeat; mask:var(--star-mask) center/100% 100% no-repeat; }
+#top .hero-pop-star__art { object-fit:contain; opacity:.9; }
+/* Five real jets, pre-composited into one square clip centred on the star. */
+#top .hero-pop-star > .hero-pop-star__burst { inset:auto; left:-10%; top:-13.6%; width:120%; height:auto; aspect-ratio:1; object-fit:cover; opacity:0; }
+
+/* ④ Water at the lens (above the can). */
+#top .hero-front-splash { position:absolute; inset:0; z-index:7; width:100%; height:100%; object-fit:cover; pointer-events:none; opacity:0; mix-blend-mode:screen; will-change:transform, opacity; }
+
+/* ⑤ Next-page wave + one full-width spray strip riding its crest. */
+#top .hero-next-wave { position:absolute; inset:0; z-index:8; width:100%; height:100%; display:block; pointer-events:none; }
+#top .hero-wave-spray { position:absolute; z-index:9; left:0; top:0; width:100%; display:block; pointer-events:none; opacity:0; object-fit:cover; mix-blend-mode:screen; will-change:transform, opacity; }
+
 @media (prefers-reduced-motion:reduce) {
-  #top .hero-can-webgl, #top .hero-dive-white { display:none; }
+  #top .hero-can-webgl, #top .hero-dive-white, #top .hero-pop-star,
+  #top .hero-front-splash, #top .hero-next-wave, #top .hero-wave-spray { display:none; }
   #top.has-can-3d .hero-product-layer, #top.has-can-3d .hero-product-layer img { visibility:visible; }
 }
-/* Real water footage, screen-blended so black drops out. */
-#top .hero-pour-clip { position:absolute; z-index:7; display:block; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:50% 0; }
-#top .hero-pour-splash { inset:0; width:100%; height:100%; object-fit:cover; }
-@media (prefers-reduced-motion:reduce) { #top .hero-pour-clip { display:none; } }
-/* Water star behind the can (z below the WebGL can). Screen-blended group. */
-#top .hero-pop-star { position:absolute; z-index:5; pointer-events:none; opacity:0; mix-blend-mode:screen; transform-origin:50% 55%; }
-#top .hero-pop-star > * { position:absolute; inset:0; width:100%; height:100%; display:block; }
-#top .hero-pop-star__drops { object-fit:cover; -webkit-mask:var(--star-mask) center/100% 100% no-repeat; mask:var(--star-mask) center/100% 100% no-repeat; opacity:1; filter:brightness(1.9) contrast(1.15); }
-#top .hero-pop-star__art { object-fit:contain; filter:brightness(2); }
-#top .hero-pop-star__body { -webkit-mask:var(--star-mask) center/100% 100% no-repeat; mask:var(--star-mask) center/100% 100% no-repeat; background:radial-gradient(ellipse at 50% 55%, rgba(255,255,255,.06), rgba(255,255,255,.17) 70%, rgba(255,255,255,.22)); }
-#top .hero-pop-star__glow { background:radial-gradient(closest-side, rgba(255,255,255,.55), rgba(255,255,255,0)); opacity:var(--star-flash,0); transform:scale(.8); }
-@media (prefers-reduced-motion:reduce) { #top .hero-pop-star { display:none; } }
-/* Five real water jets fire from the star's centre along its arms. */
-#top .hero-pop-star > .hero-pop-star__jet { inset:auto; left:20%; top:-14%; width:60%; height:auto; aspect-ratio:1; object-fit:cover;
-  transform-origin:50% 100%; transform:rotate(var(--a)) scale(1.05); filter:brightness(1.4); opacity:0; }
-#top .hero-pop-star__glow { transform:scale(1.05); }
-/* V6: water at the lens (above the can) and the next-page wave above it. */
-#top .hero-front-splash { position:absolute; inset:0; z-index:7; width:100%; height:100%; object-fit:cover; pointer-events:none; opacity:0; mix-blend-mode:screen; }
-#top .hero-next-wave { position:absolute; inset:0; z-index:8; width:100%; height:100%; display:block; pointer-events:none; }
-@media (prefers-reduced-motion:reduce) { #top .hero-front-splash, #top .hero-next-wave { display:none; } }
-/* V6.1: lens splash grows out of the star centre. */
-#top .hero-front-splash { -webkit-mask:radial-gradient(circle at var(--reveal-x,50%) var(--reveal-y,50%), #000 calc(var(--reveal-r,0vmax) * .55), transparent var(--reveal-r,0vmax));
-  mask:radial-gradient(circle at var(--reveal-x,50%) var(--reveal-y,50%), #000 calc(var(--reveal-r,0vmax) * .55), transparent var(--reveal-r,0vmax)); }
-/* Real spray on the wave crest (above the wave body). */
-#top .hero-wave-spray { position:absolute; z-index:9; display:block; pointer-events:none; opacity:0; object-fit:cover; mix-blend-mode:screen;
-  transform:scaleX(var(--flip,1)); filter:brightness(1.5);
-  -webkit-mask:linear-gradient(to top, transparent 0%, #000 22%, #000 48%, transparent 100%), linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
-  -webkit-mask-composite:source-in;
-  mask:linear-gradient(to top, transparent 0%, #000 22%, #000 48%, transparent 100%), linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
-  mask-composite:intersect; }
-#top .hero-dive-white { z-index:10; }
-@media (prefers-reduced-motion:reduce) { #top .hero-wave-spray { display:none; } }
