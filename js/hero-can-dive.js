@@ -1,9 +1,9 @@
-/* HERO V5 — "Can Dive".
+/* HERO V5.1 — "Can Pour".
  * ① The real 3D 2024 can idles with a slow spin in the Figma position.
  * ② Scrolling spins it fast while it drops and rocks.
- * ③ It settles upright with the white lower label facing the viewer.
- * ④ The camera dives into that white band until it fills the screen,
- *    and the white becomes PURE.
+ * ③ It lands logo-front, tips toward the viewer and the tab cracks open.
+ * ④ It tips over and pours; ⑤ the soda pools and rises until the screen
+ *    is the solid white of PURE.
  * Reuses the History can's geometry, label and studio lighting recipe.
  * The original PNG can stays as the fallback (no WebGL / reduced motion).
  */
@@ -23,14 +23,18 @@ const TAU = Math.PI * 2;
 // Label UV positions (2024 artwork, after its -0.03 UV shift).
 const UV_SHIFT = -0.03;
 const LOGO_U = 0.5 + UV_SHIFT;   // star logo + "Chilsung"
-const WHITE_U = 0.13 + UV_SHIFT; // clean white/silver band, away from text
-const WHITE_V = 0.21;            // distance up from the bottom of the label
 const faceYaw = u => -u * TAU;   // rotation.y that turns label-u toward +Z
 
 // Scroll timeline in viewport heights (PURE reaches the top at 1.6).
-const SPIN_END = .55;
-const SETTLE_END = .86;
-const DIVE_END = 1.30;
+const SPIN_END = .50;
+const SETTLE_END = .74;      // landed logo-front, tipped toward the viewer
+const TAB_AT = .72;          // the tab cracks open (clock-driven)
+const POUR_START = .78;
+const POUR_END = .98;        // fully tipped
+const POUR_FLOW = .84;       // stream leaves the can
+const FILL_START = .90;
+const FILL_END = 1.28;       // screen is solid white → PURE
+const POUR_SPOT = { x: .40, y: .36 }; // can center while pouring (viewport)
 
 function setLayoutScale() {
   hero.style.setProperty('--hero-layout-scale',
@@ -45,11 +49,11 @@ function updateChrome(s, boundary) {
     s < .02 ? 1 : smooth(s, 1.34, 1.48));
   hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .25, .70)));
   hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .25, .70)).toFixed(1) + 'px');
-  hero.style.setProperty('--hero-white', String(smooth(s, 1.14, 1.27)));
+  hero.style.setProperty('--hero-white', String(smooth(s, 1.24, 1.30)));
   if (header) {
     const offHero = nextSection ? boundary <= .08 : s > 1.5;
     header.classList.toggle('is-off-hero', offHero);
-    header.classList.toggle('is-on-light', !offHero && s >= 1.2);
+    header.classList.toggle('is-on-light', !offHero && s >= 1.18);
   }
 }
 
@@ -164,11 +168,43 @@ async function start() {
     rim.position.y = sign * rimCenter;
     spinner.add(rim);
   }
-  const pull = new THREE.Mesh(new THREE.TorusGeometry(.18, .018, 8, 40), metal);
-  pull.rotation.x = Math.PI / 2;
-  pull.position.set(0, rimCenter + .014, .05);
-  spinner.add(pull);
+  // Pull tab + opening. The opening sits on the rim that becomes the lowest
+  // lip while pouring (world +X once the can lands logo-front).
+  const pourYaw = faceYaw(LOGO_U);
+  const mouthDir = new THREE.Vector3(Math.cos(pourYaw), 0, Math.sin(pourYaw));
+  const tab = new THREE.Group();
+  tab.position.set(0, rimCenter + .012, 0);
+  tab.rotation.y = Math.atan2(mouthDir.x, mouthDir.z);
+  spinner.add(tab);
+  const lever = new THREE.Group();          // hinge at the rivet
+  tab.add(lever);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(.13, .022, 8, 40), metal);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.set(0, 0, -.16);
+  lever.add(ring);
+  const plate = new THREE.Mesh(new THREE.BoxGeometry(.15, .014, .26), metal);
+  plate.position.set(0, .004, .04);
+  lever.add(plate);
+  const opening = new THREE.Mesh(new THREE.CircleGeometry(1, 40),
+    new THREE.MeshStandardMaterial({ color: 0x14231d, roughness: .6, metalness: .2 }));
+  opening.rotation.x = -Math.PI / 2;
+  opening.position.set(0, -.004, .33);
+  opening.scale.set(.0001, .0001, 1);
+  tab.add(opening);
   renderer.initTexture(labelTexture);
+
+  // 2D liquid layer above the WebGL can: stream + rising fill.
+  const liquid = document.createElement('canvas');
+  liquid.className = 'hero-pour-liquid';
+  liquid.setAttribute('aria-hidden', 'true');
+  stage.append(liquid);
+  const pourCtx = liquid.getContext('2d');
+  let tabOpen = 0;        // 0 → 1, played on a clock once triggered
+  let tabTarget = 0;
+  const fizz = Array.from({ length: 90 }, (_, i) => ({
+    x: (i * 0.6180339) % 1, speed: .5 + ((i * 0.381966) % 1) * .9,
+    size: 3 + ((i * 0.7548776) % 1) * 9, phase: (i * 0.5698403) % 1
+  }));
 
   // --- Placement matching the Figma PNG can (center ≈ 722,620; ≈470px tall) ---
   const baseDistance = 11;
@@ -178,6 +214,10 @@ async function start() {
     const width = stage.clientWidth || innerWidth;
     const height = stage.clientHeight || innerHeight;
     renderer.setSize(width, height, false);
+    const ratio = Math.min(devicePixelRatio || 1, 1.5);
+    liquid.width = Math.round(width * ratio);
+    liquid.height = Math.round(height * ratio);
+    pourCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     const layout = Math.min(width / 1440, height / 900);
@@ -196,8 +236,135 @@ async function start() {
   let idleYaw = faceYaw(LOGO_U) - .5;
   let lastTime = performance.now();
   let dirty = true;
-  const target = new THREE.Vector3();
-  const surfaceLocal = new THREE.Vector3();
+  const v = new THREE.Vector3();
+  const toScreen = (local, out) => {
+    v.copy(local).applyMatrix4(spinner.matrixWorld).project(camera);
+    out.x = (v.x + 1) / 2 * view.width;
+    out.y = (1 - v.y) / 2 * view.height;
+    return out;
+  };
+  const mouthLocal = new THREE.Vector3(mouthDir.x * .36, rimCenter, mouthDir.z * .36);
+  const topLocal = new THREE.Vector3(0, rimCenter, 0);
+  const bottomLocal = new THREE.Vector3(0, -rimCenter, 0);
+  const mouth = {}, top = {}, bottom = {};
+
+  function surfaceAt(x, base, t, impactX, splash) {
+    const u = x / view.width * TAU;
+    const amp = view.height * .016;
+    let y = base + amp * (Math.sin(u * 1.2 + t * 1.7) * .6 + Math.sin(u * 2.6 - t * 2.3 + 1) * .4);
+    if (splash > 0) {
+      const d = (x - impactX) / (view.width * .05);
+      y -= view.height * .03 * splash * Math.exp(-d * d) * (.7 + .3 * Math.sin(t * 11));
+    }
+    return y;
+  }
+
+  function drawLiquid(s, t) {
+    const W = view.width, H = view.height, ctx = pourCtx;
+    ctx.clearRect(0, 0, W, H);
+    const flow = smooth(s, POUR_FLOW, POUR_FLOW + .09);
+    const level = smooth(s, FILL_START, FILL_END);
+    if (flow <= 0 && level <= 0) return;
+    const base = H * (1.04 - 1.12 * level);
+    // ④ Stream: leaves the lowest lip along the can axis, then falls.
+    let impactX = mouth.x;
+    if (flow > 0) {
+      let dx = top.x - bottom.x, dy = top.y - bottom.y;
+      const len = Math.hypot(dx, dy) || 1;
+      dx /= len; dy /= len;
+      const speed = H * .55, gravity = H * 3.2;
+      const points = [];
+      for (let i = 0; i <= 48; i++) {
+        const u = i / 48 * .9;
+        const x = mouth.x + dx * speed * u;
+        const y = mouth.y + dy * speed * u + gravity * u * u / 2;
+        points.push([x, y]);
+        if (y >= Math.min(H + 20, surfaceAt(x, base, t, x, 0))) break;
+      }
+      const shown = Math.max(2, Math.ceil(points.length * flow));
+      const path = points.slice(0, shown);
+      impactX = path[path.length - 1][0];
+      const width = Math.max(14, H * .034) * (.55 + .45 * flow);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      path.forEach(([x, y], i) => {
+        const wobble = Math.sin(t * 14 + i * .7) * width * .08;
+        if (i) ctx.lineTo(x + wobble, y); else ctx.moveTo(x, y);
+      });
+      ctx.strokeStyle = 'rgba(232,255,245,.50)';
+      ctx.lineWidth = width;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.72)';
+      ctx.lineWidth = width * .58;
+      ctx.stroke();
+      ctx.save();
+      ctx.translate(-width * .16, 0);
+      ctx.strokeStyle = 'rgba(255,255,255,.98)';
+      ctx.lineWidth = width * .14;
+      ctx.stroke();
+      ctx.restore();
+      // Splash droplets where the stream meets the pool.
+      if (level > 0) {
+        const [ix, iy] = path[path.length - 1];
+        for (let i = 0; i < 7; i++) {
+          const k = (t * 1.8 + i / 7) % 1;
+          const dir = (i % 2 ? 1 : -1) * (.4 + (i % 3) * .3);
+          ctx.beginPath();
+          ctx.arc(ix + dir * width * 2.2 * k, iy - width * 2.4 * Math.sin(k * Math.PI), width * .16 * (1 - k * .6), 0, TAU);
+          ctx.fillStyle = 'rgba(255,255,255,' + (.85 * (1 - k)) + ')';
+          ctx.fill();
+        }
+      }
+      // Fizz travelling down the stream.
+      for (let i = 0; i < 14; i++) {
+        const k = ((t * 1.6 + i / 14) % 1) * (path.length - 1);
+        const a = path[Math.floor(k)], b = path[Math.min(path.length - 1, Math.floor(k) + 1)];
+        const f = k % 1;
+        const r = width * (.12 + (i % 3) * .06);
+        ctx.beginPath();
+        ctx.arc(a[0] + (b[0] - a[0]) * f + Math.sin(i * 3.1) * width * .25, a[1] + (b[1] - a[1]) * f, r, 0, TAU);
+        ctx.strokeStyle = 'rgba(20,159,92,.35)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+    }
+    // ⑤ Pool: the poured soda rises, clear first, then the solid white of PURE.
+    if (level > 0) {
+      const splash = flow * (1 - smooth(level, .75, 1));
+      const solid = smooth(level, .30, .85);
+      ctx.beginPath();
+      ctx.moveTo(0, H + 2);
+      for (let x = 0; x <= W + 20; x += 20) ctx.lineTo(x, surfaceAt(x, base, t, impactX, splash));
+      ctx.lineTo(W + 20, H + 2);
+      ctx.closePath();
+      const fill = ctx.createLinearGradient(0, base - H * .05, 0, H);
+      fill.addColorStop(0, 'rgba(255,255,255,' + (.66 + .34 * solid) + ')');
+      fill.addColorStop(1, 'rgba(226,249,238,' + (.74 + .26 * solid) + ')');
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.save();
+      ctx.clip();
+      for (const b of fizz) {
+        const y = H - ((t * .18 * b.speed + b.phase) % 1) * (H - base + 40);
+        const x = b.x * W + Math.sin(t * 2 + b.phase * 9) * 6;
+        ctx.beginPath();
+        ctx.arc(x, y, b.size * (.6 + .4 * (1 - solid)), 0, TAU);
+        ctx.strokeStyle = 'rgba(20,159,92,' + (.28 * (1 - solid * .7)) + ')';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.beginPath();
+      for (let x = 0; x <= W + 20; x += 20) {
+        const y = surfaceAt(x, base, t, impactX, splash);
+        if (x) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,1)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+  }
 
   function frame(now) {
     const dt = Math.min(.05, (now - lastTime) / 1000);
@@ -211,44 +378,55 @@ async function start() {
       idleYaw += dt * .55 * idle;
       dirty = true;
     }
+    // ③ Crack the tab on a clock once the can has tipped forward.
+    if (s >= TAB_AT) tabTarget = 1;
+    else if (s < TAB_AT - .05) tabTarget = 0;
+    if (tabOpen !== tabTarget) {
+      tabOpen = tabTarget ? Math.min(1, tabOpen + dt / .38) : Math.max(0, tabOpen - dt / .25);
+      dirty = true;
+    }
+    if (s > POUR_FLOW - .02 && s < FILL_END + .06) dirty = true; // liquid keeps moving
     if (inHero && dirty) {
       dirty = false;
       const t = now / 1000;
       const spin = smooth(s, 0, SPIN_END);
       const settle = smooth(s, SPIN_END, SETTLE_END);
-      const dive = smooth(s, SETTLE_END, DIVE_END);
+      const pour = smooth(s, POUR_START, POUR_END);
 
-      // ② fast spin (≈1.75 turns) → ③ ease into the white band facing front.
+      // ① spin (≈1.75 turns) → ② land logo-front, tipped toward the viewer.
       const freeYaw = idleYaw + spin * 3.5 * Math.PI;
       const landingFrom = idleYaw + 3.5 * Math.PI;
-      const whiteYaw = faceYaw(WHITE_U);
-      const landingYaw = whiteYaw + TAU * Math.ceil((landingFrom - whiteYaw) / TAU);
+      const landingYaw = pourYaw + TAU * Math.ceil((landingFrom - pourYaw) / TAU);
       spinner.rotation.y = lerp(freeYaw, landingYaw, settle);
 
-      // Drop and rock while spinning, then rise back upright to center.
       const drop = Math.sin(spin * Math.PI) * (1 - settle);
       const bob = Math.sin(t * 1.6) * .045 * idle;
-      carrier.scale.setScalar(view.scale * (1 + .14 * settle));
+      const pourX = (POUR_SPOT.x - .5) * view.width * view.unit;
+      const pourY = (.5 - POUR_SPOT.y) * view.height * view.unit;
+      carrier.scale.setScalar(view.scale);
       carrier.position.set(
-        view.home.x * (1 - settle),
-        lerp(view.home.y, 0, settle) + bob - drop * view.height * view.unit * .16,
+        lerp(view.home.x, pourX, settle),
+        lerp(view.home.y, pourY, settle) + bob - drop * view.height * view.unit * .16,
         0);
-      carrier.rotation.set(
-        drop * .32,
-        0,
-        (-.10 * (1 - spin) + Math.sin(spin * TAU * 1.5) * .32 * drop) * (1 - settle));
+      // Euler XYZ: tip sideways (Z) first, then toward the viewer (X).
+      const forward = .42 * settle * (1 - .45 * pour);
+      const sideways = (-.10 * (1 - spin) + Math.sin(spin * TAU * 1.5) * .32 * drop) * (1 - settle)
+        - 1.95 * pour;
+      carrier.rotation.set(drop * .32 * (1 - settle) + forward, 0, sideways);
 
-      // ④ Camera dives straight into the white band on the label surface.
-      surfaceLocal.set(0, (WHITE_V - .5) * canLength, .68);
+      // Tab lifts (ring end up), the opening appears under its nose.
+      const pop = 1 - (1 - tabOpen) ** 3;
+      lever.rotation.x = 1.05 * pop;
+      opening.scale.set(.13 * pop + .0001, .085 * pop + .0001, 1);
+
       carrier.updateMatrixWorld(true);
-      spinner.updateMatrixWorld(true);
-      target.copy(surfaceLocal).applyMatrix4(spinner.matrixWorld);
-      const focusX = lerp(0, target.x, smooth(dive, 0, .35));
-      const focusY = lerp(0, target.y, smooth(dive, 0, .35));
-      const distance = lerp(baseDistance, target.z + .06, dive ** 1.6);
-      camera.position.set(focusX, focusY, distance);
-      camera.lookAt(focusX, focusY, target.z * dive);
+      toScreen(mouthLocal, mouth);
+      toScreen(topLocal, top);
+      toScreen(bottomLocal, bottom);
+      camera.position.set(0, 0, baseDistance);
+      camera.lookAt(0, 0, 0);
       renderer.render(scene, camera);
+      drawLiquid(s, t);
     }
     requestAnimationFrame(frame);
   }
