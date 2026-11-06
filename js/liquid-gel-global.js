@@ -180,6 +180,8 @@
     if (!(hit instanceof Element) || panel.contains(hit)) return null;
     // Keep the moving WebGL archive out of the full-frame displacement pass.
     if (hit.closest('#history, #rich-flavors')) return null;
+    // Same for the hero once its 3D/video scene is moving (hero sets the flag).
+    if (hit.closest('[data-gel-off]')) return null;
     return hit.closest(targets);
   }
 

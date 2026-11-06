@@ -39,6 +39,11 @@ function setLayoutScale() {
 }
 
 function updateChrome(s, boundary) {
+  // The site-wide SVG gel filter repaints the whole hero (3D can, videos,
+  // blend layers) every frame: keep it for the still first screen only.
+  const gelOff = s > .04;
+  if (hero.hasAttribute('data-gel-off') !== gelOff) hero.toggleAttribute('data-gel-off', gelOff);
+  if (gelOff && hero.classList.contains('site-liquid-target')) hero.classList.remove('site-liquid-target');
   // Shared hooks from hero-carbonation-star.css: section overlap + PURE reveal.
   hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .2, .55)));
   hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .2, .55)).toFixed(1) + 'px');
