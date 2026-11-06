@@ -181,7 +181,7 @@
     const story = rect ? -rect.top / innerHeight : 0;
     const t = Math.max(0, Math.min(1, story / .38));
     const fade = t * t * (3 - 2 * t);
-    richProductsActive = story >= 2.30 && story < 4.35 && rect.bottom > innerHeight;
+    richProductsActive = story >= 1.98 && story < 4.03 && rect.bottom > innerHeight;
     canvas.style.opacity = String((richProductsActive ? .40 : .84 * (1 - fade)) * heroFade);
     const show = beyondHero && (fade < 1 || richProductsActive) && !document.hidden && !reducedMotion.matches;
     canvas.classList.toggle('is-active', show);

@@ -1,5 +1,5 @@
 /* RICH handoff and ending. Earlier archive scenes retain their source files. */
-.rich-flavors{position:relative;z-index:5;height:600svh;margin-top:-100svh;background:transparent;isolation:isolate}
+.rich-flavors{position:relative;z-index:5;height:565svh;margin-top:-100svh;background:transparent;isolation:isolate}
 .rich-flavors__viewport{position:sticky;top:0;left:0;width:100vw;max-width:100vw;height:100svh;overflow:hidden;isolation:isolate;background:transparent}
 .rich-copy{position:absolute;inset:0;z-index:0;overflow:hidden;isolation:isolate;pointer-events:none;background:rgba(255,255,255,var(--rich-paper,0));opacity:var(--rich-copy-opacity,1)}
 .rich-year{position:absolute;left:50%;top:45%;color:#149f5c;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -16,7 +16,7 @@
 .history-3d.rich-year-handoff .history-3d-caption,.history-3d.rich-year-handoff .history-3d-canvas,.history-3d.rich-year-handoff .history-3d-fallback{opacity:var(--rich-archive-opacity,1)}
 /* Static Figma source images; no WebGL/canvas or autonomous product movement. */
 .rich-duo{position:absolute;inset:0;z-index:1;overflow:hidden;visibility:hidden;opacity:0;background:#f7faf8;isolation:isolate}
-.rich-duo__art{position:absolute;left:50%;top:50%;width:1440px;height:900px;transform:translate(-50%,-50%) scale(var(--rich-duo-scale,1));transform-origin:center;pointer-events:none}
+.rich-duo__art{position:absolute;left:50%;top:50%;width:1440px;height:900px;background:#f7faf8;transform:translate(-50%,-50%) scale(var(--rich-duo-scale,1));transform-origin:center;pointer-events:none}
 .rich-duo__field{position:absolute;display:block;max-width:none;pointer-events:none}
 .rich-duo__field--before{opacity:calc(1 - var(--rich-bloom,0))}
 .rich-duo__field--after{opacity:var(--rich-bloom,0)}
@@ -34,5 +34,10 @@
 .rich-signoff img{display:block;width:clamp(180px,24vw,340px);height:auto;filter:brightness(0) invert(1);opacity:var(--rich-logo-opacity,0);transform:translateY(calc(8px * (1 - var(--rich-logo-opacity,0))))}
 @media(prefers-reduced-motion:reduce){.rich-signoff img{transform:none}}
 
-/* V7.1 fruit drop: full-screen canvas behind the copy text (no water strip). */
-.rich-drop{position:absolute;inset:0;z-index:1;width:100%;height:100%;display:block;pointer-events:none;opacity:0;mix-blend-mode:multiply} /* tints, never washes out the copy */
+
+/* V8 "건배": real-water splash (high-pass footage, hard-light so it reads on
+   pastel) and seven water stars bursting from the clink point. */
+.rich-cheers-splash{position:absolute;z-index:6;display:block;pointer-events:none;opacity:0;mix-blend-mode:hard-light;transform:translate(-50%,-92%);width:880px;height:528px;object-fit:fill}
+.rich-cheers-stars{position:absolute;inset:0;z-index:7;pointer-events:none}
+.rich-cheers-stars img{position:absolute;left:0;top:0;width:100px;height:100px;opacity:0;will-change:transform,opacity}
+@media(prefers-reduced-motion:reduce){.rich-cheers-splash,.rich-cheers-stars{display:none}}
