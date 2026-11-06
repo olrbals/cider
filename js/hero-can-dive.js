@@ -211,8 +211,18 @@ async function start() {
   let seq = 'idle', seqStart = 0, seqFrontAt = 0, seqWave = 0, seqLand = 0, lastScrollY = scrollY;
   let lockY = null, lockY0 = null, rush = 0;
   let revealT = 0, pinned = false;
-  const WAVE_SECS = 1.05, LEAD_SECS = .42, LAND_SECS = .6;
-  const blockInput = e => { if (lockY !== null) { e.preventDefault(); rush = performance.now(); } };
+  const WAVE_SECS = .75, LEAD_SECS = .28, LAND_SECS = .4;
+  let push = 0, lastTouchY = null;
+  // While the scene holds the page, the visitor's own scrolling drives the
+  // wave (fast flick = fast wave); with no input it still plays on its own.
+  const blockInput = e => {
+    if (lockY === null) return;
+    e.preventDefault();
+    rush = performance.now();
+    if (e.type === 'wheel') push += Math.max(0, e.deltaY * (e.deltaMode === 1 ? 32 : 1));
+    else if (e.touches?.[0]) { const y = e.touches[0].clientY; if (lastTouchY !== null) push += Math.max(0, lastTouchY - y) * 1.5; lastTouchY = y; }
+  };
+  addEventListener('touchend', () => { lastTouchY = null; }, { passive: true });
   const blockKeys = e => { if (lockY !== null && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(e.key)) { e.preventDefault(); rush = performance.now(); } };
   addEventListener('wheel', blockInput, { passive: false });
   addEventListener('touchmove', blockInput, { passive: false });
@@ -356,12 +366,32 @@ async function start() {
     if (drops.paused) drops.play().catch(() => {});
   }
 
+  // Same big S-curve "liquid wipe" language as the site's section waves
+  // (js/hero-wave-transition.js): trailing shoulder, tucked valley and a
+  // curling leading lip, with a lighter band following the face.
+  const bell = (d, w) => Math.exp(-(d / w) * (d / w));
+  const sm = v => { const k = Math.max(0, Math.min(1, v)); return k * k * (3 - 2 * k); };
+  let wavePts = null;
+  function waveAt(x) {
+    if (!wavePts) return 1e5;
+    const i = Math.max(0, Math.min(wavePts.length - 2, Math.floor(x / view.width * (wavePts.length - 1))));
+    const a = wavePts[i], b = wavePts[i + 1], f = (x - a[0]) / Math.max(1, b[0] - a[0]);
+    return a[1] + (b[1] - a[1]) * Math.max(0, Math.min(1, f));
+  }
+  function trace(ctx, pts) {
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+      ctx.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6,
+        p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]);
+    }
+  }
   function drawWave(s, t, gate) {
     if (gate <= 0 && !waveDrawn && seq !== 'playing' && seq !== 'done') { if (!spray.paused) spray.pause(); spray.style.opacity = '0'; return false; }
     const W = view.width, H = view.height, ctx = waveCtx;
-    const rise = seq === 'playing' ? seqWave : seq === 'done' ? 1 : Math.min(smooth(s, WAVE_START, WAVE_END), gate);
-    waveTop = rise <= 0 ? view.height * 2 : view.height * (1.12 - 1.30 * rise) - view.height * .085;
-    if (rise <= 0) {
+    const p = seq === 'playing' ? seqWave : seq === 'done' ? 1 : Math.min(smooth(s, WAVE_START, WAVE_END), gate);
+    if (p <= 0) {
+      wavePts = null; waveTop = 1e5;
       if (waveDrawn) { waveCtx.clearRect(0, 0, W, H); waveDrawn = false; }
       if (!spray.paused) spray.pause();
       spray.style.opacity = '0';
@@ -369,56 +399,59 @@ async function start() {
     }
     waveDrawn = true;
     ctx.clearRect(0, 0, W, H);
-    // Swell grows in the middle of the climb and calms as it fills.
-    const swell = H * (.035 + .05 * Math.sin(Math.min(1, rise) * Math.PI));
-    const base = H * (1.12 - 1.30 * rise);
-    const edge = (x, lag, k) => {
-      const u = x / W * TAU;
-      return base + lag + swell * (Math.sin(u * 1.1 + t * 1.6 * k + rise * 5) * .55
-        + Math.sin(u * 2.3 - t * 2.1 * k + 1.3) * .3 + Math.sin(u * 4.7 + t * 3.2) * .15);
-    };
-    const fillUnder = (lag, k, style) => {
-      ctx.beginPath();
-      ctx.moveTo(0, H + 2);
-      for (let x = 0; x <= W + 16; x += 16) ctx.lineTo(x, edge(x, lag, k));
-      ctx.lineTo(W + 16, H + 2);
-      ctx.closePath();
-      ctx.fillStyle = style;
-      ctx.fill();
-    };
-    // Back swell (translucent), then the main body with a soft shaded crest.
-    fillUnder(-H * .05, 1.35, 'rgba(255,255,255,.38)');
-    const body = ctx.createLinearGradient(0, base - swell, 0, base + H * .22);
-    body.addColorStop(0, '#f4fbf8');
-    body.addColorStop(.18, '#ffffff');
-    body.addColorStop(1, '#ffffff');
-    fillUnder(0, 1, body);
-    // Glossy rim light along the crest.
-    ctx.beginPath();
-    for (let x = 0; x <= W + 16; x += 16) {
-      const y = edge(x, 0, 1);
-      if (x) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+    // Shape follows the section-wave recipe; an extra climb carries the whole
+    // sheet past the top so the screen ends fully white.
+    const lift = Math.sin(Math.min(1, p) * Math.PI * .5 + Math.PI * .5 * sm((p - .55) / .45)) ;
+    const shape = Math.sin(Math.min(1, p) * Math.PI) * sm((p - .02) / .3);
+    const travel = sm((p - .08) / .8);
+    const climb = H * 1.15 * sm((p - .25) / .75);
+    const roll = t * .9;
+    const pts = [], inner = [];
+    const n = 36;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      const front = 1 - u;                       // lead from the left, like PURE's wave
+      const diagonal = sm(front);
+      const shoulder = bell(front - (.26 + .12 * travel), .20);
+      const valley = bell(front - (.48 + .055 * travel), .13);
+      const curl = bell(front - (.78 - .13 * travel), .18);
+      const tip = bell(front - (.94 - .08 * travel), .09);
+      const globalRoll = Math.sin(front * Math.PI * 2.2 + travel * Math.PI * 1.15 - 1 + roll * .35);
+      const rise = .16 + .72 * diagonal + .20 * shoulder - .18 * valley + .27 * curl - .075 * tip + .085 * globalRoll;
+      const swell = H * .62 * Math.max(shape, .0) * rise;
+      const y = H * 1.02 - swell - climb + H * .02 * Math.sin(front * 5 + roll);
+      pts.push([u * W, y]);
+      const thick = H * (.03 + shape * (.03 + .045 * curl + .02 * shoulder));
+      inner.push([u * W, y + thick]);
     }
-    ctx.save();
-    ctx.shadowColor = 'rgba(255,255,255,.95)';
-    ctx.shadowBlur = 18;
-    ctx.strokeStyle = 'rgba(255,255,255,.95)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.restore();
-    // Spray: one strip across the width, riding the highest crest point;
-    // strongest mid-climb, gone once the page has filled.
-    const sprayAlpha = Math.sin(Math.min(1, rise) * Math.PI) * (1 - smooth(rise, .82, .97));
+    void lift;
+    wavePts = pts;
+    waveTop = Math.min(...pts.map(q => q[1]));
+    // Body.
+    ctx.beginPath();
+    trace(ctx, pts);
+    ctx.lineTo(W, H + 2); ctx.lineTo(0, H + 2); ctx.closePath();
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    // Lighter translucent band along the leading face (the FIZZ wave look).
+    ctx.beginPath();
+    trace(ctx, pts);
+    const rev = [...inner].reverse();
+    ctx.lineTo(rev[0][0], rev[0][1]);
+    trace(ctx, rev);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(215,242,229,.75)';
+    ctx.fill();
+    // Spray riding the highest point of the face.
+    const sprayAlpha = Math.sin(Math.min(1, p) * Math.PI) * (1 - smooth(p, .8, .95));
     if (sprayAlpha <= .01) {
       if (!spray.paused) spray.pause();
       if (spray.style.opacity !== '0') spray.style.opacity = '0';
     } else {
-      let crest = H;
-      for (let x = 0; x <= W; x += 32) crest = Math.min(crest, edge(x, 0, 1));
-      const h = W / 3; // strip is 3:1 and spans the full width
-      spray.style.transform = 'translate3d(0,' + (crest - h * .74).toFixed(1) + 'px,0)';
+      const h = W / 3;
+      spray.style.transform = 'translate3d(0,' + (waveTop - h * .7).toFixed(1) + 'px,0)';
       spray.style.height = h.toFixed(1) + 'px';
-      spray.style.opacity = (sprayAlpha * .95).toFixed(2);
+      spray.style.opacity = (sprayAlpha * .8).toFixed(2);
       if (spray.paused) spray.play().catch(() => {});
     }
     return true;
@@ -451,7 +484,8 @@ async function start() {
     if (!realWord) return;
     if ((s < WAVE_START && seq !== 'playing' && seq !== 'done') || s >= 1.75 || (pinned && revealT >= 1)) { if (ghost && ghost.style.opacity !== '0') ghost.style.opacity = '0'; return; }
     if (!ghost) buildGhost();
-    const cut = Math.max(0, Math.min(ghostBox.height, waveTop + view.height * .06 - ghostBox.top));
+    const local = Math.max(waveAt(ghostBox.left + ghostBox.width * .3), waveAt(ghostBox.left + ghostBox.width * .7));
+    const cut = Math.max(0, Math.min(ghostBox.height, local + view.height * .03 - ghostBox.top));
     const shown = 1 - cut / ghostBox.height;
     ghost.style.clipPath = 'inset(' + cut.toFixed(1) + 'px -40px -40px -40px)';
     ghost.style.transform = 'translate3d(0,' + (36 * (1 - shown)).toFixed(1) + 'px,0)';
@@ -542,8 +576,14 @@ async function start() {
     if (seq !== 'playing' && s < TAB_AT - .06) seq = 'idle';             // back at the top: replayable
     if (seq === 'playing') {
       const tt = now / 1000;
-      const speed = now - rush < 350 ? 1.7 : 1;                          // eager scrollers get it faster
-      if (seqFrontAt) seqWave = Math.min(1, seqWave + Math.min(.05, dt) * speed / WAVE_SECS * (tt - seqFrontAt > LEAD_SECS ? 1 : 0));
+      const speed = now - rush < 350 ? 1.8 : 1;                          // eager scrollers land faster
+      if (seqFrontAt && tt - seqFrontAt > LEAD_SECS) {
+        seqWave = Math.min(1, seqWave + Math.min(.05, dt) / WAVE_SECS + push / (innerHeight * 1.1));
+      } else if (!seqFrontAt && push > innerHeight * .25) {
+        // Eager scrolling before the splash even started: skip the wait.
+        seqFrontAt = tt - LEAD_SECS;
+      }
+      push = 0;
       if (seqWave >= 1) {
         // Glide to where PURE pins; the copy of PURE rides the water there.
         seqLand = Math.min(1, seqLand + Math.min(.05, dt) * speed / LAND_SECS);
