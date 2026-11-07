@@ -171,7 +171,7 @@
     requestAnimationFrame(step);
   }
   function checkAuto() {
-    if (reduced.matches || glide || performance.now() < cooldownUntil) { lastY = window.scrollY; return; }
+    if (reduced.matches || glide || window.__chilsungGlide || performance.now() < cooldownUntil) { lastY = window.scrollY; return; }
     const y = window.scrollY, dir = Math.sign(y - lastY);
     lastY = y;
     if (!dir) return;
