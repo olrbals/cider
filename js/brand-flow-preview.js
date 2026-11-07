@@ -145,13 +145,9 @@
     const ax=center.x+(innerWidth*.5-center.x)*paper;
     const ay=center.y+(h*.5-center.y)*paper;
     aperture.style.opacity=paperOpen?'0':takeover.toFixed(4);
-    // Red star → white: the fill washes out as it grows, the red edge rides out past the screen.
-    const wash=between(progress,.45,.56);
-    aperture.style.setProperty('--bf-aperture-fill','rgb('+Math.round(229+26*wash)+','+Math.round(50+205*wash)+','+Math.round(45+210*wash)+')');
     if(!paperOpen&&takeover>0){
       const stageBox=identity.querySelector('.identity-stage').getBoundingClientRect();
       aperture.style.transform='translate('+(ax-expanded/2-stageBox.left)+'px,'+(ay-expanded/2-stageBox.top)+'px) scale('+(expanded/100)+')';
-      aperture.firstElementChild.style.strokeWidth=(3.5*100/expanded).toFixed(4);   // keep a ~3.5px red edge at any size
     }
     // 11-07: no second star flying down onto the can — history simply fades in.
     flight.classList.remove('is-visible');

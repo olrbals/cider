@@ -267,16 +267,3 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 /* Longer hold per principle so each gag can finish and be seen. */
 #brand-values.brand-values{height:440svh;min-height:2600px}
 .brand-values__recap-main b{font-weight:800}
-
-/* 11-07 (c) — SEVEN STARS flipped: white page, green type, Chilsung-red star
-   (moves it away from the green-field + white-star look). */
-#identity.identity.experience-02,
-#identity .identity-stage { background:rgb(var(--bf-surface,255,255,255)); color:#149f5c; }
-#identity .identity-display,
-#identity .identity-liquid-type,
-#identity .identity-outline-stars,
-#identity .section-edge-label { color:#149f5c; }
-#identity .identity-main-star { color:#e5322d; }
-/* The opening star blooms out as a red outline, leaving the page white behind it. */
-.brand-star-aperture { fill:var(--bf-aperture-fill,#e5322d); }
-.brand-star-aperture path { stroke:#e5322d; stroke-linejoin:round; }
