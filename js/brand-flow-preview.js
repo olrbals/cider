@@ -81,13 +81,11 @@
     // Recap before FEEL THE FIZZ: 칠성사이다가 지켜온 3가지 원칙.
     const recap=values.querySelector('.brand-values__recap');
     if(recap){
-      const lead=between(progress,.755,.81);
-      recap.querySelector('.brand-values__recap-lead').style.cssText='opacity:'+lead.toFixed(3)+';transform:translate3d(0,'+((1-lead)*18).toFixed(1)+'px,0)';
-      recap.querySelectorAll('[data-r]').forEach((el,i)=>{
-        const k=between(progress,.78+i*.03,.84+i*.03);
-        el.style.opacity=k.toFixed(3);
-        el.style.transform='translate3d(0,'+((1-k)*34).toFixed(1)+'px,0) scale('+(.92+.08*k).toFixed(3)+')';
-      });
+      const main=between(progress,.76,.82),lead=between(progress,.8,.86);
+      recap.querySelector('.brand-values__recap-main').style.cssText='opacity:'+main.toFixed(3)+';transform:translate3d(0,'+((1-main)*30).toFixed(1)+'px,0) scale('+(.95+.05*main).toFixed(3)+')';
+      recap.querySelector('.brand-values__recap-lead').style.cssText='opacity:'+lead.toFixed(3)+';transform:translate3d(0,'+((1-lead)*16).toFixed(1)+'px,0)';
+      // Corner labels stay for the three words and step aside for the recap.
+      values.style.setProperty('--bv-labels',(1-between(progress,.74,.79)).toFixed(3));
     }
     // Corner labels blend between the principle colours with the words.
     const mix=(x,y,k)=>x.map((v,j)=>Math.round(v+(y[j]-v)*k));

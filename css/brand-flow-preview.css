@@ -198,7 +198,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 
 /* 11-07 시안 — Korean lines + finale sentence for the three principles. */
 /* 11-07 시안 v3 — gags on the big words, clock-driven (see drawPrinciples). */
-#brand-values .brand-values__micro,#brand-values .brand-values__title,#brand-values .brand-values__counter{display:none!important}
+#brand-values .brand-values__micro,#brand-values .brand-values__title,#brand-values .brand-values__counter{opacity:var(--bv-labels,1)}
 /* One icon, centred under each word (where a subtitle would sit). */
 .bv-gag{position:absolute;left:50%;top:calc(100% + 5svh);width:0;height:0;z-index:4;pointer-events:none;opacity:0;transform:translateX(-50%)}
 .bv-gag[data-gag="bean"]{top:calc(100% + 7svh)}
@@ -244,31 +244,24 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .bv-bean{left:0;top:0;width:44px;height:58px;margin:-29px 0 0 -22px;opacity:0}
 .bv-bean ellipse{fill:#6b4a2f}.bv-bean path{fill:none;stroke:#3b2716;stroke-width:1.6;stroke-linecap:round}
 .bv-gag[data-gag="bean"] .bv-splash{top:0}
-.bv-gag[data-gag="bean"] .bv-splash i{background:#f26d34;--sd:2.25s}
+.bv-gag[data-gag="bean"] .bv-splash i{background:#f26d34;--sd:1.05s}
 .bv-zero{left:0;top:0;transform:translate(-50%,-50%) scale(0);padding:.16em .55em .2em;border-radius:999px;
   background:#f26d34;color:#fff;font:400 clamp(24px,2.5vw,36px)/1 "Archivo Black","Pretendard",sans-serif;white-space:nowrap;opacity:0}
-.is-playing .bv-bean{animation:bv-bean 2.5s cubic-bezier(.3,0,.4,1) forwards}
-.is-playing .bv-zero{animation:bv-zero .9s 2.25s cubic-bezier(.3,1.6,.5,1) forwards}
+.is-playing .bv-bean{animation:bv-bean 1.25s cubic-bezier(.25,.6,.35,1) forwards}
+.is-playing .bv-zero{animation:bv-zero .7s 1.05s cubic-bezier(.3,1.6,.5,1) forwards}
 @keyframes bv-bean{
-  0%{opacity:0;transform:translateY(120px) rotate(-30deg)}
-  12%{opacity:1}
-  30%{transform:translateY(70px) rotate(10deg)}
-  50%{transform:translateY(32px) rotate(-14deg)}
-  70%{transform:translateY(0) rotate(12deg)}
-  86%{opacity:1;transform:translateY(-8px) rotate(0) scale(1.1)}
-  92%{opacity:1;transform:translateY(-8px) scale(1.7)}
-  100%{opacity:0;transform:translateY(-8px) scale(2.1)}
+  0%{opacity:0;transform:translateY(90px)}
+  15%{opacity:1}
+  60%{transform:translateY(0) rotate(-4deg)}
+  76%{opacity:1;transform:translateY(-6px) rotate(0) scale(1.05)}
+  86%{opacity:1;transform:translateY(-6px) scale(1.6)}
+  100%{opacity:0;transform:translateY(-6px) scale(2)}
 }
 @keyframes bv-zero{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-12deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-4deg)}}
 /* Recap before FEEL THE FIZZ */
 .brand-values__recap{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4svh;pointer-events:none;text-align:center}
-.brand-values__recap-lead{margin:0;opacity:0;font:700 clamp(20px,2.2222vw,32px)/1.2 "Pretendard",sans-serif;letter-spacing:-.02em;color:#149f5c}
-.brand-values__recap-words{margin:0;display:flex;flex-direction:column;align-items:center;gap:.06em;
-  font:400 min(8.3vw,12.5svh,120px)/1 var(--font-family-display);letter-spacing:-.04em}
-.brand-values__recap-words span{display:block;opacity:0}
-.brand-values__recap-words [data-r="0"]{color:#149f5c}
-.brand-values__recap-words [data-r="1"]{color:#3271e5}
-.brand-values__recap-words [data-r="2"]{color:#f26d34}
+.brand-values__recap-main{margin:0;opacity:0;font:800 clamp(40px,4.4444vw,68px)/1.2 "Pretendard",sans-serif;letter-spacing:-.04em;color:#149f5c}
+.brand-values__recap-lead{margin:0;opacity:0;font:600 clamp(18px,1.6667vw,24px)/1.2 "Pretendard",sans-serif;letter-spacing:-.01em;color:#149f5c}
 @media (prefers-reduced-motion: reduce){.bv-gag *{animation:none!important}}
 @keyframes bv-drop-idle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(.97,1.03)}}
 /* Longer hold per principle so each gag can finish and be seen. */
