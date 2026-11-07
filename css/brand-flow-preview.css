@@ -260,9 +260,10 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 @keyframes bv-zero{0%{opacity:0;transform:translate(-50%,-50%) scale(0)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 /* Recap before FEEL THE FIZZ */
 .brand-values__recap{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4svh;pointer-events:none;text-align:center}
-.brand-values__recap-main{margin:0;opacity:0;font:800 clamp(40px,4.4444vw,68px)/1.2 "Pretendard",sans-serif;letter-spacing:-.04em;color:#149f5c}
+.brand-values__recap-main{margin:0;opacity:0;font:500 clamp(40px,4.4444vw,68px)/1.2 "Pretendard",sans-serif;letter-spacing:-.04em;color:#149f5c}
 .brand-values__recap-lead{margin:0;opacity:0;font:600 clamp(18px,1.6667vw,24px)/1.2 "Pretendard",sans-serif;letter-spacing:-.01em;color:#149f5c}
 @media (prefers-reduced-motion: reduce){.bv-gag *{animation:none!important}}
 @keyframes bv-drop-idle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(.97,1.03)}}
 /* Longer hold per principle so each gag can finish and be seen. */
 #brand-values.brand-values{height:440svh;min-height:2600px}
+.brand-values__recap-main b{font-weight:800}
