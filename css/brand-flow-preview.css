@@ -220,22 +220,41 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.95) 45%,#fff 50%,rgba(255,255,255,.95) 55%,transparent)}
 .bv-shine.is-playing b{animation:bv-shine .5s .3s cubic-bezier(.45,0,.3,1) forwards}
 @keyframes bv-shine{0%{opacity:1;left:-20%}100%{opacity:1;left:110%}}
-/* CAFFEINE FREE — 사슬 풀림: CAFFEINE arrives squeezed tight, then snaps loose
-   and springs out to its normal spacing; FREE bursts out free. */
-#brand-values .brand-values__word[data-brand-value="2"] .bv-l{transform:translateX(calc((3.5 - var(--i)) * .1em)) scaleX(.9)}
-#brand-values .brand-values__word[data-brand-value="2"] .bv-free .bv-l{transform:none}
-#brand-values .brand-values__word[data-brand-value="2"] .bv-free{transform:translateY(.12em) scale(.62);opacity:.35}
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l{animation:bv-unchain .62s .08s cubic-bezier(.25,1.55,.45,1) both}
+/* CAFFEINE FREE — 기포로 빠져나가기: bubbles fizz up out of CAFFEINE, the
+   letters go see-through for a beat and fill back clear; FREE then pops. */
+#brand-values .brand-values__word[data-brand-value="2"] .bv-l{position:relative}
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l{animation:bv-empty .9s calc(var(--i) * .045s) cubic-bezier(.4,0,.3,1) both}
+#brand-values .brand-values__word[data-brand-value="2"] .bv-l::before,
+#brand-values .brand-values__word[data-brand-value="2"] .bv-l::after{
+  content:"";position:absolute;left:50%;top:45%;width:.11em;height:.11em;margin-left:-.055em;border-radius:50%;
+  border:.02em solid #f26d34;opacity:0;pointer-events:none;-webkit-text-fill-color:initial
+}
+#brand-values .brand-values__word[data-brand-value="2"] .bv-l::after{width:.07em;height:.07em;margin-left:.04em;top:60%}
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l::before{animation:bv-fizz .85s calc(var(--i) * .045s + .05s) cubic-bezier(.2,.6,.4,1) both}
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l::after{animation:bv-fizz .75s calc(var(--i) * .045s + .2s) cubic-bezier(.2,.6,.4,1) both}
+#brand-values .brand-values__word[data-brand-value="2"] .bv-free .bv-l::before,
+#brand-values .brand-values__word[data-brand-value="2"] .bv-free .bv-l::after{display:none}
 #brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free .bv-l{animation:none}
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free{animation:bv-free .6s .26s cubic-bezier(.3,1.7,.5,1) both}
-@keyframes bv-unchain{
-  0%{transform:translateX(calc((3.5 - var(--i)) * .1em)) scaleX(.9)}
-  14%{transform:translateX(calc((3.5 - var(--i)) * .13em)) scaleX(.86)}
-  100%{transform:translateX(0) scaleX(1)}
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free{animation:bv-free .5s .78s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes bv-empty{
+  0%{-webkit-text-fill-color:#f26d34;transform:translateY(0)}
+  35%{-webkit-text-fill-color:rgba(242,109,52,.16);transform:translateY(-.03em)}
+  65%{-webkit-text-fill-color:rgba(242,109,52,.3);transform:translateY(-.02em)}
+  100%{-webkit-text-fill-color:#f26d34;transform:translateY(0)}
+}
+/* The outline layer of the liquid type keeps its own (transparent) fill. */
+#brand-values .site-liquid-type-outline .bv-l{animation:none!important}
+#brand-values .site-liquid-type-outline .bv-l::before,#brand-values .site-liquid-type-outline .bv-l::after{display:none}
+@keyframes bv-fizz{
+  0%{opacity:0;transform:translateY(0) scale(.4)}
+  20%{opacity:.9}
+  100%{opacity:0;transform:translate(.06em,-.75em) scale(1.15)}
 }
 @keyframes bv-free{
-  0%{transform:translateY(.12em) scale(.62);opacity:.35}
-  100%{transform:translateY(0) scale(1);opacity:1}
+  0%{transform:translateY(0) scale(1)}
+  35%{transform:translateY(.03em) scale(1.08,.88)}
+  65%{transform:translateY(-.14em) scale(1.05)}
+  100%{transform:translateY(0) scale(1)}
 }
 @media (prefers-reduced-motion: reduce){
   #brand-values .brand-values__word *{animation:none!important}
