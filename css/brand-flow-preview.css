@@ -220,40 +220,22 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.95) 45%,#fff 50%,rgba(255,255,255,.95) 55%,transparent)}
 .bv-shine.is-playing b{animation:bv-shine .5s .3s cubic-bezier(.45,0,.3,1) forwards}
 @keyframes bv-shine{0%{opacity:1;left:-20%}100%{opacity:1;left:110%}}
-/* CAFFEINE FREE — CAFFEINE jitters like too much coffee, calms down, then FREE pops. */
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l{animation:bv-jit-a .8s calc(var(--i) * -.03s) linear both}
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l:nth-of-type(even){animation-name:bv-jit-b}
+/* CAFFEINE FREE — 사슬 풀림: CAFFEINE arrives squeezed tight, then snaps loose
+   and springs out to its normal spacing; FREE bursts out free. */
+#brand-values .brand-values__word[data-brand-value="2"] .bv-l{transform:translateX(calc((3.5 - var(--i)) * .1em)) scaleX(.9)}
+#brand-values .brand-values__word[data-brand-value="2"] .bv-free .bv-l{transform:none}
+#brand-values .brand-values__word[data-brand-value="2"] .bv-free{transform:translateY(.12em) scale(.62);opacity:.35}
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l{animation:bv-unchain .62s .08s cubic-bezier(.25,1.55,.45,1) both}
 #brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free .bv-l{animation:none}
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free{animation:bv-free .55s .78s cubic-bezier(.3,1.5,.5,1) both}
-@keyframes bv-jit-a{
-  0%{transform:translate(0,0) rotate(0)}
-  8%{transform:translate(-.05em,.03em) rotate(-5deg)}
-  16%{transform:translate(.05em,-.04em) rotate(4deg)}
-  24%{transform:translate(-.04em,-.02em) rotate(-4deg)}
-  32%{transform:translate(.04em,.03em) rotate(3deg)}
-  42%{transform:translate(-.03em,.02em) rotate(-2.5deg)}
-  52%{transform:translate(.025em,-.02em) rotate(2deg)}
-  64%{transform:translate(-.015em,.01em) rotate(-1deg)}
-  78%{transform:translate(.008em,0) rotate(.5deg)}
-  100%{transform:translate(0,0) rotate(0)}
-}
-@keyframes bv-jit-b{
-  0%{transform:translate(0,0) rotate(0)}
-  8%{transform:translate(.05em,-.04em) rotate(5deg)}
-  16%{transform:translate(-.04em,.04em) rotate(-4deg)}
-  24%{transform:translate(.05em,.02em) rotate(3deg)}
-  32%{transform:translate(-.04em,-.03em) rotate(-3deg)}
-  42%{transform:translate(.03em,-.02em) rotate(2.5deg)}
-  52%{transform:translate(-.02em,.02em) rotate(-2deg)}
-  64%{transform:translate(.012em,-.01em) rotate(1deg)}
-  78%{transform:translate(-.006em,0) rotate(-.5deg)}
-  100%{transform:translate(0,0) rotate(0)}
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free{animation:bv-free .6s .26s cubic-bezier(.3,1.7,.5,1) both}
+@keyframes bv-unchain{
+  0%{transform:translateX(calc((3.5 - var(--i)) * .1em)) scaleX(.9)}
+  14%{transform:translateX(calc((3.5 - var(--i)) * .13em)) scaleX(.86)}
+  100%{transform:translateX(0) scaleX(1)}
 }
 @keyframes bv-free{
-  0%{transform:translateY(0) scale(1)}
-  30%{transform:translateY(.03em) scale(1.08,.88)}
-  60%{transform:translateY(-.14em) scale(1.06,1.06)}
-  100%{transform:translateY(0) scale(1)}
+  0%{transform:translateY(.12em) scale(.62);opacity:.35}
+  100%{transform:translateY(0) scale(1);opacity:1}
 }
 @media (prefers-reduced-motion: reduce){
   #brand-values .brand-values__word *{animation:none!important}
