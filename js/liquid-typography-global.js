@@ -124,7 +124,7 @@
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
     // 11-07: every white/light scene gets the principles-page green rings.
-    const darkBackground = !activeScene.matches('.brand-values__stage, .product-explorer, .pop-stage, .history-3d-stage, .rich-flavors__viewport, .rich-scene') &&
+    const darkBackground = !activeScene.matches('.brand-values__stage, .product-explorer, .pop-stage, .history-3d-stage, .rich-flavors__viewport, .rich-scene, .identity-stage') &&
       (!activeScene.matches('.identity-stage') || Number(document.querySelector('#identity')?.style.getPropertyValue('--bf-paper')||0)<.5);
     const tint = darkBackground
       ? 'rgba(255, 255, 255, .96)' : 'rgba(19, 131, 91, .8)';
