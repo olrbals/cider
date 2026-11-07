@@ -8,7 +8,7 @@
   const pop = document.createElement('div');
   pop.className = 'seven-stars-pop';
   pop.setAttribute('aria-hidden', 'true');
-  pop.innerHTML = '<canvas></canvas><p class="seven-stars-pop__copy">모두와 함께 큰 별</p>';
+  pop.innerHTML = '<canvas></canvas><p class="seven-stars-pop__copy">시대를 깨운 청량함, 모두와 함께 큰 별</p>';
   document.body.append(pop);
   const canvas = pop.querySelector('canvas');
   const copy = pop.querySelector('.seven-stars-pop__copy');
@@ -43,11 +43,17 @@
     const dt = Math.min(.05, (now - (prev || now)) / 1000); prev = now;
     const age = (now - born) / 1000;
     ctx.clearRect(0, 0, w, h);
-    // Shock ring: one quick "팡" from the centre.
+    // Shock star: one quick "팡" from the centre.
     if (age < .55) {
       const k = age / .55, e = 1 - (1 - k) ** 3;
+      // Star-shaped shock wave (five points, slight turn as it bursts out).
+      const R = 30 + e * Math.hypot(w, h) * .5, rot = -Math.PI / 2 + e * .18;
       ctx.beginPath();
-      ctx.arc(w / 2, h / 2, 30 + e * Math.hypot(w, h) * .46, 0, Math.PI * 2);
+      for (let i = 0; i < 10; i++) {
+        const rr = i % 2 ? R * .42 : R, an = rot + i * Math.PI / 5;
+        ctx.lineTo(w / 2 + Math.cos(an) * rr, h / 2 + Math.sin(an) * rr);
+      }
+      ctx.closePath(); ctx.lineJoin = 'round';
       ctx.strokeStyle = 'rgba(20,159,92,' + (.38 * (1 - k)).toFixed(3) + ')';
       ctx.lineWidth = 2 + 14 * (1 - k);
       ctx.stroke();

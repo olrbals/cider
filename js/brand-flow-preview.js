@@ -126,8 +126,9 @@
       const stageBox=identity.querySelector('.identity-stage').getBoundingClientRect();
       aperture.style.transform='translate('+(ax-expanded/2-stageBox.left)+'px,'+(ay-expanded/2-stageBox.top)+'px) scale('+(expanded/100)+')';
     }
-    flight.classList.toggle('is-visible',visible);
-    if(!visible)return;
+    // 11-07: no second star flying down onto the can — history simply fades in.
+    flight.classList.remove('is-visible');
+    if(true||!visible)return;
 
     const move=fall;
     // Ask the 3D history renderer for the landmark on the actual can,
