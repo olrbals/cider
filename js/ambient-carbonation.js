@@ -98,7 +98,7 @@
   function resize() {
     width = Math.max(1, window.innerWidth);
     height = Math.max(1, window.innerHeight);
-    dpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1 : 1.5);
+    dpr = 1;   // 11-07: soft bubbles don't need retina pixels — big saving on laptops
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
     canvas.style.width = width + 'px';

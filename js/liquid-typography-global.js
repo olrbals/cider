@@ -279,7 +279,7 @@
     glow.style.setProperty('--liquid-glow-radius-y', (lightSize * .88).toFixed(1) + 'px');
 
     // 30fps for SVG masks; cursor positioning remains smooth at display refresh rate.
-    if (now - lastRender < 32) return;
+    if (now - lastRender < 42) return;   // 11-07: 24fps masks (lighter on laptops)
     lastRender = now;
     all.forEach(item => {
       const rect = item.node.getBoundingClientRect();
@@ -297,7 +297,7 @@
         return;
       }
       const points = [];
-      const count = 40;
+      const count = 26;
       for (let i = 0; i < count; i++) {
         const angle = Math.PI * 2 * i / count;
         const variation =

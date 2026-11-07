@@ -3,7 +3,7 @@
 .brand-values__word > .site-liquid-type-fill,
 .brand-values__word > .site-liquid-type-outline { position:absolute; inset:0; width:100%; height:100%; display:grid; place-items:center; }
 .brand-values__word .site-liquid-type-content { display:block; font:inherit; line-height:inherit; letter-spacing:inherit; }
-.glow-star-cursor { position:fixed; left:0; top:0; width:28px; height:28px; z-index:2147483646; pointer-events:none; visibility:hidden; transform:translate(-50%,-50%); contain:layout style; }
+.glow-star-cursor { position:fixed; left:0; top:0; width:28px; height:28px; z-index:2147483646; pointer-events:none; visibility:hidden; transform:translate(-50%,-50%); contain:layout style; will-change:transform; }
 .glow-star-cursor.is-visible { visibility:visible; }
 .glow-star-cursor svg { display:block; width:28px; height:28px; overflow:visible; fill:#149f5c; stroke:#e8fff8; stroke-width:2.5; stroke-linejoin:round; filter:drop-shadow(0 0 3px #eafff8) drop-shadow(0 0 7px #a0ffe5); animation:cursor-star-glow 2.4s ease-in-out infinite alternate; }
 .glow-star-cursor-trail { position:fixed; left:0; top:0; z-index:2147483645; pointer-events:none; border-radius:50%; background:#9fffe3; box-shadow:0 0 7px 3px #b8ffeb; opacity:0; transform:translate(-50%,-50%); }

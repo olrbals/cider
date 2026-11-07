@@ -52,6 +52,7 @@ async function boot() {
   function frame() {
     raf = 0;
     if (duo.style.visibility !== 'visible') return;          // sleeps until shown again
+    { const r = root.getBoundingClientRect(); if (r.bottom <= 0 || r.top >= innerHeight) return; }   // off screen (e.g. footer) → sleep
     if (W !== duo.clientWidth || H !== duo.clientHeight) resize();
     const v = duo.getBoundingClientRect();
     const units = visibleH / Math.max(1, H);

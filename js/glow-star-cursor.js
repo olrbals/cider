@@ -19,12 +19,12 @@
     document.documentElement.classList.remove('has-glow-star-cursor');
   }
   function draw(now=performance.now()){
-    frame=0;cursor.style.left=x+'px';cursor.style.top=y+'px';
+    frame=0;cursor.style.transform='translate3d('+x+'px,'+y+'px,0) translate(-50%,-50%)';
     const strength=reduced.matches?0:Math.min(1,Math.max(0,1-(now-lastMove)/180));
     let px=x,py=y;
     trail.forEach((p,i)=>{
       p.x+=(px-p.x)*.42;p.y+=(py-p.y)*.42;
-      p.node.style.left=p.x.toFixed(2)+'px';p.node.style.top=p.y.toFixed(2)+'px';
+      p.node.style.transform='translate3d('+p.x.toFixed(2)+'px,'+p.y.toFixed(2)+'px,0) translate(-50%,-50%)';
       p.node.style.opacity=(strength*.25*(1-i/7)).toFixed(3);px=p.x;py=p.y;
     });
     if(strength>0)frame=requestAnimationFrame(draw);

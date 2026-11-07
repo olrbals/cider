@@ -52,6 +52,7 @@
   function frame(now) {
     raf = 0;
     if (duo.style.visibility !== 'visible') { ctx.clearRect(0, 0, W, H); bubbles.length = 0; last = 0; return; }
+    { const r = duo.getBoundingClientRect(); if (r.bottom <= 0 || r.top >= innerHeight) { last = 0; return; } }
     if (W !== duo.clientWidth || H !== duo.clientHeight) resize();
     const dt = Math.min(.05, (now - (last || now)) / 1000); last = now;
     const t = now / 1000;
