@@ -112,7 +112,8 @@
     const takeover=between(progress,.42,.47);
     const landing=between(progress,.945,.995);
     const visible=fall>.40 && progress<.995 && r.bottom>0 && r.top<h && !document.hidden;
-    const entry=between(progress,.75,.95);
+    // 11-07: history is fully there under the white tide sheet (seven-stars-pop.js).
+    const entry=progress>=(window.__sevenStarsTideStart??.665)?1:between(progress,.75,.95);
     historyStage.style.setProperty('--history-entry-opacity',historyRect.top>0?entry.toFixed(4):'1');
     identity.classList.toggle('is-star-opening',progress>.40);
     const center=source||{x:innerWidth*.5,y:h*.55,size:Math.min(190,innerWidth*.135)};
