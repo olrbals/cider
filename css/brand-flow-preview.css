@@ -176,13 +176,13 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 /* V5.2 — one color per principle (Figma 1431:33 / 1456:2; navy replaces
    yellow so CAFFEINE FREE reads on white and pairs with the yellow FIZZ). */
 #brand-values .brand-values__word[data-brand-value="0"] { color: #149f5c; }
-#brand-values .brand-values__word[data-brand-value="1"] { color: #149f5c; }
-#brand-values .brand-values__word[data-brand-value="2"] { color: #149f5c; }
+#brand-values .brand-values__word[data-brand-value="1"] { color: #3271e5; }
+#brand-values .brand-values__word[data-brand-value="2"] { color: #6b4428; }
 /* 11-07 — corner labels follow the active principle colour. */
-#brand-values .brand-values__micro,#brand-values .brand-values__title,#brand-values .brand-values__counter { color: var(--bv-accent,#149f5c); }
+#brand-values .brand-values__micro,#brand-values .brand-values__title,#brand-values .brand-values__counter { color:#b7bdba; }
 
 /* 11-07 — FIZZ edge labels in Chilsung green. */
-#korea .korea-stage > .section-edge-label { color: #149f5c !important; }
+#korea .korea-stage > .section-edge-label { color: rgba(20,159,92,.5) !important; }
 
 /* 11-07 — SEVEN STARS → history: carbonation pop + line on the white screen. */
 .seven-stars-pop{position:fixed;inset:0;z-index:27;pointer-events:none;visibility:hidden}
@@ -220,35 +220,16 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.95) 45%,#fff 50%,rgba(255,255,255,.95) 55%,transparent)}
 .bv-shine.is-playing b{animation:bv-shine .5s .3s cubic-bezier(.45,0,.3,1) forwards}
 @keyframes bv-shine{0%{opacity:1;left:-20%}100%{opacity:1;left:110%}}
-/* CAFFEINE FREE — 기포로 빠져나가기: bubbles fizz up out of CAFFEINE, the
-   letters go see-through for a beat and fill back clear; FREE then pops. */
-#brand-values .brand-values__word[data-brand-value="2"] .bv-l{position:relative}
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l{animation:bv-empty .9s calc(var(--i) * .045s) cubic-bezier(.4,0,.3,1) both}
-#brand-values .brand-values__word[data-brand-value="2"] .bv-l::before,
-#brand-values .brand-values__word[data-brand-value="2"] .bv-l::after{
-  content:"";position:absolute;left:50%;top:45%;width:.11em;height:.11em;margin-left:-.055em;border-radius:50%;
-  border:.02em solid #149f5c;opacity:0;pointer-events:none;-webkit-text-fill-color:initial
-}
-#brand-values .brand-values__word[data-brand-value="2"] .bv-l::after{width:.07em;height:.07em;margin-left:.04em;top:60%}
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l::before{animation:bv-fizz .85s calc(var(--i) * .045s + .05s) cubic-bezier(.2,.6,.4,1) both}
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l::after{animation:bv-fizz .75s calc(var(--i) * .045s + .2s) cubic-bezier(.2,.6,.4,1) both}
-#brand-values .brand-values__word[data-brand-value="2"] .bv-free .bv-l::before,
-#brand-values .brand-values__word[data-brand-value="2"] .bv-free .bv-l::after{display:none}
+/* CAFFEINE FREE — 흩어짐: the CAFFEINE letters burst apart like grounds
+   blown away and drift back only as a faint ghost — the caffeine is gone,
+   while FREE lands solid. */
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l{animation:bv-scatter 1.15s calc(var(--i) * .035s) cubic-bezier(.25,.7,.3,1) both}
 #brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free .bv-l{animation:none}
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free{animation:bv-free .5s .78s cubic-bezier(.3,1.6,.5,1) both}
-@keyframes bv-empty{
-  0%{-webkit-text-fill-color:#149f5c;transform:translateY(0)}
-  35%{-webkit-text-fill-color:rgba(20,159,92,.16);transform:translateY(-.03em)}
-  65%{-webkit-text-fill-color:rgba(20,159,92,.3);transform:translateY(-.02em)}
-  100%{-webkit-text-fill-color:#149f5c;transform:translateY(0)}
-}
-/* The outline layer of the liquid type keeps its own (transparent) fill. */
-#brand-values .site-liquid-type-outline .bv-l{animation:none!important}
-#brand-values .site-liquid-type-outline .bv-l::before,#brand-values .site-liquid-type-outline .bv-l::after{display:none}
-@keyframes bv-fizz{
-  0%{opacity:0;transform:translateY(0) scale(.4)}
-  20%{opacity:.9}
-  100%{opacity:0;transform:translate(.06em,-.75em) scale(1.15)}
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free{animation:bv-free .5s .7s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes bv-scatter{
+  0%{opacity:1;filter:blur(0);transform:translate(0,0) rotate(0) scale(1)}
+  38%{opacity:.12;filter:blur(5px);transform:translate(var(--sx),var(--sy)) rotate(var(--sr)) scale(.78)}
+  100%{opacity:.24;filter:blur(0);transform:translate(0,0) rotate(0) scale(1)}
 }
 @keyframes bv-free{
   0%{transform:translateY(0) scale(1)}
@@ -267,3 +248,8 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 /* Longer hold per principle so each gag can finish and be seen. */
 #brand-values.brand-values{height:440svh;min-height:2600px}
 .brand-values__recap-main b{font-weight:800}
+
+/* 11-07 (d) — design note: anything that isn't the main content goes grey or light. */
+#identity .identity-stage > .section-edge-label{opacity:.55}
+.site-header > nav,.site-header .header-utils{opacity:.72}
+.history-era-bar__hint{color:rgba(20,159,92,.4)!important}
