@@ -75,7 +75,7 @@
         gag.style.transform='translate3d(-50%,'+dy.toFixed(2)+'px,0)';
         if(i===1){const sh=values.querySelector('.bv-shine');sh.style.opacity=opacity.toFixed(3);sh.classList.toggle('is-playing',gag.classList.contains('is-playing'));}
         // PURE's drop waits for the visitor's first scroll into the section.
-        const ready=opacity>.85&&(i>0||progress>=.035);
+        const ready=opacity>.5&&(i>0||progress>=.035);
         if(ready&&!gag.classList.contains('is-playing'))gag.classList.add('is-playing');
         else if(opacity<.08||(i===0&&progress<.01))gag.classList.remove('is-playing');
       }

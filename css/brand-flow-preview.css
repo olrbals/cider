@@ -211,9 +211,9 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .bv-splash{left:0;top:-6px;width:0;height:0}
 .bv-splash i{left:0;top:0;width:12px;height:12px;margin:-6px;border-radius:50%;opacity:0}
 .bv-gag[data-gag="drop"] .bv-splash i{background:#3dbb7e}
-.is-playing .bv-drop{animation:bv-drop 2.6s cubic-bezier(.3,0,.4,1) forwards,bv-drop-idle 2.4s 2.6s ease-in-out infinite}
-.is-playing .bv-ripple{animation:bv-ripple 1.1s .8s ease-out forwards}
-.is-playing .bv-splash i{animation:bv-spray 1s var(--sd,.82s) cubic-bezier(.2,.7,.3,1) forwards}
+.is-playing .bv-drop{animation:bv-drop 1.3s cubic-bezier(.3,0,.4,1) forwards,bv-drop-idle 2.4s 1.3s ease-in-out infinite}
+.is-playing .bv-ripple{animation:bv-ripple .8s .4s ease-out forwards}
+.is-playing .bv-splash i{animation:bv-spray .7s var(--sd,.4s) cubic-bezier(.2,.7,.3,1) forwards}
 @keyframes bv-drop{
   0%{opacity:0;transform:translateY(-190px) scale(.85,1.2)}
   6%{opacity:1}
@@ -233,22 +233,22 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .bv-shine{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none;mix-blend-mode:screen;opacity:0}
 .bv-shine b{position:absolute;left:-20%;top:-20%;width:14%;height:140%;transform:skewX(-20deg);opacity:0;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.95) 45%,#fff 50%,rgba(255,255,255,.95) 55%,transparent)}
-.bv-shine.is-playing b{animation:bv-shine 1.1s .1s cubic-bezier(.45,0,.3,1) forwards}
+.bv-shine.is-playing b{animation:bv-shine .6s 0s cubic-bezier(.45,0,.3,1) forwards}
 @keyframes bv-shine{0%{opacity:1;left:-20%}100%{opacity:1;left:110%}}
 .bv-spk{left:var(--x);top:var(--y);width:var(--s);height:var(--s);margin:calc(var(--s) / -2);opacity:0}
 .bv-spk path{fill:#3271e5}
-.is-playing .bv-spk{animation:bv-spk-pop .55s var(--d) cubic-bezier(.3,1.6,.5,1) forwards,bv-spk-tw 1.4s calc(var(--d) + .55s) ease-in-out infinite}
+.is-playing .bv-spk{animation:bv-spk-pop .4s var(--d) cubic-bezier(.3,1.6,.5,1) forwards,bv-spk-tw 1.4s calc(var(--d) + .4s) ease-in-out infinite}
 @keyframes bv-spk-pop{0%{opacity:0;transform:scale(0) rotate(-90deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes bv-spk-tw{0%,100%{opacity:1;transform:scale(1) rotate(0)}50%{opacity:.6;transform:scale(.62) rotate(30deg)}}
 /* CAFFEINE FREE — a bean floats up, pops, and 0mg bursts in its place. */
 .bv-bean{left:0;top:0;width:44px;height:58px;margin:-29px 0 0 -22px;opacity:0}
 .bv-bean ellipse{fill:#6b4a2f}.bv-bean path{fill:none;stroke:#3b2716;stroke-width:1.6;stroke-linecap:round}
 .bv-gag[data-gag="bean"] .bv-splash{top:0}
-.bv-gag[data-gag="bean"] .bv-splash i{background:#f26d34;--sd:.66s}
+.bv-gag[data-gag="bean"] .bv-splash i{background:#f26d34;--sd:.5s}
 .bv-zero{left:0;top:0;transform:translate(-50%,-50%) scale(0);padding:.16em .55em .2em;border-radius:999px;
   background:#f26d34;color:#fff;font:400 clamp(16px,1.6667vw,24px)/1 "Archivo Black","Pretendard",sans-serif;white-space:nowrap;opacity:0}
-.is-playing .bv-bean{animation:bv-bean .8s cubic-bezier(.25,.6,.35,1) forwards}
-.is-playing .bv-zero{animation:bv-zero .6s .66s cubic-bezier(.3,1.6,.5,1) forwards}
+.is-playing .bv-bean{animation:bv-bean .6s cubic-bezier(.25,.6,.35,1) forwards}
+.is-playing .bv-zero{animation:bv-zero .45s .5s cubic-bezier(.3,1.6,.5,1) forwards}
 @keyframes bv-bean{
   0%{opacity:0;transform:translateY(90px)}
   15%{opacity:1}
