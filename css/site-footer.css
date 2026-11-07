@@ -1,30 +1,35 @@
 /* Brand signoff + site footer — green, layout after the Lotte Chilsung corporate footer, in the
    site's type. Full-height so the liquid wave can sweep in completely. */
-.site-footer{position:relative;z-index:6;isolation:isolate;overflow:visible;min-height:100svh;display:grid;align-items:center;background:#149f5c;color:rgba(255,255,255,.82);font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;padding:96px 40px 72px}
-.site-footer__inner{position:relative;width:min(1440px,100%);margin:0 auto;display:grid;justify-items:center;gap:30px;text-align:center}
-.site-footer__top{width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
-.site-footer__logo{display:block;width:clamp(200px,20vw,300px);height:auto;filter:brightness(0) invert(1);margin-bottom:28px}
-.site-footer__brand{grid-column:2;margin:0;display:flex;align-items:center;gap:12px;font-size:26px;font-weight:700;letter-spacing:.06em;color:#fff}
-.site-footer__mark{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#fff;color:#149f5c;font:italic 700 24px/1 Georgia,serif;letter-spacing:0}
-.site-footer__family{grid-column:3;justify-self:end;display:flex;align-items:center;gap:6px}
+.site-footer{position:relative;z-index:6;isolation:isolate;overflow:visible;min-height:100svh;display:flex;background:#149f5c;color:rgba(255,255,255,.86);font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;padding:0 clamp(24px,5.5vw,80px)}
+/* 11-07 — readable layout: brand moment on top, one aligned info panel below. */
+.site-footer__inner{position:relative;width:min(1200px,100%);margin:0 auto;display:flex;flex-direction:column;min-height:100svh}
+.site-footer__hero{flex:1;display:grid;place-items:center;padding:14svh 0 8svh}
+.site-footer__logo{display:block;width:clamp(200px,18vw,270px);height:auto;filter:brightness(0) invert(1)}
+.site-footer__panel{padding:0 0 clamp(32px,5svh,56px);display:grid;gap:22px;text-align:left}
+.site-footer__top{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.28)}
+.site-footer__brand{margin:0;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;letter-spacing:.04em;color:#fff}
+.site-footer__mark{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#fff;color:#149f5c;font:italic 700 18px/1 Georgia,serif;letter-spacing:0}
+.site-footer__selects{display:flex;align-items:center;gap:10px}
+.site-footer__family{display:flex;align-items:center;gap:6px}
 .site-footer select option{color:#222}
-.site-footer select{appearance:none;-webkit-appearance:none;height:48px;padding:0 48px 0 24px;border:1px solid rgba(255,255,255,.55);border-radius:999px;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M6 0l6 8H0z' fill='%23ffffff'/%3E%3C/svg%3E") no-repeat right 20px center;font-family:inherit;font-size:18px;color:#fff;cursor:pointer}
-.site-footer__family select{min-width:290px}
-.site-footer__family button{width:48px;height:48px;border:0;border-radius:50%;background:#fff;color:#149f5c;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer}
-.site-footer__links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 0}
-.site-footer__links > span{font-size:19px;color:rgba(255,255,255,.78);text-decoration:none;padding:0 22px;position:relative}
-.site-footer__links > span:not(:first-child)::before{content:"";position:absolute;left:-2px;top:50%;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.45);transform:translateY(-50%)}
+.site-footer select{appearance:none;-webkit-appearance:none;height:40px;padding:0 40px 0 18px;border:1px solid rgba(255,255,255,.5);border-radius:999px;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff'/%3E%3C/svg%3E") no-repeat right 16px center;font-family:inherit;font-size:14px;letter-spacing:.02em;color:#fff}
+.site-footer__family select,.site-footer__sns select{min-width:190px}
+.site-footer__family button{width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#149f5c;font-family:inherit;font-weight:700;font-size:13px}
+.site-footer__links{display:flex;flex-wrap:wrap;align-items:center;gap:8px 0}
+.site-footer__links > span{font-size:15px;line-height:1.5;color:rgba(255,255,255,.86);padding:0 16px;position:relative}
+.site-footer__links > span:first-child{padding-left:0}
+.site-footer__links > span:not(:first-child)::before{content:"";position:absolute;left:-1px;top:50%;width:1px;height:12px;background:rgba(255,255,255,.4);transform:translateY(-50%)}
 .site-footer__links > span.is-strong{color:#fff;font-weight:700}
-.site-footer__sns{margin-left:22px}
-.site-footer__sns select{min-width:300px}
-.site-footer__info{font-style:normal;display:flex;flex-wrap:wrap;justify-content:center;font-size:17px;color:rgba(255,255,255,.8)}
-.site-footer__info span{padding:0 16px}
-.site-footer__info span+span{border-left:1px solid rgba(255,255,255,.35)}
-.site-footer__copy{margin:-8px 0 0;font-size:15px;letter-spacing:.01em;color:rgba(255,255,255,.55)}
-.site-footer__certs{display:grid;gap:4px;font-size:15px;color:rgba(255,255,255,.75);text-align:left}
-.site-footer__certs p{margin:0}.site-footer__certs strong{color:#fff;font-weight:600}
-.site-footer__note{margin:8px 0 0;font-size:13px;color:#fff;opacity:.6}
-@media(max-width:900px){.site-footer__top{grid-template-columns:1fr;gap:20px}.site-footer__brand,.site-footer__family{grid-column:1;justify-self:center}.site-footer__family select,.site-footer__sns select{min-width:220px}}
+.site-footer__info{font-style:normal;display:flex;flex-wrap:wrap;gap:6px 0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.78)}
+.site-footer__info span{padding:0 14px;position:relative}
+.site-footer__info span:first-child{padding-left:0}
+.site-footer__info span+span::before{content:"";position:absolute;left:-1px;top:50%;width:1px;height:11px;background:rgba(255,255,255,.35);transform:translateY(-50%)}
+.site-footer__bottom{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px 32px;padding-top:4px}
+.site-footer__copy{margin:0;font-size:13px;letter-spacing:.02em;color:rgba(255,255,255,.62)}
+.site-footer__certs{display:flex;gap:20px;font-size:13px;color:rgba(255,255,255,.7)}
+.site-footer__certs p{margin:0}.site-footer__certs strong{color:#fff;font-weight:600;margin-right:6px}
+.site-footer__note{margin:0;font-size:12px;color:rgba(255,255,255,.55)}
+@media(max-width:900px){.site-footer__top{flex-direction:column;align-items:flex-start}.site-footer__selects{flex-wrap:wrap}}
 
 /* 11-07 — portfolio footer: nothing is clickable or focusable. */
 .site-footer,.site-footer *{pointer-events:none!important;cursor:default!important;user-select:none}

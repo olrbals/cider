@@ -25,7 +25,7 @@
   ) || (typeof window.navigator.deviceMemory === 'number' && window.navigator.deviceMemory < 4);
   const densityFactor = lowPower ? .55 : 1;
   let width = 0, height = 0, dpr = 1;
-  let targetCount = 0, spawnCredit = 0, frame = 0, lastTime = 0;
+  let targetCount = 0, spawnCredit = 0, frame = 0, lastTime = 0, historyFade = 1;
   let active = false;
   let richProductsActive = false;
 
@@ -184,8 +184,16 @@
     richProductsActive = story >= 1.98 && story < 3.45 && rect.bottom > innerHeight;
     // 11-07: rising carbonation on every screen — hero first screen through the footer.
     void heroFade; void beyondHero; void fade;
-    canvas.style.opacity = String(richProductsActive ? .55 : .84);
-    const show = !document.hidden && !reducedMotion.matches;
+    // 11-07 (b): from Brand History on, the bubbles thin out and fade away
+    // over ~1.5 screens; RICH and the footer stay clear.
+    const hist = document.querySelector('#history-3d');
+    const hr = hist?.getBoundingClientRect();
+    const into = hr ? -hr.top / innerHeight : -1;
+    const hk = Math.max(0, Math.min(1, (into + .2) / 1.7));
+    historyFade = 1 - hk * hk * (3 - 2 * hk);
+    targetCount = Math.max(0, Math.round(desiredCount() * (.25 + .75 * historyFade)));
+    canvas.style.opacity = String((richProductsActive ? .55 : .84) * historyFade);
+    const show = historyFade > .01 && !document.hidden && !reducedMotion.matches;
     canvas.classList.toggle('is-active', show);
     if (show) resume();
     else suspend();
