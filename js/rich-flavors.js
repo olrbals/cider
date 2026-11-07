@@ -135,7 +135,7 @@
       const px=mix(clinkPt.x,x,Math.min(1,e))+Math.sin(t*4.5+i*1.3)*22*drift;
       const py=mix(clinkPt.y,y,Math.min(1,e))+Math.cos(t*3.7+i)*18*drift;
       const scale=.04+.96*e+.28*Math.sin(Math.min(1,ki)*Math.PI);                                     // overshoots > 1: flies at the viewer
-      const angle=rotation+(i%2?1:-1)*(120*(1-ki))+Math.sin(t*3+i)*8*drift;
+      const angle=rotation; // 11-07: no spin — the fruits just burst outward for freshness
       n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
       n.style.transform='translate(-50%,-50%) rotate('+angle.toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
       n.style.opacity=(alpha*Math.min(1,ki*5)).toFixed(4);

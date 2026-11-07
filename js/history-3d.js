@@ -384,18 +384,34 @@ function createArchiveCounter(stage, years) {
     lastBlend = blend;
     const selected = Math.min(years.length - 1, pair + (blend < .5 ? 0 : 1));
 
-    if(reducedMotion.matches){if(currentIndex !== selected || captionPair !== pair)settle(selected);}
-    else {
-      if(captionPair!==pair || currentIndex===-1){
-        digits.forEach((item,i)=>{
-          item.animation?.cancel();item.animation=null;
-          item.reel.replaceChildren(makeGlyph(years[pair][i]),makeGlyph(years[pair+1][i]));
-          item.reel.style.filter='';
+    // 11-07 — slot-machine year: on each switch, every changed digit whips
+    // top → bottom through a few full turns of 0–9, then lands on the new year.
+    if (reducedMotion.matches || currentIndex === -1) {
+      if (currentIndex !== selected) settle(selected);
+    } else if (currentIndex !== selected) {
+      const from = years[currentIndex], to = years[selected];
+      const down = selected > currentIndex;
+      digits.forEach((item, i) => {
+        item.animation?.cancel(); item.animation = null;
+        if (from[i] === to[i]) { item.reel.replaceChildren(makeGlyph(to[i])); item.reel.style.transform = ''; return; }
+        const turns = 2 + (digits.length - 1 - i) * .5;            // right-hand digits spin a little longer
+        const count = Math.round(10 * turns);
+        const a = +from[i], seq = [];
+        // Reel reads top → bottom: new … filler … old. Sliding it down makes the
+        // numbers fall from above; scrolling back up reverses the direction.
+        for (let k = 1; k <= count; k++) seq.push(String((a + (down ? k : -k) + 100) % 10));
+        seq[seq.length - 1] = to[i];
+        const glyphs = [from[i], ...seq].reverse().map(makeGlyph);
+        item.reel.replaceChildren(...glyphs);
+        const h = 1.3, end = 0, start = -(glyphs.length - 1) * h;
+        const frames = down
+          ? [{ transform: 'translateY(' + start + 'em)', filter: 'blur(0px)' }, { transform: 'translateY(' + (start * .25) + 'em)', filter: 'blur(1.6px)', offset: .55 }, { transform: 'translateY(' + end + 'em)', filter: 'blur(0px)' }]
+          : [{ transform: 'translateY(' + end + 'em)', filter: 'blur(0px)' }, { transform: 'translateY(' + (start * .75) + 'em)', filter: 'blur(1.6px)', offset: .55 }, { transform: 'translateY(' + start + 'em)', filter: 'blur(0px)' }];
+        if (!down) item.reel.replaceChildren(...glyphs.reverse());
+        item.reel.style.transform = '';
+        item.animation = item.reel.animate(frames, {
+          duration: 640 + i * 70, easing: 'cubic-bezier(.18,.7,.24,1.06)', fill: 'forwards'
         });
-      }
-      digits.forEach((item,i)=>{
-        const amount=years[pair][i]===years[pair+1][i]?0:blend;
-        item.reel.style.transform='translateY('+(-amount*1.3).toFixed(5)+'em)';
       });
     }
     if(currentIndex !== selected) screenReaderYear.textContent = years[selected];
