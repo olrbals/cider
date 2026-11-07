@@ -35,3 +35,6 @@
 .site-footer,.site-footer *{pointer-events:none!important;cursor:default!important;user-select:none}
 .site-footer select:disabled,.site-footer button:disabled{opacity:1;color:inherit}
 .site-footer__family button:disabled{color:#149f5c}
+
+/* 11-07 (c) — official Lotte Chilsung mark, no select boxes. */
+.site-footer__brand img{display:block;height:40px;width:auto}
