@@ -123,14 +123,15 @@
     const particle = document.createElement('span');
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
-    const darkBackground = !activeScene.matches('.brand-values__stage, .product-explorer, .pop-stage, .history-3d-stage') &&
+    // 11-07: every white/light scene gets the principles-page green rings.
+    const darkBackground = !activeScene.matches('.brand-values__stage, .product-explorer, .pop-stage, .history-3d-stage, .rich-flavors__viewport, .rich-scene') &&
       (!activeScene.matches('.identity-stage') || Number(document.querySelector('#identity')?.style.getPropertyValue('--bf-paper')||0)<.5);
     const tint = darkBackground
       ? 'rgba(255, 255, 255, .96)' : 'rgba(19, 131, 91, .8)';
     const angle = Math.random() * Math.PI * 2;
     const trail = isRipple ? 0 : Math.random() * (14 + velocity * 42);
     const scatter = isRipple ? 0 : 9 + Math.random() * (21 + velocity * 16);
-    const size = isRipple ? 22 : 3.5 + Math.random() * (16 * 1.22 - 3.5);
+    const size = isRipple ? 22 : 3.5 + Math.random() * (16 * 1.22 * 1.2 - 3.5);   // 11-07: max ×1.2
     particle.style.left = (x - directionX * trail +
       Math.cos(angle) * scatter).toFixed(1) + 'px';
     particle.style.top = (y - directionY * trail +
@@ -162,7 +163,7 @@
   function sceneAt(clientX, clientY) {
     const hit = document.elementFromPoint(clientX, clientY);
     if (!(hit instanceof Element)) return null;
-    if (hit.closest('.rich-copy, .rich-duo, .rich-signoff')) return null;
+    if (hit.closest('.rich-copy, .rich-signoff')) return null;
 
     // The history 3D stage has pointer-events:none so the browser hit-test
     // lands on its underlying scroll panel. Route that hit to the visible

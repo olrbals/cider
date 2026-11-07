@@ -182,8 +182,10 @@
     const t = Math.max(0, Math.min(1, story / .38));
     const fade = t * t * (3 - 2 * t);
     richProductsActive = story >= 1.98 && story < 3.45 && rect.bottom > innerHeight;
-    canvas.style.opacity = String((richProductsActive ? .40 : .84 * (1 - fade)) * heroFade);
-    const show = beyondHero && (fade < 1 || richProductsActive) && !document.hidden && !reducedMotion.matches;
+    // 11-07: rising carbonation on every screen — hero first screen through the footer.
+    void heroFade; void beyondHero; void fade;
+    canvas.style.opacity = String(richProductsActive ? .55 : .84);
+    const show = !document.hidden && !reducedMotion.matches;
     canvas.classList.toggle('is-active', show);
     if (show) resume();
     else suspend();
