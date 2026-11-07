@@ -53,24 +53,53 @@
     if(rect.top>h||rect.bottom<0)return;
     const progress=clamp(-rect.top/Math.max(1,rect.height-h));
     const counter=values.querySelector('.brand-values__counter');
-    if(counter)counter.textContent=String(Math.min(3,Math.floor(progress*3)+1)).padStart(2,'0')+' - 03';
-    const cuts=[[0,.34],[.33,.67],[.66,1]];
+    // 11-07 시안: three principles, then the Korean lines gather into one sentence.
+    const cuts=[[0,.29],[.28,.57],[.56,.83]];
+    const finale=between(progress,.8,.865);
+    if(counter)counter.textContent=String(progress<.28?1:progress<.56?2:3).padStart(2,'0')+' - 03';
+    const kos=values.querySelectorAll('.brand-values__ko');
     words.forEach((word,i)=>{
       const [a,b]=cuts[i];
       const entering=i===0?1:between(progress,a-.028,a+.045);
-      const leaving=i===2?1:1-between(progress,b-.075,b+.025);
+      const leaving=i===2?1-finale:1-between(progress,b-.075,b+.025);
       const opacity=clamp(entering*leaving);
       const dy=(1-entering)*24+(1-leaving)*-25;
       word.style.opacity=opacity.toFixed(3);
       word.style.transform='translate3d(0,'+dy.toFixed(2)+'px,0) scale('+
         (1-.025*(1-opacity)).toFixed(4)+')';
       word.setAttribute('aria-hidden',opacity<.2?'true':'false');
+      // Korean line follows its word, arriving a beat later.
+      const ko=kos[i];
+      if(ko){
+        const [a2]=cuts[i];
+        const kin=i===0?between(progress,0,.05):between(progress,a2+.01,a2+.07);
+        const ko_o=clamp(kin*leaving);
+        ko.style.opacity=ko_o.toFixed(3);
+        ko.style.transform='translate3d(-50%,'+((1-kin)*16+(1-leaving)*-14).toFixed(2)+'px,0)';
+      }
+    });
+    // CAFFEINE FREE: a coffee bean floats up on a bubble and pops → 0mg.
+    const bean=values.querySelector('.bv-bean'),zero=values.querySelector('.bv-zero');
+    if(bean){
+      const rise=between(progress,.6,.7),burst=between(progress,.7,.735);
+      bean.style.opacity=(rise>0?Math.min(1,rise*4)*(1-burst):0).toFixed(3);
+      bean.style.transform='translate3d(0,'+((1-rise)*46-rise*26).toFixed(1)+'px,0) rotate('+(rise*40).toFixed(1)+'deg) scale('+(1+burst*.8).toFixed(3)+')';
+      bean.style.setProperty('--bv-ring',burst.toFixed(3));
+      zero.style.opacity=between(progress,.715,.75).toFixed(3);
+      zero.style.transform='scale('+(.6+.4*between(progress,.715,.75)+.12*Math.sin(Math.PI*between(progress,.715,.76))).toFixed(3)+')';
+    }
+    // Finale: the three Korean pieces come together, each in its own colour.
+    values.querySelectorAll('.brand-values__sentence [data-s]').forEach((piece,i)=>{
+      const k=between(progress,.84+i*.025,.9+i*.025);
+      piece.style.opacity=k.toFixed(3);
+      piece.style.transform='translate3d(0,'+((1-k)*(i===3?14:38)).toFixed(1)+'px,0) scale('+(.9+.1*k).toFixed(3)+')';
     });
     // Corner labels blend between the principle colours with the words.
     const mix=(x,y,k)=>x.map((v,j)=>Math.round(v+(y[j]-v)*k));
     const pal=[[20,159,92],[50,113,229],[242,109,52]];
-    const k1=between(progress,.33-.028,.33+.045),k2=between(progress,.66-.028,.66+.045);
-    const rgb=k2>0?mix(pal[1],pal[2],k2):mix(pal[0],pal[1],k1);
+    const k1=between(progress,.28-.028,.28+.045),k2=between(progress,.56-.028,.56+.045);
+    let rgb=k2>0?mix(pal[1],pal[2],k2):mix(pal[0],pal[1],k1);
+    if(finale>0)rgb=mix(pal[2],pal[0],finale);
     values.style.setProperty('--bv-accent','rgb('+rgb.join(',')+')');
     stage.style.backgroundColor='#ffffff';
   }

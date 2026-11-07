@@ -195,3 +195,40 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   opacity:var(--pop-copy,0);
   transform:translate(-50%,-50%) translateY(calc((1 - var(--pop-copy,0)) * 18px + var(--pop-lift,0px))) scale(calc(.96 + var(--pop-copy,0) * .04));
 }
+
+/* 11-07 시안 — Korean lines + finale sentence for the three principles. */
+.brand-values__ko{
+  position:absolute;left:50%;top:calc(100% + 1.2svh);margin:0;white-space:nowrap;z-index:3;
+  font:700 clamp(20px,2.2222vw,32px)/1.2 "Pretendard",sans-serif;letter-spacing:-.02em;
+  opacity:0;transform:translate3d(-50%,16px,0);pointer-events:none;
+}
+.brand-values__ko[data-ko="0"]{color:#149f5c}
+.brand-values__ko[data-ko="1"]{color:#3271e5}
+.brand-values__ko[data-ko="2"]{color:#f26d34}
+.bv-bean{position:absolute;left:calc(100% + 14px);top:-.2em;width:22px;height:28px;opacity:0;display:block}
+.bv-bean svg{display:block;width:100%;height:100%}
+.bv-bean ellipse{fill:#6b4a2f}
+.bv-bean path{fill:none;stroke:#3b2716;stroke-width:1.6;stroke-linecap:round}
+.bv-bean::after{
+  content:"";position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;
+  border:2px solid rgba(242,109,52,calc(.8 - var(--bv-ring,0) * .8));transform:scale(calc(.2 + var(--bv-ring,0) * 1.4));
+  opacity:calc(var(--bv-ring,0) * 4);
+}
+.bv-zero{
+  position:absolute;left:calc(100% + 12px);top:50%;margin-top:-.62em;padding:.14em .5em .18em;border-radius:999px;
+  background:#f26d34;color:#fff;font:800 .62em/1 "Archivo Black","Pretendard",sans-serif;letter-spacing:.02em;
+  opacity:0;transform-origin:left center;
+}
+.brand-values__sentence{
+  position:absolute;inset:0;margin:0;z-index:3;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;
+  column-gap:.32em;row-gap:.2em;text-align:center;pointer-events:none;
+  font:800 clamp(40px,5vw,76px)/1.15 "Pretendard",sans-serif;letter-spacing:-.04em;
+}
+.brand-values__sentence span{display:inline-block;opacity:0}
+.brand-values__sentence [data-s="0"]{color:#149f5c}
+.brand-values__sentence [data-s="1"]{color:#3271e5}
+.brand-values__sentence [data-s="2"]{color:#f26d34}
+.brand-values__sentence small{
+  flex-basis:100%;display:block;opacity:0;margin-top:.5em;
+  font:400 clamp(13px,1.25vw,18px)/1 "Archivo","Pretendard",sans-serif;letter-spacing:.3em;color:#149f5c;
+}
