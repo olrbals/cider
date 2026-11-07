@@ -53,15 +53,14 @@
     if(rect.top>h||rect.bottom<0)return;
     const progress=clamp(-rect.top/Math.max(1,rect.height-h));
     const counter=values.querySelector('.brand-values__counter');
-    // 11-07 시안: three principles, then the Korean lines gather into one sentence.
-    const cuts=[[0,.29],[.28,.57],[.56,.83]];
-    const finale=between(progress,.8,.865);
-    if(counter)counter.textContent=String(progress<.28?1:progress<.56?2:3).padStart(2,'0')+' - 03';
+    // 11-07 시안: three principles, each with a Korean line and a small gag.
+    const cuts=[[0,.34],[.33,.67],[.66,1]];
+    if(counter)counter.textContent=String(progress<.33?1:progress<.66?2:3).padStart(2,'0')+' - 03';
     const kos=values.querySelectorAll('.brand-values__ko');
     words.forEach((word,i)=>{
       const [a,b]=cuts[i];
       const entering=i===0?1:between(progress,a-.028,a+.045);
-      const leaving=i===2?1-finale:1-between(progress,b-.075,b+.025);
+      const leaving=i===2?1:1-between(progress,b-.075,b+.025);
       const opacity=clamp(entering*leaving);
       const dy=(1-entering)*24+(1-leaving)*-25;
       word.style.opacity=opacity.toFixed(3);
@@ -86,31 +85,34 @@
       if(!icon)return;
       const a=i===0?0:cuts[i][0];
       const t0=i===0?.03:a+.04;
-      const go=between(progress,t0,t0+.1),hit=between(progress,t0+.1,t0+.135),b=between(progress,t0+.115,t0+.15);
+      const go=between(progress,t0,t0+.11),hit=between(progress,t0+.11,t0+.14),b=between(progress,t0+.125,t0+.16);
       const gag=icon.dataset.gag;
-      let tf='';
-      if(gag==='drop')tf='translate3d(0,'+((1-go)*-60).toFixed(1)+'px,0) scale('+(1+hit*.5).toFixed(3)+','+(1-hit*.55).toFixed(3)+')';
-      else if(gag==='spark')tf='rotate('+(go*180).toFixed(1)+'deg) scale('+(Math.sin(Math.PI*Math.min(1,go*1.05))*1.25+hit*.6).toFixed(3)+')';
-      else tf='translate3d(0,'+((1-go)*46-go*26).toFixed(1)+'px,0) rotate('+(go*40).toFixed(1)+'deg) scale('+(1+hit*.8).toFixed(3)+')';
-      icon.style.opacity=(go>0?Math.min(1,go*4)*(1-hit):0).toFixed(3);
+      let tf='',op=go>0?Math.min(1,go*4):0;
+      if(gag==='drop'){
+        // 또잉: falls, squashes on landing, hops once and settles beside the word.
+        const hop=between(progress,t0+.115,t0+.165),sq=Math.sin(Math.PI*hit);
+        tf='translate3d(0,'+((1-go)*-90-Math.sin(Math.PI*hop)*26).toFixed(1)+'px,0) scale('+(1+sq*.45).toFixed(3)+','+(1-sq*.4).toFixed(3)+')';
+      }else if(gag==='spark'){
+        tf='rotate('+(go*180).toFixed(1)+'deg) scale('+(go<1?Math.sin(Math.PI*.5*go)*1.3:1.3-.3*hit).toFixed(3)+')';
+        icon.classList.toggle('is-twinkling',hit>=1);
+      }else{
+        tf='translate3d(0,'+((1-go)*60-go*30).toFixed(1)+'px,0) rotate('+(go*40).toFixed(1)+'deg) scale('+(1+hit*.8).toFixed(3)+')';
+        op*=1-hit;
+      }
+      icon.style.opacity=op.toFixed(3);
       icon.style.transform=tf;
       icon.style.setProperty('--bv-ring',hit.toFixed(3));
-      badge.style.opacity=b.toFixed(3);
-      badge.style.transform='scale('+(.6+.4*b+.12*Math.sin(Math.PI*b)).toFixed(3)+')';
+      if(badge){
+        badge.style.opacity=b.toFixed(3);
+        badge.style.transform='scale('+(.6+.4*b+.12*Math.sin(Math.PI*b)).toFixed(3)+')';
+      }
       if(gag==='spark')ko.style.setProperty('--bv-glint',go.toFixed(3));
-    });
-    // Finale: the three Korean pieces come together, each in its own colour.
-    values.querySelectorAll('.brand-values__sentence [data-s]').forEach((piece,i)=>{
-      const k=between(progress,.84+i*.025,.9+i*.025);
-      piece.style.opacity=k.toFixed(3);
-      piece.style.transform='translate3d(0,'+((1-k)*(i===3?14:38)).toFixed(1)+'px,0) scale('+(.9+.1*k).toFixed(3)+')';
     });
     // Corner labels blend between the principle colours with the words.
     const mix=(x,y,k)=>x.map((v,j)=>Math.round(v+(y[j]-v)*k));
     const pal=[[20,159,92],[50,113,229],[242,109,52]];
-    const k1=between(progress,.28-.028,.28+.045),k2=between(progress,.56-.028,.56+.045);
+    const k1=between(progress,.33-.028,.33+.045),k2=between(progress,.66-.028,.66+.045);
     let rgb=k2>0?mix(pal[1],pal[2],k2):mix(pal[0],pal[1],k1);
-    if(finale>0)rgb=mix(pal[2],pal[0],finale);
     values.style.setProperty('--bv-accent','rgb('+rgb.join(',')+')');
     stage.style.backgroundColor='#ffffff';
   }
