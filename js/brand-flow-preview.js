@@ -56,7 +56,6 @@
     // 11-07 시안: three principles, each with a Korean line and a small gag.
     const cuts=[[0,.27],[.26,.52],[.51,.77]];
     if(counter)counter.textContent=String(progress<.26?1:progress<.51?2:3).padStart(2,'0')+' - 03';
-    const gags=values.querySelectorAll('.bv-gag');
     words.forEach((word,i)=>{
       const [a,b]=cuts[i];
       const entering=i===0?1:between(progress,a-.028,a+.045);
@@ -67,18 +66,13 @@
       word.style.transform='translate3d(0,'+dy.toFixed(2)+'px,0) scale('+
         (1-.025*(1-opacity)).toFixed(4)+')';
       word.setAttribute('aria-hidden',opacity<.2?'true':'false');
-      // Gags run on their own clock once the word has settled (so fast
-      // scrolling never rushes them) and re-arm when the word leaves.
-      const gag=gags[i];
-      if(gag){
-        gag.style.opacity=opacity.toFixed(3);
-        gag.style.transform='translate3d(-50%,'+dy.toFixed(2)+'px,0)';
-        if(i===1){const sh=values.querySelector('.bv-shine');sh.style.opacity=opacity.toFixed(3);sh.classList.toggle('is-playing',gag.classList.contains('is-playing'));}
-        // PURE's drop waits for the visitor's first scroll into the section.
-        const ready=opacity>.5&&(i>0||progress>=.035);
-        if(ready&&!gag.classList.contains('is-playing'))gag.classList.add('is-playing');
-        else if(opacity<.08||(i===0&&progress<.01))gag.classList.remove('is-playing');
-      }
+      // Text motion runs on its own clock once the word has (half) arrived,
+      // so fast scrolling never rushes it; re-arms when the word leaves.
+      // PURE waits for the visitor's first scroll into the section.
+      const ready=opacity>.5&&(i>0||progress>=.035);
+      if(ready&&!word.classList.contains('is-playing'))word.classList.add('is-playing');
+      else if(opacity<.08||(i===0&&progress<.01))word.classList.remove('is-playing');
+      if(i===1){const sh=values.querySelector('.bv-shine');if(sh){sh.style.opacity=opacity.toFixed(3);sh.classList.toggle('is-playing',word.classList.contains('is-playing'));}}
     });
     // Recap before FEEL THE FIZZ: 칠성사이다가 지켜온 3가지 원칙.
     const recap=values.querySelector('.brand-values__recap');
