@@ -54,64 +54,45 @@
     const progress=clamp(-rect.top/Math.max(1,rect.height-h));
     const counter=values.querySelector('.brand-values__counter');
     // 11-07 시안: three principles, each with a Korean line and a small gag.
-    const cuts=[[0,.34],[.33,.67],[.66,1]];
-    if(counter)counter.textContent=String(progress<.33?1:progress<.66?2:3).padStart(2,'0')+' - 03';
-    const kos=values.querySelectorAll('.brand-values__ko');
+    const cuts=[[0,.27],[.26,.52],[.51,.77]];
+    if(counter)counter.textContent=String(progress<.26?1:progress<.51?2:3).padStart(2,'0')+' - 03';
+    const gags=values.querySelectorAll('.bv-gag');
     words.forEach((word,i)=>{
       const [a,b]=cuts[i];
       const entering=i===0?1:between(progress,a-.028,a+.045);
-      const leaving=i===2?1:1-between(progress,b-.075,b+.025);
+      const leaving=1-between(progress,b-.06,b+.02);
       const opacity=clamp(entering*leaving);
       const dy=(1-entering)*24+(1-leaving)*-25;
       word.style.opacity=opacity.toFixed(3);
       word.style.transform='translate3d(0,'+dy.toFixed(2)+'px,0) scale('+
         (1-.025*(1-opacity)).toFixed(4)+')';
       word.setAttribute('aria-hidden',opacity<.2?'true':'false');
-      // Korean line follows its word, arriving a beat later.
-      const ko=kos[i];
-      if(ko){
-        const [a2]=cuts[i];
-        const kin=i===0?between(progress,0,.05):between(progress,a2+.01,a2+.07);
-        const ko_o=clamp(kin*leaving);
-        ko.style.opacity=ko_o.toFixed(3);
-        ko.style.transform='translate3d(-50%,'+((1-kin)*16+(1-leaving)*-14).toFixed(2)+'px,0)';
+      // Gags run on their own clock once the word has settled (so fast
+      // scrolling never rushes them) and re-arm when the word leaves.
+      const gag=gags[i];
+      if(gag){
+        gag.style.opacity=opacity.toFixed(3);
+        gag.style.transform='translate3d(-50%,'+dy.toFixed(2)+'px,0)';
+        if(i===1){const sh=values.querySelector('.bv-shine');sh.style.opacity=opacity.toFixed(3);sh.classList.toggle('is-playing',gag.classList.contains('is-playing'));}
+        if(opacity>.85&&!gag.classList.contains('is-playing'))gag.classList.add('is-playing');
+        else if(opacity<.08)gag.classList.remove('is-playing');
       }
     });
-    // Little gags beside each Korean line (same beat for all three):
-    // 맑고 → a drop falls and splashes → 무색소 · 깨끗하게 → a glint wipes the
-    // word and a sparkle twinkles → 투명 · 카페인 없이 → a bean floats up and pops → 0mg.
-    kos.forEach((ko,i)=>{
-      const icon=ko.querySelector('.bv-icon'),badge=ko.querySelector('.bv-badge');
-      if(!icon)return;
-      const a=i===0?0:cuts[i][0];
-      const t0=i===0?.03:a+.04;
-      const go=between(progress,t0,t0+.11),hit=between(progress,t0+.11,t0+.14),b=between(progress,t0+.125,t0+.16);
-      const gag=icon.dataset.gag;
-      let tf='',op=go>0?Math.min(1,go*4):0;
-      if(gag==='drop'){
-        // 또잉: falls, squashes on landing, hops once and settles beside the word.
-        const hop=between(progress,t0+.115,t0+.165),sq=Math.sin(Math.PI*hit);
-        tf='translate3d(0,'+((1-go)*-90-Math.sin(Math.PI*hop)*26).toFixed(1)+'px,0) scale('+(1+sq*.45).toFixed(3)+','+(1-sq*.4).toFixed(3)+')';
-      }else if(gag==='spark'){
-        tf='rotate('+(go*180).toFixed(1)+'deg) scale('+(go<1?Math.sin(Math.PI*.5*go)*1.3:1.3-.3*hit).toFixed(3)+')';
-        icon.classList.toggle('is-twinkling',hit>=1);
-      }else{
-        tf='translate3d(0,'+((1-go)*60-go*30).toFixed(1)+'px,0) rotate('+(go*40).toFixed(1)+'deg) scale('+(1+hit*.8).toFixed(3)+')';
-        op*=1-hit;
-      }
-      icon.style.opacity=op.toFixed(3);
-      icon.style.transform=tf;
-      icon.style.setProperty('--bv-ring',hit.toFixed(3));
-      if(badge){
-        badge.style.opacity=b.toFixed(3);
-        badge.style.transform='scale('+(.6+.4*b+.12*Math.sin(Math.PI*b)).toFixed(3)+')';
-      }
-      if(gag==='spark')ko.style.setProperty('--bv-glint',go.toFixed(3));
-    });
+    // Recap before FEEL THE FIZZ: 칠성사이다가 지켜온 3가지 원칙.
+    const recap=values.querySelector('.brand-values__recap');
+    if(recap){
+      const lead=between(progress,.755,.81);
+      recap.querySelector('.brand-values__recap-lead').style.cssText='opacity:'+lead.toFixed(3)+';transform:translate3d(0,'+((1-lead)*18).toFixed(1)+'px,0)';
+      recap.querySelectorAll('[data-r]').forEach((el,i)=>{
+        const k=between(progress,.78+i*.03,.84+i*.03);
+        el.style.opacity=k.toFixed(3);
+        el.style.transform='translate3d(0,'+((1-k)*34).toFixed(1)+'px,0) scale('+(.92+.08*k).toFixed(3)+')';
+      });
+    }
     // Corner labels blend between the principle colours with the words.
     const mix=(x,y,k)=>x.map((v,j)=>Math.round(v+(y[j]-v)*k));
     const pal=[[20,159,92],[50,113,229],[242,109,52]];
-    const k1=between(progress,.33-.028,.33+.045),k2=between(progress,.66-.028,.66+.045);
+    const k1=between(progress,.26-.028,.26+.045),k2=between(progress,.51-.028,.51+.045);
     let rgb=k2>0?mix(pal[1],pal[2],k2):mix(pal[0],pal[1],k1);
     values.style.setProperty('--bv-accent','rgb('+rgb.join(',')+')');
     stage.style.backgroundColor='#ffffff';

@@ -197,65 +197,76 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 }
 
 /* 11-07 시안 — Korean lines + finale sentence for the three principles. */
-.brand-values__ko{
-  position:absolute;left:50%;top:calc(100% + 1.2svh);margin:0;white-space:nowrap;z-index:3;
-  font:700 clamp(20px,2.2222vw,32px)/1.2 "Pretendard",sans-serif;letter-spacing:-.02em;
-  opacity:0;transform:translate3d(-50%,16px,0);pointer-events:none;
+/* 11-07 시안 v3 — gags on the big words, clock-driven (see drawPrinciples). */
+#brand-values .brand-values__micro,#brand-values .brand-values__title,#brand-values .brand-values__counter{display:none!important}
+/* One icon, centred under each word (where a subtitle would sit). */
+.bv-gag{position:absolute;left:50%;top:calc(100% + 5svh);width:0;height:0;z-index:4;pointer-events:none;opacity:0;transform:translateX(-50%)}
+.bv-gag[data-gag="bean"]{top:calc(100% + 7svh)}
+.bv-gag *{position:absolute}
+.bv-gag svg{display:block;width:100%;height:100%;position:static}
+/* PURE — 또잉: a fat drop falls, squashes, splashes and bounces. */
+.bv-drop{left:0;top:0;width:48px;height:62px;margin:-62px 0 0 -24px;transform-origin:50% 100%;opacity:0}
+.bv-drop path{fill:#3dbb7e}.bv-drop path.hl{fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round}
+.bv-ripple{left:0;top:0;width:120px;height:26px;margin:-13px 0 0 -60px;border:3px solid #149f5c;border-radius:50%;opacity:0}
+.bv-splash{left:0;top:-6px;width:0;height:0}
+.bv-splash i{left:0;top:0;width:12px;height:12px;margin:-6px;border-radius:50%;opacity:0}
+.bv-gag[data-gag="drop"] .bv-splash i{background:#3dbb7e}
+.is-playing .bv-drop{animation:bv-drop 2s cubic-bezier(.3,0,.4,1) forwards}
+.is-playing .bv-ripple{animation:bv-ripple .9s .62s ease-out forwards}
+.is-playing .bv-splash i{animation:bv-spray .8s var(--sd,.64s) cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes bv-drop{
+  0%{opacity:0;transform:translateY(-190px) scale(.85,1.2)}
+  6%{opacity:1}
+  32%{transform:translateY(0) scale(.85,1.2)}
+  40%{transform:translateY(3px) scale(1.6,.5)}
+  56%{transform:translateY(-90px) scale(.9,1.12)}
+  72%{transform:translateY(0) scale(1.25,.78)}
+  82%{transform:translateY(-18px) scale(.96,1.05)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
 }
-.brand-values__ko[data-ko="0"]{color:#149f5c}
-.brand-values__ko[data-ko="1"]{color:#3271e5}
-.brand-values__ko[data-ko="2"]{color:#f26d34}
-.bv-icon{position:absolute;left:calc(100% + 14px);top:50%;margin-top:-26px;width:40px;height:52px;opacity:0;display:block}
-.bv-icon svg{display:block;width:100%;height:100%}
-.bv-icon[data-gag="bean"] ellipse{fill:#6b4a2f}
-.bv-icon[data-gag="bean"] path{fill:none;stroke:#3b2716;stroke-width:1.6;stroke-linecap:round}
-.bv-icon[data-gag="drop"]{transform-origin:50% 100%}
-.bv-icon[data-gag="drop"] path{fill:#3dbb7e}
-.bv-icon[data-gag="drop"] path.hl{fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round}
-.bv-icon[data-gag="spark"]{width:46px;height:46px;margin-top:-23px}
-.bv-icon[data-gag="spark"] path{fill:#3271e5}
-.bv-icon::after{
-  content:"";position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;
-  border:2.5px solid currentColor;transform:scale(calc(.2 + var(--bv-ring,0) * 1.4));
-  opacity:calc(var(--bv-ring,0) * 4 * (1 - var(--bv-ring,0)));
+@keyframes bv-ripple{0%{opacity:.9;transform:scale(.2)}100%{opacity:0;transform:scale(2.4)}}
+@keyframes bv-spray{
+  0%{opacity:1;transform:rotate(var(--a)) translateX(0) scale(1.3)}
+  100%{opacity:0;transform:rotate(var(--a)) translateX(95px) translateY(26px) scale(.4)}
 }
-.bv-icon[data-gag="drop"]{color:#149f5c}
-.bv-icon[data-gag="drop"]::after{top:auto;bottom:-14px;height:22px;margin-top:0;border-radius:50%}
-.bv-icon[data-gag="spark"]{color:#3271e5}
-.bv-icon[data-gag="bean"]{color:#f26d34}
-.bv-badge{
-  position:absolute;left:calc(100% + 12px);top:50%;margin-top:-.62em;padding:.16em .55em .2em;border-radius:999px;
-  color:#fff;font:800 .62em/1 "Pretendard","Archivo Black",sans-serif;letter-spacing:.01em;white-space:nowrap;
-  opacity:0;transform-origin:left center;
+/* CLEAR — a shine wipes the word, then a sparkle cluster pops and twinkles. */
+.bv-shine{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none;mix-blend-mode:screen;opacity:0}
+.bv-shine b{position:absolute;left:-20%;top:-20%;width:14%;height:140%;transform:skewX(-20deg);opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.95) 45%,#fff 50%,rgba(255,255,255,.95) 55%,transparent)}
+.bv-shine.is-playing b{animation:bv-shine 1.1s .1s cubic-bezier(.45,0,.3,1) forwards}
+@keyframes bv-shine{0%{opacity:1;left:-20%}100%{opacity:1;left:110%}}
+.bv-spk{left:var(--x);top:var(--y);width:var(--s);height:var(--s);margin:calc(var(--s) / -2);opacity:0}
+.bv-spk path{fill:#3271e5}
+.is-playing .bv-spk{animation:bv-spk-pop .55s var(--d) cubic-bezier(.3,1.6,.5,1) forwards,bv-spk-tw 1.4s calc(var(--d) + .55s) ease-in-out infinite}
+@keyframes bv-spk-pop{0%{opacity:0;transform:scale(0) rotate(-90deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes bv-spk-tw{0%,100%{opacity:1;transform:scale(1) rotate(0)}50%{opacity:.6;transform:scale(.62) rotate(30deg)}}
+/* CAFFEINE FREE — a bean floats up, pops, and 0mg bursts in its place. */
+.bv-bean{left:0;top:0;width:44px;height:58px;margin:-29px 0 0 -22px;opacity:0}
+.bv-bean ellipse{fill:#6b4a2f}.bv-bean path{fill:none;stroke:#3b2716;stroke-width:1.6;stroke-linecap:round}
+.bv-gag[data-gag="bean"] .bv-splash{top:0}
+.bv-gag[data-gag="bean"] .bv-splash i{background:#f26d34;--sd:1.25s}
+.bv-zero{left:0;top:0;transform:translate(-50%,-50%) scale(0);padding:.16em .55em .2em;border-radius:999px;
+  background:#f26d34;color:#fff;font:400 clamp(24px,2.5vw,36px)/1 "Archivo Black","Pretendard",sans-serif;white-space:nowrap;opacity:0}
+.is-playing .bv-bean{animation:bv-bean 1.4s cubic-bezier(.3,0,.4,1) forwards}
+.is-playing .bv-zero{animation:bv-zero .6s 1.28s cubic-bezier(.3,1.7,.5,1) forwards}
+@keyframes bv-bean{
+  0%{opacity:0;transform:translateY(120px) rotate(-30deg)}
+  12%{opacity:1}
+  30%{transform:translateY(70px) rotate(10deg)}
+  50%{transform:translateY(32px) rotate(-14deg)}
+  70%{transform:translateY(0) rotate(12deg)}
+  86%{opacity:1;transform:translateY(-8px) rotate(0) scale(1.1)}
+  92%{opacity:1;transform:translateY(-8px) scale(1.7)}
+  100%{opacity:0;transform:translateY(-8px) scale(2.1)}
 }
-.brand-values__ko[data-ko="0"] .bv-badge{background:#149f5c}
-.brand-values__ko[data-ko="1"] .bv-badge{background:#3271e5}
-.brand-values__ko[data-ko="2"] .bv-badge{background:#f26d34;font-family:"Archivo Black","Pretendard",sans-serif}
-/* 깨끗하게: a white glint wipes across the word. */
-.bv-glint{
-  background:linear-gradient(100deg,#3271e5 0%,#3271e5 40%,#bfe0ff 48%,#fff 50%,#bfe0ff 52%,#3271e5 60%,#3271e5 100%);
-  background-size:300% 100%;background-position:calc(100% - var(--bv-glint,0) * 100%) 0;
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.brand-values__sentence{
-  position:absolute;inset:0;margin:0;z-index:3;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;
-  column-gap:.32em;row-gap:.2em;text-align:center;pointer-events:none;
-  font:800 clamp(40px,5vw,76px)/1.15 "Pretendard",sans-serif;letter-spacing:-.04em;
-}
-.brand-values__sentence span{display:inline-block;opacity:0}
-.brand-values__sentence [data-s="0"]{color:#149f5c}
-.brand-values__sentence [data-s="1"]{color:#3271e5}
-.brand-values__sentence [data-s="2"]{color:#f26d34}
-.brand-values__sentence small{
-  flex-basis:100%;display:block;opacity:0;margin-top:.5em;
-  font:400 clamp(13px,1.25vw,18px)/1 "Archivo","Pretendard",sans-serif;letter-spacing:.3em;color:#149f5c;
-}
-
-/* 깨끗하게 sparkle keeps twinkling while the word is on screen. */
-.bv-icon[data-gag="spark"].is-twinkling svg{animation:bv-twinkle 1.1s ease-in-out infinite}
-.bv-icon[data-gag="spark"]::before{
-  content:"";position:absolute;right:-10px;top:-8px;width:14px;height:14px;opacity:.85;
-  background:#7fb0ff;clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);
-}
-.bv-icon[data-gag="spark"].is-twinkling::before{animation:bv-twinkle 1.1s .45s ease-in-out infinite}
-@keyframes bv-twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(.72) rotate(25deg);opacity:.75}}
+@keyframes bv-zero{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-12deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-4deg)}}
+/* Recap before FEEL THE FIZZ */
+.brand-values__recap{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4svh;pointer-events:none;text-align:center}
+.brand-values__recap-lead{margin:0;opacity:0;font:700 clamp(20px,2.2222vw,32px)/1.2 "Pretendard",sans-serif;letter-spacing:-.02em;color:#149f5c}
+.brand-values__recap-words{margin:0;display:flex;flex-direction:column;align-items:center;gap:.06em;
+  font:400 min(8.3vw,12.5svh,120px)/1 var(--font-family-display);letter-spacing:-.04em}
+.brand-values__recap-words span{display:block;opacity:0}
+.brand-values__recap-words [data-r="0"]{color:#149f5c}
+.brand-values__recap-words [data-r="1"]{color:#3271e5}
+.brand-values__recap-words [data-r="2"]{color:#f26d34}
+@media (prefers-reduced-motion: reduce){.bv-gag *{animation:none!important}}
