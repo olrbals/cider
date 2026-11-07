@@ -28,7 +28,7 @@
 .rich-duo__slot[data-rich-slot="peach"] img,.rich-duo__slot[data-rich-slot="grape"] img{transform:scale(calc(.792 * (1 + .07 * var(--rich-pop,0))))}
 .rich-duo__slot[data-rich-slot="slice"] img,.rich-duo__slot[data-rich-slot="bunch"] img,.rich-duo__slot[data-rich-slot="single"] img{transform:scale(calc(1 + .14 * var(--rich-pop,0)))}
 .rich-duo__slot[data-rich-slot="whole"],.rich-duo__slot[data-rich-slot="single"]{z-index:4}
-.rich-duo__slot[data-rich-slot="whole"] img,.rich-duo__depth>span[data-rich-depth="0"] img,.rich-duo__depth>span[data-rich-depth="6"] img{transform:scaleY(-1)}
+.rich-duo__slot[data-rich-slot="whole"] img,.rich-duo__depth>span[data-rich-depth="0"] img,.rich-duo__depth>span[data-rich-depth="6"] img,.rich-duo__depth>span[data-rich-depth="8"] img,.rich-duo__depth>span[data-rich-depth="11"] img{transform:scaleY(-1)}
 .rich-duo__depth{position:absolute;inset:0;z-index:0;pointer-events:none}
 
 .rich-signoff{position:absolute;inset:0;z-index:2;display:grid;place-items:center;visibility:hidden;opacity:0;background:#149f5c;overflow:hidden}

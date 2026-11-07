@@ -92,3 +92,39 @@
 }
 
 @media(min-width:761px){.history-3d-info{translate:20px 0}}
+
+/* 11-07 — one pinned screen; eras are chosen with the bottom era bar. */
+#history .history-3d-track{height:135svh}
+#history .history-3d-era{display:none}
+.history-era-bar{
+  position:absolute;z-index:6;left:50%;bottom:clamp(28px,5.5svh,56px);transform:translateX(-50%);
+  width:min(64vw,920px);padding:30px 0 0;pointer-events:auto;touch-action:none;
+  cursor:grab;user-select:none;-webkit-user-select:none;outline:none;color:#149f5c;
+}
+.history-era-bar.is-dragging{cursor:grabbing}
+.history-era-bar__rail{position:relative;height:4px;border-radius:4px;background:rgba(20,159,92,.18)}
+.history-era-bar__fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#149f5c}
+.history-era-bar__tick{
+  position:absolute;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;padding:0;border:0;border-radius:50%;
+  background:#f7faf8;box-shadow:inset 0 0 0 2px #149f5c;cursor:inherit;pointer-events:none;
+}
+.history-era-bar__tick span{
+  position:absolute;left:50%;bottom:20px;transform:translateX(-50%);
+  font:400 clamp(11px,.9722vw,14px)/1 "Archivo",Arial,sans-serif;letter-spacing:.02em;color:rgba(20,159,92,.55);
+  transition:color .2s,transform .2s;
+}
+.history-era-bar__tick.is-active span{color:#149f5c;transform:translateX(-50%) scale(1.15)}
+.history-era-bar__thumb{
+  position:absolute;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;
+  background:#149f5c;box-shadow:0 0 0 6px rgba(20,159,92,.16),0 6px 16px rgba(20,159,92,.28);
+  transition:box-shadow .2s,transform .2s;
+}
+.history-era-bar__thumb i{position:absolute;inset:8px;border-radius:50%;background:#fff}
+.history-era-bar:hover .history-era-bar__thumb,.history-era-bar.is-dragging .history-era-bar__thumb{transform:scale(1.12);box-shadow:0 0 0 9px rgba(20,159,92,.18),0 8px 20px rgba(20,159,92,.32)}
+.history-era-bar:focus-visible .history-era-bar__thumb{box-shadow:0 0 0 4px #fff,0 0 0 7px #149f5c}
+.history-era-bar__hint{
+  margin:18px 0 0;text-align:center;font:400 clamp(10px,.8333vw,12px)/1 "Archivo",Arial,sans-serif;
+  letter-spacing:.18em;color:rgba(20,159,92,.6);
+}
+#history.rich-year-handoff .history-era-bar,.history-3d.rich-year-handoff .history-era-bar{opacity:0;pointer-events:none}
+.history-bar-live .rich-flavors,.history-bar-live .rich-flavors__viewport{pointer-events:none}

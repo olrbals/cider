@@ -177,4 +177,9 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
    yellow so CAFFEINE FREE reads on white and pairs with the yellow FIZZ). */
 #brand-values .brand-values__word[data-brand-value="0"] { color: #149f5c; }
 #brand-values .brand-values__word[data-brand-value="1"] { color: #3271e5; }
-#brand-values .brand-values__word[data-brand-value="2"] { color: #1d2b64; }
+#brand-values .brand-values__word[data-brand-value="2"] { color: #f26d34; }
+/* 11-07 — corner labels follow the active principle colour. */
+#brand-values .brand-values__micro,#brand-values .brand-values__title,#brand-values .brand-values__counter { color: var(--bv-accent,#149f5c); }
+
+/* 11-07 — FIZZ edge labels in Chilsung green. */
+#korea .korea-stage > .section-edge-label { color: #149f5c !important; }

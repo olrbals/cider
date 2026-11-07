@@ -25,10 +25,10 @@ const LOGO_U = 0.5 + UV_SHIFT;   // star logo + "Chilsung"
 const faceYaw = u => -u * TAU;   // rotation.y that turns label-u toward +Z
 
 // Scroll timeline in viewport heights (PURE reaches the top at 1.6).
-const SPIN_END = .40;        // ① spins in place
-const SETTLE_END = .50;      // ② stops logo-front
-const TAB_AT = .48;          // ③ tab cracks + water star bursts (clock-driven)
-const FRONT_AT = .49;        // ④ scene starts the moment the can stops: star → 파앙 back-to-back
+const SPIN_END = .30;        // ① spins in place
+const SETTLE_END = .38;      // ② stops logo-front
+const TAB_AT = .32;          // ③ tab cracks + water star bursts (clock-driven)
+const FRONT_AT = .40;        // ④ scene starts the moment the can stops: star → 파앙 back-to-back
 const WAVE_START = .62;      // ⑤ next page rolls up from the bottom, PURE riding in it
 const WAVE_END = 1.30;       //    …covers the screen before the hero unpins (1.35)
 const HANDOFF = 1.58;        // real PURE section pins at 1.6 — crossfade from the clone
@@ -41,7 +41,7 @@ function setLayoutScale() {
 function updateChrome(s, boundary) {
   // The site-wide SVG gel filter repaints the whole hero (3D can, videos,
   // blend layers) every frame: keep it for the still first screen only.
-  const gelOff = s > .04;
+  const gelOff = true; // 11-07: no liquid refraction on the hero at all
   if (hero.hasAttribute('data-gel-off') !== gelOff) hero.toggleAttribute('data-gel-off', gelOff);
   if (gelOff && hero.classList.contains('site-liquid-target')) hero.classList.remove('site-liquid-target');
   // Shared hooks from hero-carbonation-star.css: section overlap + PURE reveal.
@@ -339,10 +339,10 @@ async function start() {
   function placeStar(s, surge) {
     // ③ "팡": spring pop on a clock; ④ breaks apart as the water rushes forward.
     const opening = tabTarget === 1;
-    const pop = opening ? springOut(Math.min(1, starT / .8)) : starT;
+    const pop = opening ? springOut(Math.min(1, starT / .7)) : starT;
     if (opening && !jetsFired) {
       jetsFired = true;
-      jets.forEach(jet => { jet.currentTime = 0; jet.play().catch(() => {}); });
+      jets.forEach(jet => { jet.currentTime = 0; jet.playbackRate = 1.35; jet.play().catch(() => {}); });
     } else if (!opening && starT === 0) jetsFired = false;
     // Jets fade as their burst settles, so no frozen last frame lingers.
     jets.forEach(jet => {
@@ -504,7 +504,7 @@ async function start() {
     // One continuous splash: the lens water only starts once the star's jets
     // have flown out (burst ≥55%), whatever the scroll speed.
     const burstK = burst.duration ? burst.currentTime / burst.duration : 0;
-    const burstReady = jetsFired && (burstK >= .32 || burst.ended); // 파앙 hits while the jets are still flying
+    const burstReady = jetsFired && (burstK >= .2 || burst.ended); // 파앙 hits while the jets are still flying
     const sceneOn = seq === 'playing' || (seq === 'scrub' && s >= FRONT_AT && s < WAVE_END + .04);
     if (sceneOn && (frontOn || burstReady)) {
       if (!frontOn) {
@@ -562,11 +562,11 @@ async function start() {
     else if (s < TAB_AT - .05) tabTarget = 0;
     const starGoal = tabTarget;
     if (starT !== starGoal) {
-      starT = starGoal ? Math.min(1, starT + dt / .6) : Math.max(0, starT - dt / .32);
+      starT = starGoal ? Math.min(1, starT + dt / .32) : Math.max(0, starT - dt / .32);
       dirty = true;
     }
     if (tabOpen !== tabTarget) {
-      tabOpen = tabTarget ? Math.min(1, tabOpen + dt / .38) : Math.max(0, tabOpen - dt / .25);
+      tabOpen = tabTarget ? Math.min(1, tabOpen + dt / .22) : Math.max(0, tabOpen - dt / .25);
       dirty = true;
     }
     // Scene driver.

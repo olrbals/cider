@@ -455,7 +455,7 @@ async function initHistory(section) {
   let lastSurface = '', lastHalo = '';
   function render(value) {
     progress = clamp(value);
-    const point = smoothstep(0,.045,progress)*clamp((progress-.035)/.965) * (eras.length - 1);
+    const point = progress * (eras.length - 1);   // 11-07: driven by the era bar, not scroll
     const pair = Math.min(eras.length - 2, Math.floor(point));
     const local = point - pair;
     // Hold → roll → hold, with exactly one texture/year switch at 180°.
@@ -486,21 +486,81 @@ async function initHistory(section) {
     can?.render(pair, local);
   }
 
-  if (window.gsap && window.ScrollTrigger) {
-    window.gsap.registerPlugin(window.ScrollTrigger);
-    const playhead={progress:0};
-    window.gsap.to(playhead,{progress:1,ease:'none',onUpdate:()=>render(playhead.progress),scrollTrigger:{
-      id:'history-eras',trigger:section,start:'top top',end:'bottom bottom',scrub:.18,invalidateOnRefresh:true
-    }});
-    window.ScrollTrigger.refresh();
-  } else {
-    const sync = () => {
-      const rect = section.getBoundingClientRect();
-      render(-rect.top / Math.max(1, rect.height - window.innerHeight));
-    };
-    window.addEventListener('scroll', sync, { passive: true });
-    sync();
+  // 11-07 — era bar: the user drags along a timeline at the bottom instead of
+  // scrolling through ~5 screens. A damped follow keeps the can rolling smoothly;
+  // releasing settles on the nearest era so the can never rests mid-turn.
+  const bar = document.createElement('div');
+  bar.className = 'history-era-bar';
+  bar.setAttribute('role', 'slider');
+  bar.setAttribute('tabindex', '0');
+  bar.setAttribute('aria-label', '연도 선택');
+  bar.setAttribute('aria-valuemin', years[0]);
+  bar.setAttribute('aria-valuemax', years.at(-1));
+  bar.innerHTML = '<div class="history-era-bar__rail"><span class="history-era-bar__fill"></span>'
+    + years.map((y, i) => '<button type="button" tabindex="-1" class="history-era-bar__tick" data-era="' + i + '" style="left:'
+      + (i / (years.length - 1) * 100) + '%"><span>' + y + '</span></button>').join('')
+    + '<span class="history-era-bar__thumb"><i></i></span></div><p class="history-era-bar__hint">DRAG TO TRAVEL IN TIME</p>';
+  stage.append(bar);
+  const rail = bar.querySelector('.history-era-bar__rail');
+  const fill = bar.querySelector('.history-era-bar__fill');
+  const thumb = bar.querySelector('.history-era-bar__thumb');
+  const ticks = [...bar.querySelectorAll('.history-era-bar__tick')];
+  const last = years.length - 1;
+  let target = 0, shown = 0, dragging = false, raf = 0, prev = 0, autoEnd = false, lastActive = -1;
+  const snap = v => Math.round(clamp(v) * last) / last;
+  function paintBar(v) {
+    const pct = (v * 100).toFixed(3) + '%';
+    fill.style.width = pct;
+    thumb.style.left = pct;
+    const active = Math.round(v * last);
+    if (active !== lastActive) {
+      lastActive = active;
+      ticks.forEach((t, i) => t.classList.toggle('is-active', i === active));
+      bar.setAttribute('aria-valuenow', years[active]);
+      bar.setAttribute('aria-valuetext', years[active] + '년');
+    }
   }
+  function tick(now) {
+    const dt = Math.min(.05, (now - (prev || now)) / 1000); prev = now;
+    const k = dragging ? 14 : 6;
+    shown += (target - shown) * (1 - Math.exp(-dt * k));
+    if (Math.abs(target - shown) < .0004) shown = target;
+    render(shown); paintBar(shown);
+    raf = shown !== target ? requestAnimationFrame(tick) : 0;
+    if (!raf) prev = 0;
+  }
+  function goTo(v) { target = clamp(v); if (!raf) raf = requestAnimationFrame(tick); }
+  const valueAt = x => { const r = rail.getBoundingClientRect(); return clamp((x - r.left) / Math.max(1, r.width)); };
+  bar.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;
+    dragging = true; autoEnd = false;
+    bar.setPointerCapture(e.pointerId); bar.classList.add('is-dragging');
+    goTo(valueAt(e.clientX)); e.preventDefault();
+  });
+  bar.addEventListener('pointermove', e => { if (dragging) goTo(valueAt(e.clientX)); });
+  const release = () => { if (!dragging) return; dragging = false; bar.classList.remove('is-dragging'); goTo(snap(target)); };
+  bar.addEventListener('pointerup', release);
+  bar.addEventListener('pointercancel', release);
+  bar.addEventListener('keydown', e => {
+    const step = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+    if (e.key === 'Home') goTo(0); else if (e.key === 'End') goTo(1);
+    else if (step) goTo(snap(target + step / last)); else return;
+    e.preventDefault();
+  });
+  // Leaving toward RICH: glide to 2024 so the 2024 → 2026 year handoff still lines up.
+  const toEnd = () => {
+    const r = section.getBoundingClientRect();
+    if (r.bottom < innerHeight * .75 && !autoEnd && !dragging) { autoEnd = true; goTo(1); }
+    else if (r.top > innerHeight * .5) autoEnd = false;
+    // RICH's transparent sticky viewport overlaps this screen: let the bar
+    // receive the cursor until RICH actually takes over.
+    const live = r.top < innerHeight && r.bottom > innerHeight * .75 && !section.classList.contains('rich-year-handoff');
+    document.documentElement.classList.toggle('history-bar-live', live);
+  };
+  addEventListener('scroll', toEnd, { passive: true });
+  toEnd();
+  paintBar(0);
+
   const observer = new ResizeObserver(() => { can?.resize(); render(progress); });
   observer.observe(stage);
   reducedMotion.addEventListener('change', () => render(progress));

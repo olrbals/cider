@@ -12,10 +12,9 @@
 .site-footer__family select{min-width:290px}
 .site-footer__family button{width:48px;height:48px;border:0;border-radius:50%;background:#fff;color:#149f5c;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer}
 .site-footer__links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 0}
-.site-footer__links a{font-size:19px;color:rgba(255,255,255,.78);text-decoration:none;padding:0 22px;position:relative}
-.site-footer__links a:not(:first-child)::before{content:"";position:absolute;left:-2px;top:50%;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.45);transform:translateY(-50%)}
-.site-footer__links a.is-strong{color:#fff;font-weight:700}
-.site-footer__links a:hover,.site-footer__links a:focus-visible{color:#fff;text-decoration:underline}
+.site-footer__links > span{font-size:19px;color:rgba(255,255,255,.78);text-decoration:none;padding:0 22px;position:relative}
+.site-footer__links > span:not(:first-child)::before{content:"";position:absolute;left:-2px;top:50%;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.45);transform:translateY(-50%)}
+.site-footer__links > span.is-strong{color:#fff;font-weight:700}
 .site-footer__sns{margin-left:22px}
 .site-footer__sns select{min-width:300px}
 .site-footer__info{font-style:normal;display:flex;flex-wrap:wrap;justify-content:center;font-size:17px;color:rgba(255,255,255,.8)}
@@ -26,3 +25,8 @@
 .site-footer__certs p{margin:0}.site-footer__certs strong{color:#fff;font-weight:600}
 .site-footer__note{margin:8px 0 0;font-size:13px;color:#fff;opacity:.6}
 @media(max-width:900px){.site-footer__top{grid-template-columns:1fr;gap:20px}.site-footer__brand,.site-footer__family{grid-column:1;justify-self:center}.site-footer__family select,.site-footer__sns select{min-width:220px}}
+
+/* 11-07 — portfolio footer: nothing is clickable or focusable. */
+.site-footer,.site-footer *{pointer-events:none!important;cursor:default!important;user-select:none}
+.site-footer select:disabled,.site-footer button:disabled{opacity:1;color:inherit}
+.site-footer__family button:disabled{color:#149f5c}

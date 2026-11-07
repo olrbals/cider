@@ -65,6 +65,12 @@
         (1-.025*(1-opacity)).toFixed(4)+')';
       word.setAttribute('aria-hidden',opacity<.2?'true':'false');
     });
+    // Corner labels blend between the principle colours with the words.
+    const mix=(x,y,k)=>x.map((v,j)=>Math.round(v+(y[j]-v)*k));
+    const pal=[[20,159,92],[50,113,229],[242,109,52]];
+    const k1=between(progress,.33-.028,.33+.045),k2=between(progress,.66-.028,.66+.045);
+    const rgb=k2>0?mix(pal[1],pal[2],k2):mix(pal[0],pal[1],k1);
+    values.style.setProperty('--bv-accent','rgb('+rgb.join(',')+')');
     stage.style.backgroundColor='#ffffff';
   }
   function drawStar() {

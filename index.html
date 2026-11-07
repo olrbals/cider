@@ -62,7 +62,7 @@
   </header>
 
   <main>
-    <section class="hero" id="top" aria-labelledby="hero-title">
+    <section class="hero" id="top" data-gel-off aria-labelledby="hero-title">
       <div class="hero-splash-stage">
       <div class="hero-layout" data-node-id="1434:210">
       <p class="hero-korean-title" aria-hidden="true" data-node-id="1434:214">칠성사이다</p>
@@ -203,6 +203,10 @@
               <span data-rich-depth="5"><img src="img/flavors/v11-peach.png" alt="" width="77" height="77"></span>
               <span data-rich-depth="6"><img src="img/flavors/v11-grape-bunch.png" alt="" width="150" height="150"></span>
               <span data-rich-depth="7"><img src="img/flavors/v11-grape-single.png" alt="" width="100" height="100"></span>
+              <span data-rich-depth="8"><img src="img/flavors/v11-peach-piece.png" alt="" width="220" height="175"></span>
+              <span data-rich-depth="9"><img src="img/flavors/v11-grape-single.png" alt="" width="200" height="200"></span>
+              <span data-rich-depth="10"><img src="img/flavors/v11-peach.png" alt="" width="170" height="170"></span>
+              <span data-rich-depth="11"><img src="img/flavors/v11-grape-bunch.png" alt="" width="190" height="190"></span>
             </div>
           </div>
         </section>
@@ -219,22 +223,22 @@
         <img class="site-footer__logo" src="img/brand/Chilsung_Cider_2024.webp" alt="칠성사이다" width="232" height="92">
         <div class="site-footer__top">
           <p class="site-footer__brand"><span class="site-footer__mark" aria-hidden="true">L</span>롯데칠성음료</p>
-          <label class="site-footer__family">
+          <div class="site-footer__family">
             <span class="visually-hidden">패밀리 사이트</span>
-            <select><option>FAMILY SITE</option><option>롯데칠성음료</option><option>롯데칠성몰</option></select>
-            <button type="button">GO</button>
-          </label>
+            <select disabled tabindex="-1" aria-disabled="true"><option>FAMILY SITE</option><option>롯데칠성음료</option><option>롯데칠성몰</option></select>
+            <button type="button" disabled tabindex="-1">GO</button>
+          </div>
         </div>
         <nav class="site-footer__links" aria-label="푸터 메뉴">
-          <a href="#">이용약관</a>
-          <a href="#" class="is-strong">개인정보처리방침</a>
-          <a href="#">고정형 영상정보처리기기 운영방침</a>
-          <a href="#">롯데칠성몰</a>
-          <a href="#">신문고</a>
-          <a href="#">사이트맵</a>
-          <label class="site-footer__sns"><span class="visually-hidden">롯데칠성 SNS</span>
-            <select><option>롯데칠성SNS</option><option>Instagram</option><option>YouTube</option></select>
-          </label>
+          <span>이용약관</span>
+          <span class="is-strong">개인정보처리방침</span>
+          <span>고정형 영상정보처리기기 운영방침</span>
+          <span>롯데칠성몰</span>
+          <span>신문고</span>
+          <span>사이트맵</span>
+          <div class="site-footer__sns"><span class="visually-hidden">롯데칠성 SNS</span>
+            <select disabled tabindex="-1" aria-disabled="true"><option>롯데칠성SNS</option><option>Instagram</option><option>YouTube</option></select>
+          </div>
         </nav>
         <address class="site-footer__info">
           <span>서울특별시 송파구 올림픽로 269 롯데캐슬골드 5층</span>

@@ -23,7 +23,7 @@
     {key:'grape',side:1,pre:[952.233,450.0195,222.965,557.554,-7],post:[823.994,522.649,222.965,557.554,12]},
     {key:'single',side:1,pre:[1259.3015,634.3015,100,100,-30],post:[987.3015,742.3015,100,100,-30]}
   ].map(s=>({...s,node:duo.querySelector('[data-rich-slot="'+s.key+'"]'),fruit:!['peach','grape'].includes(s.key)}));
-  const depth=[[16.759,737.49,600,478.632,160,.52],[1362.41,936.41,800,800,-30,.52],[1361.8075,-53.1925,600,600,-30,.56],[241.229,45.229,313.054,313.054,-25.16,.48],[240.807,449.807,89.915,89.915,-25.16,.32],[674.5055,80.5055,77.146,77.146,72.23,.20],[1258.1805,466.1805,150,150,76.76,.32],[789.713,92.713,100,100,-81.46,.20]];
+  const depth=[[16.759,737.49,600,478.632,160,.52],[1362.41,936.41,800,800,-30,.52],[1361.8075,-53.1925,600,600,-30,.56],[241.229,45.229,313.054,313.054,-25.16,.48],[240.807,449.807,89.915,89.915,-25.16,.32],[674.5055,80.5055,77.146,77.146,72.23,.20],[1258.1805,466.1805,150,150,76.76,.32],[789.713,92.713,100,100,-81.46,.20],[1150,175,220,175.5,-20,.42],[92,385,200,200,25,.38],[1085,805,170,170,40,.40],[420,815,190,190,-60,.36]];
   const depthNodes=[...duo.querySelectorAll('[data-rich-depth]')];
 
   function captureAnchor(){
@@ -124,17 +124,17 @@
   // (overshoot = "coming at you") on a ~0.9s clock, so every scroll speed
   // sees the same 파앙. Before the clink they are hidden.
   let lastDuoT=-1,clinkPt={x:720,y:420};
-  const burstOut=k=>{const c=1.7,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
+  const burstOut=k=>{const c=2.4,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/750):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/460):(t>=clinkT+.02?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
-      const ki=Math.max(0,Math.min(1,(k-i*.035)/(1-i*.035)));   // tiny stagger
+      const ki=Math.max(0,Math.min(1,(k-i*.02)/(1-i*.02)));   // tiny stagger
       const e=burstOut(ki);
       const px=mix(clinkPt.x,x,Math.min(1,e))+Math.sin(t*4.5+i*1.3)*22*drift;
       const py=mix(clinkPt.y,y,Math.min(1,e))+Math.cos(t*3.7+i)*18*drift;
-      const scale=.12+.88*e;                                     // overshoots > 1: flies at the viewer
+      const scale=.04+.96*e+.28*Math.sin(Math.min(1,ki)*Math.PI);                                     // overshoots > 1: flies at the viewer
       const angle=rotation+(i%2?1:-1)*(120*(1-ki))+Math.sin(t*3+i)*8*drift;
       n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
       n.style.transform='translate(-50%,-50%) rotate('+angle.toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
