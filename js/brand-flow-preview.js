@@ -82,6 +82,7 @@
         flight.classList.remove('is-visible');
         historyStage.style.setProperty('--history-entry-opacity','1');
         archiveActive=true;
+        window.dispatchEvent(new CustomEvent('chilsung:star-progress',{detail:1}));
       }
       return;
     }
@@ -89,6 +90,7 @@
     const h=viewport();
     const available=Math.max(1,r.height-h);
     const progress=window.gsap&&window.ScrollTrigger?playhead.progress:clamp(-r.top/available);
+    window.dispatchEvent(new CustomEvent('chilsung:star-progress',{detail:progress}));
     // The typography eases away while the star retains its exact position.
     const textAlpha=1-between(progress,.34,.45);
     const originalAlpha=1-between(progress,.42,.47);
