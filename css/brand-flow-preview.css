@@ -205,19 +205,37 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .brand-values__ko[data-ko="0"]{color:#149f5c}
 .brand-values__ko[data-ko="1"]{color:#3271e5}
 .brand-values__ko[data-ko="2"]{color:#f26d34}
-.bv-bean{position:absolute;left:calc(100% + 14px);top:-.2em;width:22px;height:28px;opacity:0;display:block}
-.bv-bean svg{display:block;width:100%;height:100%}
-.bv-bean ellipse{fill:#6b4a2f}
-.bv-bean path{fill:none;stroke:#3b2716;stroke-width:1.6;stroke-linecap:round}
-.bv-bean::after{
+.bv-icon{position:absolute;left:calc(100% + 14px);top:-.2em;width:22px;height:28px;opacity:0;display:block}
+.bv-icon svg{display:block;width:100%;height:100%}
+.bv-icon[data-gag="bean"] ellipse{fill:#6b4a2f}
+.bv-icon[data-gag="bean"] path{fill:none;stroke:#3b2716;stroke-width:1.6;stroke-linecap:round}
+.bv-icon[data-gag="drop"]{transform-origin:50% 100%}
+.bv-icon[data-gag="drop"] path{fill:#7fd3a8}
+.bv-icon[data-gag="drop"] path.hl{fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round}
+.bv-icon[data-gag="spark"]{width:26px;height:26px;top:-.15em}
+.bv-icon[data-gag="spark"] path{fill:#3271e5}
+.bv-icon::after{
   content:"";position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;
-  border:2px solid rgba(242,109,52,calc(.8 - var(--bv-ring,0) * .8));transform:scale(calc(.2 + var(--bv-ring,0) * 1.4));
-  opacity:calc(var(--bv-ring,0) * 4);
+  border:2px solid currentColor;transform:scale(calc(.2 + var(--bv-ring,0) * 1.4));
+  opacity:calc(var(--bv-ring,0) * 4 * (1 - var(--bv-ring,0)));
 }
-.bv-zero{
-  position:absolute;left:calc(100% + 12px);top:50%;margin-top:-.62em;padding:.14em .5em .18em;border-radius:999px;
-  background:#f26d34;color:#fff;font:800 .62em/1 "Archivo Black","Pretendard",sans-serif;letter-spacing:.02em;
+.bv-icon[data-gag="drop"]{color:#149f5c}
+.bv-icon[data-gag="drop"]::after{top:auto;bottom:-10px;height:14px;margin-top:0;border-radius:50%}
+.bv-icon[data-gag="spark"]{color:#3271e5}
+.bv-icon[data-gag="bean"]{color:#f26d34}
+.bv-badge{
+  position:absolute;left:calc(100% + 12px);top:50%;margin-top:-.62em;padding:.16em .55em .2em;border-radius:999px;
+  color:#fff;font:800 .62em/1 "Pretendard","Archivo Black",sans-serif;letter-spacing:.01em;white-space:nowrap;
   opacity:0;transform-origin:left center;
+}
+.brand-values__ko[data-ko="0"] .bv-badge{background:#149f5c}
+.brand-values__ko[data-ko="1"] .bv-badge{background:#3271e5}
+.brand-values__ko[data-ko="2"] .bv-badge{background:#f26d34;font-family:"Archivo Black","Pretendard",sans-serif}
+/* 깨끗하게: a white glint wipes across the word. */
+.bv-glint{
+  background:linear-gradient(100deg,#3271e5 0%,#3271e5 40%,#bfe0ff 48%,#fff 50%,#bfe0ff 52%,#3271e5 60%,#3271e5 100%);
+  background-size:300% 100%;background-position:calc(100% - var(--bv-glint,0) * 100%) 0;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .brand-values__sentence{
   position:absolute;inset:0;margin:0;z-index:3;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;

@@ -78,16 +78,27 @@
         ko.style.transform='translate3d(-50%,'+((1-kin)*16+(1-leaving)*-14).toFixed(2)+'px,0)';
       }
     });
-    // CAFFEINE FREE: a coffee bean floats up on a bubble and pops → 0mg.
-    const bean=values.querySelector('.bv-bean'),zero=values.querySelector('.bv-zero');
-    if(bean){
-      const rise=between(progress,.6,.7),burst=between(progress,.7,.735);
-      bean.style.opacity=(rise>0?Math.min(1,rise*4)*(1-burst):0).toFixed(3);
-      bean.style.transform='translate3d(0,'+((1-rise)*46-rise*26).toFixed(1)+'px,0) rotate('+(rise*40).toFixed(1)+'deg) scale('+(1+burst*.8).toFixed(3)+')';
-      bean.style.setProperty('--bv-ring',burst.toFixed(3));
-      zero.style.opacity=between(progress,.715,.75).toFixed(3);
-      zero.style.transform='scale('+(.6+.4*between(progress,.715,.75)+.12*Math.sin(Math.PI*between(progress,.715,.76))).toFixed(3)+')';
-    }
+    // Little gags beside each Korean line (same beat for all three):
+    // 맑고 → a drop falls and splashes → 무색소 · 깨끗하게 → a glint wipes the
+    // word and a sparkle twinkles → 투명 · 카페인 없이 → a bean floats up and pops → 0mg.
+    kos.forEach((ko,i)=>{
+      const icon=ko.querySelector('.bv-icon'),badge=ko.querySelector('.bv-badge');
+      if(!icon)return;
+      const a=i===0?0:cuts[i][0];
+      const t0=i===0?.03:a+.04;
+      const go=between(progress,t0,t0+.1),hit=between(progress,t0+.1,t0+.135),b=between(progress,t0+.115,t0+.15);
+      const gag=icon.dataset.gag;
+      let tf='';
+      if(gag==='drop')tf='translate3d(0,'+((1-go)*-60).toFixed(1)+'px,0) scale('+(1+hit*.5).toFixed(3)+','+(1-hit*.55).toFixed(3)+')';
+      else if(gag==='spark')tf='rotate('+(go*180).toFixed(1)+'deg) scale('+(Math.sin(Math.PI*Math.min(1,go*1.05))*1.25+hit*.6).toFixed(3)+')';
+      else tf='translate3d(0,'+((1-go)*46-go*26).toFixed(1)+'px,0) rotate('+(go*40).toFixed(1)+'deg) scale('+(1+hit*.8).toFixed(3)+')';
+      icon.style.opacity=(go>0?Math.min(1,go*4)*(1-hit):0).toFixed(3);
+      icon.style.transform=tf;
+      icon.style.setProperty('--bv-ring',hit.toFixed(3));
+      badge.style.opacity=b.toFixed(3);
+      badge.style.transform='scale('+(.6+.4*b+.12*Math.sin(Math.PI*b)).toFixed(3)+')';
+      if(gag==='spark')ko.style.setProperty('--bv-glint',go.toFixed(3));
+    });
     // Finale: the three Korean pieces come together, each in its own colour.
     values.querySelectorAll('.brand-values__sentence [data-s]').forEach((piece,i)=>{
       const k=between(progress,.84+i*.025,.9+i*.025);
