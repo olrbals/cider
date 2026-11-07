@@ -105,23 +105,37 @@
 .history-era-bar__rail{position:relative;height:4px;border-radius:4px;background:rgba(20,159,92,.18)}
 .history-era-bar__fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#149f5c}
 .history-era-bar__tick{
-  position:absolute;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;padding:0;border:0;border-radius:50%;
-  background:#f7faf8;box-shadow:inset 0 0 0 2px #149f5c;cursor:inherit;pointer-events:none;
+  position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;padding:0;border:0;background:none;
+  cursor:inherit;pointer-events:none;color:#149f5c;
 }
+.history-era-bar__tick>svg{display:block;width:100%;height:100%;fill:#f7faf8;stroke:#149f5c;stroke-width:2.4;stroke-linejoin:round;transition:fill .2s}
+.history-era-bar__tick.is-active>svg{fill:#149f5c}
 .history-era-bar__tick span{
-  position:absolute;left:50%;bottom:20px;transform:translateX(-50%);
+  position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
   font:400 clamp(11px,.9722vw,14px)/1 "Archivo",Arial,sans-serif;letter-spacing:.02em;color:rgba(20,159,92,.55);
   transition:color .2s,transform .2s;
 }
 .history-era-bar__tick.is-active span{color:#149f5c;transform:translateX(-50%) scale(1.15)}
+/* Star thumb */
 .history-era-bar__thumb{
-  position:absolute;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;
-  background:#149f5c;box-shadow:0 0 0 6px rgba(20,159,92,.16),0 6px 16px rgba(20,159,92,.28);
-  transition:box-shadow .2s,transform .2s;
+  position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;
+  filter:drop-shadow(0 0 6px rgba(20,159,92,.35)) drop-shadow(0 4px 10px rgba(20,159,92,.25));
+  transition:transform .2s,filter .2s;
 }
-.history-era-bar__thumb i{position:absolute;inset:8px;border-radius:50%;background:#fff}
-.history-era-bar:hover .history-era-bar__thumb,.history-era-bar.is-dragging .history-era-bar__thumb{transform:scale(1.12);box-shadow:0 0 0 9px rgba(20,159,92,.18),0 8px 20px rgba(20,159,92,.32)}
-.history-era-bar:focus-visible .history-era-bar__thumb{box-shadow:0 0 0 4px #fff,0 0 0 7px #149f5c}
+.history-era-bar__thumb svg{display:block;width:100%;height:100%;fill:#149f5c;stroke:#fff;stroke-width:1.6;stroke-linejoin:round}
+.history-era-bar:hover .history-era-bar__thumb,.history-era-bar.is-dragging .history-era-bar__thumb{transform:scale(1.14) rotate(8deg);filter:drop-shadow(0 0 10px rgba(20,159,92,.45)) drop-shadow(0 6px 14px rgba(20,159,92,.3))}
+.history-era-bar:focus-visible .history-era-bar__thumb{filter:drop-shadow(0 0 0 #fff) drop-shadow(0 0 4px #149f5c)}
+/* Faint glowing star comet left behind on each era change */
+.history-era-bar__trail{position:absolute;inset:0;pointer-events:none}
+.history-era-bar__spark{
+  position:absolute;top:50%;display:block;transform:translate(-50%,-50%);
+  filter:drop-shadow(0 0 6px rgba(61,187,126,.75));animation:history-spark .8s cubic-bezier(.2,.6,.3,1) forwards;
+}
+.history-era-bar__spark svg{display:block;width:100%;height:100%;fill:#c9f0d9;stroke:#3dbb7e;stroke-width:1.2}
+@keyframes history-spark{
+  0%{opacity:.85;transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+  100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.25) rotate(var(--r))}
+}
 .history-era-bar__hint{
   margin:18px 0 0;text-align:center;font:400 clamp(10px,.8333vw,12px)/1 "Archivo",Arial,sans-serif;
   letter-spacing:.18em;color:rgba(20,159,92,.6);

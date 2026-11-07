@@ -514,12 +514,28 @@ async function initHistory(section) {
   bar.setAttribute('aria-valuemax', years.at(-1));
   bar.innerHTML = '<div class="history-era-bar__rail"><span class="history-era-bar__fill"></span>'
     + years.map((y, i) => '<button type="button" tabindex="-1" class="history-era-bar__tick" data-era="' + i + '" style="left:'
-      + (i / (years.length - 1) * 100) + '%"><span>' + y + '</span></button>').join('')
-    + '<span class="history-era-bar__thumb"><i></i></span></div><p class="history-era-bar__hint">SCROLL OR DRAG</p>';
+      + (i / (years.length - 1) * 100) + '%"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.7l-6.4 3.5L7 14.1 1.7 9.1l7.2-.9z\"/></svg><span>' + y + '</span></button>').join('')
+    + '<span class="history-era-bar__trail"></span><span class="history-era-bar__thumb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.7l-6.4 3.5L7 14.1 1.7 9.1l7.2-.9z"/></svg></span></div><p class="history-era-bar__hint">SCROLL OR DRAG</p>';
   stage.append(bar);
   const rail = bar.querySelector('.history-era-bar__rail');
   const fill = bar.querySelector('.history-era-bar__fill');
   const thumb = bar.querySelector('.history-era-bar__thumb');
+  const trail = bar.querySelector('.history-era-bar__trail');
+  // Soft glowing star comet behind the thumb while it travels between eras.
+  let trailAt = -1;
+  function dropTrail(v, dir) {
+    trailAt = v;
+    const sp = document.createElement('i');
+    sp.className = 'history-era-bar__spark';
+    const size = 9 + Math.random() * 8;
+    sp.style.cssText = 'left:' + (v * 100).toFixed(3) + '%;width:' + size.toFixed(1) + 'px;height:' + size.toFixed(1)
+      + 'px;--dy:' + ((Math.random() - .5) * 26).toFixed(1) + 'px;--dx:' + (-dir * (6 + Math.random() * 10)).toFixed(1)
+      + 'px;--r:' + (Math.random() * 70 - 35).toFixed(0) + 'deg';
+    sp.innerHTML = '<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.7l-6.4 3.5L7 14.1 1.7 9.1l7.2-.9z\"/></svg>';
+    trail.append(sp);
+    sp.addEventListener('animationend', () => sp.remove(), { once: true });
+    while (trail.childElementCount > 40) trail.firstChild.remove();
+  }
   const ticks = [...bar.querySelectorAll('.history-era-bar__tick')];
   const last = years.length - 1;
   let target = 0, shown = 0, dragging = false, raf = 0, prev = 0, autoEnd = false, lastActive = -1;
@@ -545,9 +561,15 @@ async function initHistory(section) {
     const rate = Math.min(dragging ? 16 : 12, 4.6 + dist * 2.2) / last;   // eras/sec → progress/sec
     const step = Math.min(Math.abs(d), rate * dt);
     shown += Math.sign(d) * step;
+    if (step > 0 && !reducedMotion.matches) {
+      // Fill the whole stretch covered this frame, so slow frames still leave a comet.
+      const dir = Math.sign(d), from = trailAt < 0 ? shown - dir * step : trailAt;
+      for (let v = from + dir * .011; dir > 0 ? v <= shown : v >= shown; v += dir * .011) dropTrail(v, dir);
+    }
     if (Math.abs(target - shown) < .0006) shown = target;
     render(shown); paintBar(shown);
     raf = shown !== target ? requestAnimationFrame(tick) : 0;
+    if (!raf) trailAt = -1;
     if (!raf) prev = 0;
   }
   function goTo(v) { target = clamp(v); if (!raf) raf = requestAnimationFrame(tick); }
