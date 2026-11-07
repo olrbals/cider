@@ -85,7 +85,7 @@
     }
     // Corner labels blend between the principle colours with the words.
     const mix=(x,y,k)=>x.map((v,j)=>Math.round(v+(y[j]-v)*k));
-    const pal=[[20,159,92],[50,113,229],[229,50,45]];
+    const pal=[[20,159,92],[20,159,92],[20,159,92]];   // 11-07: all three principles in Chilsung green
     const k1=between(progress,.26-.028,.26+.045),k2=between(progress,.51-.028,.51+.045);
     let rgb=k2>0?mix(pal[1],pal[2],k2):mix(pal[0],pal[1],k1);
     values.style.setProperty('--bv-accent','rgb('+rgb.join(',')+')');

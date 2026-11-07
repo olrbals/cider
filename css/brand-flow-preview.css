@@ -176,8 +176,8 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 /* V5.2 — one color per principle (Figma 1431:33 / 1456:2; navy replaces
    yellow so CAFFEINE FREE reads on white and pairs with the yellow FIZZ). */
 #brand-values .brand-values__word[data-brand-value="0"] { color: #149f5c; }
-#brand-values .brand-values__word[data-brand-value="1"] { color: #3271e5; }
-#brand-values .brand-values__word[data-brand-value="2"] { color: #e5322d; }
+#brand-values .brand-values__word[data-brand-value="1"] { color: #149f5c; }
+#brand-values .brand-values__word[data-brand-value="2"] { color: #149f5c; }
 /* 11-07 — corner labels follow the active principle colour. */
 #brand-values .brand-values__micro,#brand-values .brand-values__title,#brand-values .brand-values__counter { color: var(--bv-accent,#149f5c); }
 
@@ -227,7 +227,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 #brand-values .brand-values__word[data-brand-value="2"] .bv-l::before,
 #brand-values .brand-values__word[data-brand-value="2"] .bv-l::after{
   content:"";position:absolute;left:50%;top:45%;width:.11em;height:.11em;margin-left:-.055em;border-radius:50%;
-  border:.02em solid #e5322d;opacity:0;pointer-events:none;-webkit-text-fill-color:initial
+  border:.02em solid #149f5c;opacity:0;pointer-events:none;-webkit-text-fill-color:initial
 }
 #brand-values .brand-values__word[data-brand-value="2"] .bv-l::after{width:.07em;height:.07em;margin-left:.04em;top:60%}
 #brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l::before{animation:bv-fizz .85s calc(var(--i) * .045s + .05s) cubic-bezier(.2,.6,.4,1) both}
@@ -237,10 +237,10 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 #brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free .bv-l{animation:none}
 #brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free{animation:bv-free .5s .78s cubic-bezier(.3,1.6,.5,1) both}
 @keyframes bv-empty{
-  0%{-webkit-text-fill-color:#e5322d;transform:translateY(0)}
-  35%{-webkit-text-fill-color:rgba(229,50,45,.16);transform:translateY(-.03em)}
-  65%{-webkit-text-fill-color:rgba(229,50,45,.3);transform:translateY(-.02em)}
-  100%{-webkit-text-fill-color:#e5322d;transform:translateY(0)}
+  0%{-webkit-text-fill-color:#149f5c;transform:translateY(0)}
+  35%{-webkit-text-fill-color:rgba(20,159,92,.16);transform:translateY(-.03em)}
+  65%{-webkit-text-fill-color:rgba(20,159,92,.3);transform:translateY(-.02em)}
+  100%{-webkit-text-fill-color:#149f5c;transform:translateY(0)}
 }
 /* The outline layer of the liquid type keeps its own (transparent) fill. */
 #brand-values .site-liquid-type-outline .bv-l{animation:none!important}
