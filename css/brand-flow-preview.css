@@ -246,7 +246,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .bv-gag[data-gag="bean"] .bv-splash{top:0}
 .bv-gag[data-gag="bean"] .bv-splash i{background:#f26d34;--sd:1.05s}
 .bv-zero{left:0;top:0;transform:translate(-50%,-50%) scale(0);padding:.16em .55em .2em;border-radius:999px;
-  background:#f26d34;color:#fff;font:400 clamp(24px,2.5vw,36px)/1 "Archivo Black","Pretendard",sans-serif;white-space:nowrap;opacity:0}
+  background:#f26d34;color:#fff;font:400 clamp(16px,1.6667vw,24px)/1 "Archivo Black","Pretendard",sans-serif;white-space:nowrap;opacity:0}
 .is-playing .bv-bean{animation:bv-bean 1.25s cubic-bezier(.25,.6,.35,1) forwards}
 .is-playing .bv-zero{animation:bv-zero .7s 1.05s cubic-bezier(.3,1.6,.5,1) forwards}
 @keyframes bv-bean{
@@ -257,7 +257,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   86%{opacity:1;transform:translateY(-6px) scale(1.6)}
   100%{opacity:0;transform:translateY(-6px) scale(2)}
 }
-@keyframes bv-zero{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-12deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-4deg)}}
+@keyframes bv-zero{0%{opacity:0;transform:translate(-50%,-50%) scale(0)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 /* Recap before FEEL THE FIZZ */
 .brand-values__recap{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4svh;pointer-events:none;text-align:center}
 .brand-values__recap-main{margin:0;opacity:0;font:800 clamp(40px,4.4444vw,68px)/1.2 "Pretendard",sans-serif;letter-spacing:-.04em;color:#149f5c}

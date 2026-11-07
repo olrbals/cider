@@ -74,8 +74,10 @@
         gag.style.opacity=opacity.toFixed(3);
         gag.style.transform='translate3d(-50%,'+dy.toFixed(2)+'px,0)';
         if(i===1){const sh=values.querySelector('.bv-shine');sh.style.opacity=opacity.toFixed(3);sh.classList.toggle('is-playing',gag.classList.contains('is-playing'));}
-        if(opacity>.85&&!gag.classList.contains('is-playing'))gag.classList.add('is-playing');
-        else if(opacity<.08)gag.classList.remove('is-playing');
+        // PURE's drop waits for the visitor's first scroll into the section.
+        const ready=opacity>.85&&(i>0||progress>=.035);
+        if(ready&&!gag.classList.contains('is-playing'))gag.classList.add('is-playing');
+        else if(opacity<.08||(i===0&&progress<.01))gag.classList.remove('is-playing');
       }
     });
     // Recap before FEEL THE FIZZ: 칠성사이다가 지켜온 3가지 원칙.
