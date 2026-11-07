@@ -211,9 +211,9 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .bv-splash{left:0;top:-6px;width:0;height:0}
 .bv-splash i{left:0;top:0;width:12px;height:12px;margin:-6px;border-radius:50%;opacity:0}
 .bv-gag[data-gag="drop"] .bv-splash i{background:#3dbb7e}
-.is-playing .bv-drop{animation:bv-drop 2s cubic-bezier(.3,0,.4,1) forwards}
-.is-playing .bv-ripple{animation:bv-ripple .9s .62s ease-out forwards}
-.is-playing .bv-splash i{animation:bv-spray .8s var(--sd,.64s) cubic-bezier(.2,.7,.3,1) forwards}
+.is-playing .bv-drop{animation:bv-drop 2.6s cubic-bezier(.3,0,.4,1) forwards,bv-drop-idle 2.4s 2.6s ease-in-out infinite}
+.is-playing .bv-ripple{animation:bv-ripple 1.1s .8s ease-out forwards}
+.is-playing .bv-splash i{animation:bv-spray 1s var(--sd,.82s) cubic-bezier(.2,.7,.3,1) forwards}
 @keyframes bv-drop{
   0%{opacity:0;transform:translateY(-190px) scale(.85,1.2)}
   6%{opacity:1}
@@ -244,11 +244,11 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .bv-bean{left:0;top:0;width:44px;height:58px;margin:-29px 0 0 -22px;opacity:0}
 .bv-bean ellipse{fill:#6b4a2f}.bv-bean path{fill:none;stroke:#3b2716;stroke-width:1.6;stroke-linecap:round}
 .bv-gag[data-gag="bean"] .bv-splash{top:0}
-.bv-gag[data-gag="bean"] .bv-splash i{background:#f26d34;--sd:1.25s}
+.bv-gag[data-gag="bean"] .bv-splash i{background:#f26d34;--sd:2.25s}
 .bv-zero{left:0;top:0;transform:translate(-50%,-50%) scale(0);padding:.16em .55em .2em;border-radius:999px;
   background:#f26d34;color:#fff;font:400 clamp(24px,2.5vw,36px)/1 "Archivo Black","Pretendard",sans-serif;white-space:nowrap;opacity:0}
-.is-playing .bv-bean{animation:bv-bean 1.4s cubic-bezier(.3,0,.4,1) forwards}
-.is-playing .bv-zero{animation:bv-zero .6s 1.28s cubic-bezier(.3,1.7,.5,1) forwards}
+.is-playing .bv-bean{animation:bv-bean 2.5s cubic-bezier(.3,0,.4,1) forwards}
+.is-playing .bv-zero{animation:bv-zero .9s 2.25s cubic-bezier(.3,1.6,.5,1) forwards}
 @keyframes bv-bean{
   0%{opacity:0;transform:translateY(120px) rotate(-30deg)}
   12%{opacity:1}
@@ -270,3 +270,6 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .brand-values__recap-words [data-r="1"]{color:#3271e5}
 .brand-values__recap-words [data-r="2"]{color:#f26d34}
 @media (prefers-reduced-motion: reduce){.bv-gag *{animation:none!important}}
+@keyframes bv-drop-idle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(.97,1.03)}}
+/* Longer hold per principle so each gag can finish and be seen. */
+#brand-values.brand-values{height:440svh;min-height:2600px}
