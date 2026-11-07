@@ -93,8 +93,8 @@
 
 @media(min-width:761px){.history-3d-info{translate:20px 0}}
 
-/* 11-07 — one pinned screen; eras are chosen with the bottom era bar. */
-#history .history-3d-track{height:135svh}
+/* 11-07 — scroll steps through eras (≈40svh each); the bottom bar is optional. */
+#history .history-3d-track{height:420svh}
 #history .history-3d-era{display:none}
 .history-era-bar{
   position:absolute;z-index:6;left:50%;bottom:clamp(28px,5.5svh,56px);transform:translateX(-50%);

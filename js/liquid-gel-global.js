@@ -99,7 +99,7 @@
     return;
   }
 
-  let cols = 180;
+  let cols = 120; // 11-07: lighter field (was 180)
   let rows = 100;
   let width = 1;
   let height = 1;
@@ -126,7 +126,7 @@
     // to surface slope; scale here is measured in rendered CSS pixels.
     // Principles already uses a fill/outline mask; keep its additional DOM
     // refraction gentle so the centered multiline words do not tear apart.
-    const amount=active?.matches('.brand-values__stage')?18:65;
+    const amount=active?.matches('.brand-values__stage')?12:42; // 11-07: gentler (was 18/65)
     displacement.setAttribute('scale', (Number(refraction.value) * amount).toFixed(2));
   }
 
@@ -309,7 +309,9 @@
   }
 
   // RICH keeps the same ripple field without idle filtering or PNG encoding.
-  const optimizedTarget = () => active?.matches('.rich-flavors__viewport');
+  // 11-07: every scene uses the cheap path — BMP upload, and the filter is
+  // dropped entirely whenever the surface has settled flat.
+  const optimizedTarget = () => !!active;
   function writeTexture(force = false) {
     if (!active || !pixelData) return;
     // V4 originally takes the height gradient in a WebGL shader.
@@ -362,7 +364,7 @@
     for (const stroke of strokes) pushGel(stroke);
     simulate(dt);
     // 30Hz image uploads keep text, 3D and scrolling responsive.
-    if (time - mapStamp >= 33 || (!optimizedTarget() && strokes.length > 0)) {
+    if (time - mapStamp >= 45 || (!optimizedTarget() && strokes.length > 0)) {
       writeTexture();
       mapStamp = time;
     }

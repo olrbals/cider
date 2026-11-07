@@ -499,7 +499,7 @@ async function initHistory(section) {
   bar.innerHTML = '<div class="history-era-bar__rail"><span class="history-era-bar__fill"></span>'
     + years.map((y, i) => '<button type="button" tabindex="-1" class="history-era-bar__tick" data-era="' + i + '" style="left:'
       + (i / (years.length - 1) * 100) + '%"><span>' + y + '</span></button>').join('')
-    + '<span class="history-era-bar__thumb"><i></i></span></div><p class="history-era-bar__hint">DRAG TO TRAVEL IN TIME</p>';
+    + '<span class="history-era-bar__thumb"><i></i></span></div><p class="history-era-bar__hint">SCROLL OR DRAG</p>';
   stage.append(bar);
   const rail = bar.querySelector('.history-era-bar__rail');
   const fill = bar.querySelector('.history-era-bar__fill');
@@ -522,14 +522,28 @@ async function initHistory(section) {
   }
   function tick(now) {
     const dt = Math.min(.05, (now - (prev || now)) / 1000); prev = now;
-    const k = dragging ? 14 : 6;
-    shown += (target - shown) * (1 - Math.exp(-dt * k));
-    if (Math.abs(target - shown) < .0004) shown = target;
+    // 샤샤샥: each era change is a quick whip-spin on a clock (≈0.3s per
+    // era, faster across several eras), then the can and year stop dead.
+    const d = target - shown, dist = Math.abs(d) * last;
+    // The can's own hold→roll→hold (smoothstep .2–.8 per era) supplies the ease.
+    const rate = Math.min(dragging ? 16 : 12, 4.6 + dist * 2.2) / last;   // eras/sec → progress/sec
+    const step = Math.min(Math.abs(d), rate * dt);
+    shown += Math.sign(d) * step;
+    if (Math.abs(target - shown) < .0006) shown = target;
     render(shown); paintBar(shown);
     raf = shown !== target ? requestAnimationFrame(tick) : 0;
     if (!raf) prev = 0;
   }
   function goTo(v) { target = clamp(v); if (!raf) raf = requestAnimationFrame(tick); }
+  // Scroll steps through the eras: each equal slice of the section is one
+  // year, so crossing a slice fires the next whip-spin.
+  let scrollEra = -1;
+  function fromScroll() {
+    const r = section.getBoundingClientRect();
+    const p = clamp(-r.top / Math.max(1, r.height - innerHeight));
+    const era = Math.min(last, Math.floor(p * years.length));
+    if (era !== scrollEra) { scrollEra = era; if (!dragging) goTo(era / last); }
+  }
   const valueAt = x => { const r = rail.getBoundingClientRect(); return clamp((x - r.left) / Math.max(1, r.width)); };
   bar.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;
@@ -549,9 +563,10 @@ async function initHistory(section) {
   });
   // Leaving toward RICH: glide to 2024 so the 2024 → 2026 year handoff still lines up.
   const toEnd = () => {
+    fromScroll();
     const r = section.getBoundingClientRect();
     if (r.bottom < innerHeight * .75 && !autoEnd && !dragging) { autoEnd = true; goTo(1); }
-    else if (r.top > innerHeight * .5) autoEnd = false;
+    else if (r.bottom >= innerHeight * .75) autoEnd = false;
     // RICH's transparent sticky viewport overlaps this screen: let the bar
     // receive the cursor until RICH actually takes over.
     const live = r.top < innerHeight && r.bottom > innerHeight * .75 && !section.classList.contains('rich-year-handoff');
