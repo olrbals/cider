@@ -146,7 +146,46 @@
     scheduled = true;
     window.requestAnimationFrame(render);
   }
-  window.addEventListener('scroll', requestRender, { passive: true });
+  // 11-07 — snappy transitions: once the visitor nudges a wave boundary
+  // (a wheel tick or two), the page glides the rest of the way on its own,
+  // so the liquid wipe finishes smoothly instead of being dragged through a
+  // whole screen of scrolling. Works in both directions; input is held only
+  // for the short glide.
+  const AUTO_IDS = ['korea', 'identity', 'footer'];
+  const autoScenes = scenes.filter(sc => AUTO_IDS.includes(sc.section.id));
+  let lastY = window.scrollY, glide = null, cooldownUntil = 0;
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  function startGlide(target) {
+    const from = window.scrollY;
+    const dist = Math.abs(target - from);
+    if (dist < 4) return;
+    glide = { from, to: target, t0: performance.now(), dur: Math.min(900, 420 + dist * .45) };
+    const step = now => {
+      if (!glide) return;
+      const k = Math.min(1, (now - glide.t0) / glide.dur);
+      window.scrollTo(0, glide.from + (glide.to - glide.from) * ease(k));
+      if (k < 1) requestAnimationFrame(step);
+      else { glide = null; cooldownUntil = performance.now() + 380; lastY = window.scrollY; }
+    };
+    requestAnimationFrame(step);
+  }
+  function checkAuto() {
+    if (reduced.matches || glide || performance.now() < cooldownUntil) { lastY = window.scrollY; return; }
+    const y = window.scrollY, dir = Math.sign(y - lastY);
+    lastY = y;
+    if (!dir) return;
+    const vh = window.innerHeight;
+    for (const sc of autoScenes) {
+      const top = sc.section.getBoundingClientRect().top;
+      if (dir > 0 && top < vh * .97 && top > vh * .02) { startGlide(y + top); return; }
+      if (dir < 0 && top > vh * .03 && top < vh * .98) { startGlide(y + top - vh); return; }
+    }
+  }
+  const holdInput = e => { if (glide) e.preventDefault(); };
+  window.addEventListener('wheel', holdInput, { passive: false });
+  window.addEventListener('touchmove', holdInput, { passive: false });
+  window.addEventListener('keydown', e => { if (glide && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(e.key)) e.preventDefault(); });
+  window.addEventListener('scroll', () => { requestRender(); checkAuto(); }, { passive: true });
   window.addEventListener('resize', requestRender, { passive: true });
   reduced.addEventListener('change', requestRender);
   requestRender();
