@@ -70,7 +70,9 @@
     const height = Math.max(1, window.innerHeight);
     const rect = identity.getBoundingClientRect();
     const available = Math.max(1, rect.height - height);
-    const p = reduce.matches ? 1 : clamp(-rect.top / available);
+    // Same white-screen hold as brand-flow-preview.js (HOLD_AT .70, .7 screens).
+    const holdPx = height * .7, base = Math.max(1, available - holdPx), sp = -rect.top, at = .70 * base;
+    const p = reduce.matches ? 1 : sp < at ? clamp(sp / base) : sp < at + holdPx ? .70 : clamp((sp - holdPx) / base);
     identity.classList.toggle('is-seven-complete', p >= .57 && rect.bottom > 0 && rect.top < height);
     // First a tiny outlined star is born between T and R, then the
     // growing slot pushes them apart rather than overlapping the letters.

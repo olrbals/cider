@@ -95,7 +95,7 @@ html.has-scene-edge-overlay .identity-stage > .section-edge-label,
 html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block; }
 
 /* One expanding white star opens the archive, without a separate color fade. */
-#identity.identity.experience-02 { height:360svh; min-height:1900px; }
+#identity.identity.experience-02 { height:430svh; min-height:2270px; } /* +70svh: hold on the white line */
 #identity.identity.experience-02,
 #identity .identity-stage { background:rgb(var(--bf-surface,20,159,92)); color:#fff; }
 #identity .identity-display,

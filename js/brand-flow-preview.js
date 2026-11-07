@@ -29,6 +29,7 @@
   aperture.classList.add('brand-star-aperture');
   identity.querySelector('.identity-stage').prepend(aperture);
   const playhead={progress:0};
+  const HOLD_AT=.70,HOLD_SCREENS=.7;   // mirrored in scene-polish.js
   let frame=0;
   let source=null;
   let archiveActive=false;
@@ -89,7 +90,11 @@
     archiveActive=false;
     const h=viewport();
     const available=Math.max(1,r.height-h);
-    const progress=window.gsap&&window.ScrollTrigger?playhead.progress:clamp(-r.top/available);
+    const rawProgress=window.gsap&&window.ScrollTrigger?playhead.progress:clamp(-r.top/available);
+    // 11-07: hold the white "시대를 깨운 청량함" screen for ~70svh of scroll.
+    // The section is that much taller; everything else keeps its old pace.
+    const holdPx=h*HOLD_SCREENS,base=Math.max(1,available-holdPx),sp=rawProgress*available,at=HOLD_AT*base;
+    const progress=sp<at?sp/base:sp<at+holdPx?HOLD_AT:clamp((sp-holdPx)/base);
     window.dispatchEvent(new CustomEvent('chilsung:star-progress',{detail:progress}));
     // The typography eases away while the star retains its exact position.
     const textAlpha=1-between(progress,.34,.45);
