@@ -23,7 +23,7 @@
     {key:'grape',side:1,pre:[952.233,450.0195,222.965,557.554,-7],post:[823.994,522.649,222.965,557.554,12]},
     {key:'single',side:1,pre:[1259.3015,634.3015,100,100,-30],post:[987.3015,742.3015,100,100,-30]}
   ].map(s=>({...s,node:duo.querySelector('[data-rich-slot="'+s.key+'"]'),fruit:!['peach','grape'].includes(s.key)}));
-  const depth=[[16.759,737.49,600,478.632,160,.52],[1362.41,936.41,800,800,-30,.52],[1361.8075,-53.1925,600,600,-30,.56],[241.229,45.229,313.054,313.054,-25.16,.48],[240.807,449.807,89.915,89.915,-25.16,.32],[674.5055,80.5055,77.146,77.146,72.23,.20],[1258.1805,466.1805,150,150,76.76,.32],[789.713,92.713,100,100,-81.46,.20],[1150,175,220,175.5,-20,.42],[92,385,200,200,25,.38],[1085,805,170,170,40,.40],[420,815,190,190,-60,.36]];
+  const depth=[[16.759,737.49,600,478.632,160,.52],[1362.41,936.41,800,800,-30,.52],[1361.8075,-53.1925,600,600,-30,.56],[241.229,45.229,313.054,313.054,-25.16,.48],[240.807,449.807,89.915,89.915,-25.16,.32],[674.5055,80.5055,77.146,77.146,72.23,.20],[1258.1805,466.1805,150,150,76.76,.32],[789.713,92.713,100,100,-81.46,.20],[110,395,220,175.5,20,.42],[1160,195,200,200,-25,.38],[455,835,170,170,40,.40],[1075,815,190,190,-60,.36]];
   const depthNodes=[...duo.querySelectorAll('[data-rich-depth]')];
 
   function captureAnchor(){
@@ -124,16 +124,21 @@
   // (overshoot = "coming at you") on a ~0.9s clock, so every scroll speed
   // sees the same 파앙. Before the clink they are hidden.
   let lastDuoT=-1,clinkPt={x:720,y:420};
+  const DEPTH_DELAY=[0,.12,.05,.2,.09,.16,.03,.22,.14,.07,.18,.1];
   const burstOut=k=>{const c=2.4,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/460):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/560):(t>=clinkT+.02?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
-      const ki=Math.max(0,Math.min(1,(k-i*.02)/(1-i*.02)));   // tiny stagger
+      // 파팍: scattered pops, not one clump — each fruit starts already spread
+      // out on its own side and lands on its own beat.
+      const delay=DEPTH_DELAY[i%DEPTH_DELAY.length];
+      const ki=Math.max(0,Math.min(1,(k-delay)/(1-delay)));
       const e=burstOut(ki);
-      const px=mix(clinkPt.x,x,Math.min(1,e))+Math.sin(t*4.5+i*1.3)*22*drift;
-      const py=mix(clinkPt.y,y,Math.min(1,e))+Math.cos(t*3.7+i)*18*drift;
+      const ox=mix(clinkPt.x,x,.58),oy=mix(clinkPt.y,y,.58);
+      const px=mix(ox,x,Math.min(1,e))+Math.sin(t*4.5+i*1.3)*22*drift;
+      const py=mix(oy,y,Math.min(1,e))+Math.cos(t*3.7+i)*18*drift;
       const scale=.04+.96*e+.28*Math.sin(Math.min(1,ki)*Math.PI);                                     // overshoots > 1: flies at the viewer
       const angle=rotation; // 11-07: no spin — the fruits just burst outward for freshness
       n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
