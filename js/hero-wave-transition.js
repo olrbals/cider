@@ -160,12 +160,13 @@
     const dist = Math.abs(target - from);
     if (dist < 4) return;
     glide = { from, to: target, t0: performance.now(), dur: Math.min(900, 420 + dist * .45) };
+    window.__chilsungGlide = true;
     const step = now => {
       if (!glide) return;
       const k = Math.min(1, (now - glide.t0) / glide.dur);
       window.scrollTo(0, glide.from + (glide.to - glide.from) * ease(k));
       if (k < 1) requestAnimationFrame(step);
-      else { glide = null; cooldownUntil = performance.now() + 380; lastY = window.scrollY; }
+      else { glide = null; window.__chilsungGlide = false; cooldownUntil = performance.now() + 380; lastY = window.scrollY; }
     };
     requestAnimationFrame(step);
   }

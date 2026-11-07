@@ -119,6 +119,7 @@
   }
 
   let scrollTicking = false;
+  let smoothText = 0, smoothFill = 0, smoothLast = 0;
 
   function updateSequence(now) {
     scrollTicking = false;
@@ -128,7 +129,18 @@
     const available = Math.max(1, koreaRect.height - viewport);
     // Preserve the original scroll-scrubbed FEEL → THE → FIZZ entrance.
     const entryOffset = viewport * .16;
-    const textProgress = clamp(1.38 * (entryOffset - koreaRect.top) / (entryOffset + available));
+    const scrollText = clamp(1.38 * (entryOffset - koreaRect.top) / (entryOffset + available));
+    // 11-07 — once the yellow page has arrived (the wave glides it into place),
+    // FEEL → THE → FIZZ rise in on their own; scroll jumps are smoothed by a
+    // critically damped follow, so the letters always glide instead of snapping.
+    const arrived = koreaRect.top <= viewport * .12 && koreaRect.bottom > viewport * .5;
+    const textTarget = arrived ? Math.max(scrollText, DANCE_START + .01) : scrollText;
+    const dtText = smoothLast ? Math.min(.05, (now - smoothLast) / 1000) : 1 / 60;
+    smoothLast = now;
+    smoothText += (textTarget - smoothText) * (1 - Math.exp(-dtText * 3.2));
+    if (Math.abs(textTarget - smoothText) < .0008) smoothText = textTarget;
+    const textProgress = smoothText;
+    const textSettling = smoothText !== textTarget;
 
     // Once the words settle, keep their autonomous dance active for as long
     // as any portion of this yellow section remains in the viewport.
@@ -151,11 +163,17 @@
 
     // Preserve the original independent cream-to-green fill timeline.
     const progress = clamp(-koreaRect.top / available);
-    korea.style.setProperty('--korea-fill', (ease(progress / .68) * 100).toFixed(2) + '%');
+    // The cream→green fill follows the letters in, then keeps its scroll link.
+    const fillTarget = arrived ? Math.max(ease(progress / .68), clamp((smoothText - .3) / .3)) : ease(progress / .68);
+    smoothFill += (fillTarget - smoothFill) * (1 - Math.exp(-dtText * 3.2));
+    if (Math.abs(fillTarget - smoothFill) < .0008) smoothFill = fillTarget;
+    korea.style.setProperty('--korea-fill', (smoothFill * 100).toFixed(2) + '%');
+    window.dispatchEvent(new Event('chilsung:korea-fill'));
     korea.style.setProperty('--korea-shift', (progress * 55).toFixed(2) + 'px');
 
     // Only keep a frame loop alive while the text is actually dancing.
-    if (danceActive) requestScrollTick();
+    if (danceActive || textSettling || smoothFill !== fillTarget) requestScrollTick();
+    else smoothLast = 0;
   }
   function requestScrollTick() {
     if (!scrollTicking) {

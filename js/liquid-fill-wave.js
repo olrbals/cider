@@ -82,7 +82,8 @@
     if (starActive || textActive) request();
   }
 
-  window.addEventListener('scroll', request, { passive: true });
+  window.addEventListener('chilsung:korea-fill', request);
+  addEventListener('scroll', request, { passive: true });
   window.addEventListener('resize', request, { passive: true });
   reducedMotion.addEventListener('change', request);
   document.addEventListener('visibilitychange', () => {
