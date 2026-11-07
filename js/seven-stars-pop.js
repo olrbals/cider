@@ -46,8 +46,8 @@
     // Shock star: one quick "팡" from the centre.
     if (age < .55) {
       const k = age / .55, e = 1 - (1 - k) ** 3;
-      // Star-shaped shock wave (five points, slight turn as it bursts out).
-      const R = 30 + e * Math.hypot(w, h) * .5, rot = -Math.PI / 2 + e * .18;
+      // Star-shaped shock wave (five points, upright).
+      const R = 30 + e * Math.hypot(w, h) * .5, rot = -Math.PI / 2;   // upright, no tilt
       ctx.beginPath();
       for (let i = 0; i < 10; i++) {
         const rr = i % 2 ? R * .42 : R, an = rot + i * Math.PI / 5;
