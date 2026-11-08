@@ -90,3 +90,13 @@
 .site-header .header-utils > * { height:22px; padding:0 22px; }
 .site-header .header-utils svg { width:26px; height:26px; }
 .site-header .header-utils .header-utils__mall,.site-header .header-utils .header-utils__mall img { height:30px; }
+/* 11-08 (d) — matched to the official header's proportions at 1440px
+   (≈88px bar, ~164px-wide logo, 124px menu pitch, 20px menu type). */
+.site-header { height:88px; }
+.site-header .header-logo { height:88px; }
+.site-header .header-logo img { height:43px; }
+.site-header nav span { width:clamp(104px,8.6vw,124px); min-height:88px; font-size:20px; }
+.site-header .header-utils { height:88px; font-size:16px; }
+.site-header .header-utils > * { height:20px; padding:0 18px; }
+.site-header .header-utils svg { width:22px; height:22px; }
+.site-header .header-utils .header-utils__mall,.site-header .header-utils .header-utils__mall img { height:24px; }
