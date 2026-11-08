@@ -92,7 +92,7 @@ async function boot() {
     // Names only once the bottles stand apart — never during the '건배' clink where they cross.
     const sr = slots.map(n => n.getBoundingClientRect());
     const apart = sr.length > 1 && Math.abs((sr[0].left + sr[0].width / 2) - (sr[1].left + sr[1].width / 2)) > Math.max(sr[0].width, sr[1].width) * 1.1;
-    const allSettled = apart && slots.every(n => Math.abs(n.richSpin || 0) < .08);
+    const allSettled = slots.every(n => Math.abs(n.richSpin || 0) < .08);   // bottles no longer cross, so no 'apart' check
     if (!allSettled) restSince = 0; else if (!restSince) restSince = performance.now();
     const landed = restSince && performance.now() - restSince > 700;   // fruits have arrived too
     slots.forEach((node, i) => {

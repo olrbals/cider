@@ -106,3 +106,9 @@
 #brand-values .brand-values__recap-lead{font:400 clamp(18px,1.6667vw,26px)/1.2 "Pretendard",sans-serif!important;letter-spacing:-.01em;color:var(--c-deep)!important}
 /* all seven: light by --shine (landing, rest flash, the final blaze) */
 #identity .seven-gel__star{filter:drop-shadow(0 0 calc(var(--shine,0) * 26px) rgba(255,255,255,calc(min(1,var(--shine,0)) * .95))) brightness(calc(1 + var(--shine,0) * .1))}
+/* 11-08: the fruits float (둥둥) — on the inner image, so the JS-driven flight transform is untouched */
+.rich-duo [data-rich-slot="slice"] img,.rich-duo [data-rich-slot="bunch"] img,.rich-duo [data-rich-slot="whole"] img,.rich-duo [data-rich-slot="single"] img,.rich-duo [data-rich-depth] img{animation:rich-float 4.2s ease-in-out infinite}
+.rich-duo [data-rich-slot="bunch"] img,.rich-duo [data-rich-depth]:nth-child(odd) img{animation-duration:5.1s;animation-delay:-1.3s}
+.rich-duo [data-rich-slot="whole"] img,.rich-duo [data-rich-depth]:nth-child(3n) img{animation-duration:3.7s;animation-delay:-2.2s}
+@keyframes rich-float{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(0,-12px) rotate(2.5deg)}}
+@media (prefers-reduced-motion:reduce){.rich-duo [data-rich-slot] img,.rich-duo [data-rich-depth] img{animation:none}}
