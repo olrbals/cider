@@ -105,3 +105,5 @@
 .site-header nav span { width:clamp(116px,9.45vw,136px); }
 /* 11-08 (f) — Lotte Chilsung mark ×1.2 */
 .site-header .header-logo img { height:52px; }
+/* 11-08 (g) — top room −8px */
+.site-header { height:100px; padding-top:12px; }
