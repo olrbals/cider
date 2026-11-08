@@ -112,3 +112,10 @@
 .rich-duo [data-rich-slot="whole"] img,.rich-duo [data-rich-depth]:nth-child(3n) img{animation-duration:3.7s;animation-delay:-2.2s}
 @keyframes rich-float{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(0,-12px) rotate(2.5deg)}}
 @media (prefers-reduced-motion:reduce){.rich-duo [data-rich-slot] img,.rich-duo [data-rich-depth] img{animation:none}}
+
+/* 11-08: RICH clink — keep moving layers on the GPU */
+.rich-duo [data-rich-depth],.rich-duo__slot{will-change:transform,opacity;backface-visibility:hidden}
+/* 11-08: header peeks back in on a small upward scroll, on every page */
+.site-header.is-off-hero{position:fixed;transform:translateY(-100%);transition:opacity .3s ease,visibility .3s ease,transform .38s cubic-bezier(.22,.8,.3,1)}
+.site-header.is-off-hero.is-peek{opacity:1;visibility:visible;pointer-events:auto;transform:none;background:linear-gradient(180deg,rgba(7,76,39,.94),rgba(7,76,39,.78));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+@media (prefers-reduced-motion:reduce){.site-header.is-off-hero{transition:none}}

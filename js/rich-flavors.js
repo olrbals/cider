@@ -145,12 +145,11 @@
       const px=mix(clinkPt.x,x,persp)+Math.sin(t*4.5+i*1.3)*22*drift;
       const py=mix(clinkPt.y,y,persp)+Math.cos(t*3.7+i)*18*drift;
       const scale=(.02+.98*persp)*(1+land);
-      const speed=ki<1?(1/(z*z))*(Z0-1)/(1-1/Z0):0;               // d(persp)/dk — motion blur follows speed
-      const blur=Math.min(7,speed*1.6)*(ki<.98?1:0);
       const twist=(i%2?1:-1)*30*(1-persp);
-      n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
-      n.style.transform='translate(-50%,-50%) rotate('+(rotation+twist).toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
-      n.style.filter=blur>.2?'blur('+blur.toFixed(1)+'px)':'';
+      // 11-08 smoothness: compositor-only — no left/top (layout) and no
+      // per-frame blur filter (re-rasterises big images every frame).
+      n.style.left='0px';n.style.top='0px';
+      n.style.transform='translate3d('+px.toFixed(1)+'px,'+py.toFixed(1)+'px,0) translate(-50%,-50%) rotate('+(rotation+twist).toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
       n.style.opacity=(alpha*Math.min(1,ki*8)).toFixed(4);
     });
   }

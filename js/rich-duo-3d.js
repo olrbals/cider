@@ -85,13 +85,11 @@ async function boot() {
     if (W !== duo.clientWidth || H !== duo.clientHeight) resize();
     const v = duo.getBoundingClientRect();
     const units = visibleH / Math.max(1, H);
-    const scale = parseFloat(getComputedStyle(root).getPropertyValue('--rich-duo-scale')) || 1;
+    const scale = parseFloat(root.style.getPropertyValue('--rich-duo-scale')) || 1;
     const pop = parseFloat(duo.style.getPropertyValue('--rich-pop')) || 0;
     let key = '';
     placed = [];
     // Names only once the bottles stand apart — never during the '건배' clink where they cross.
-    const sr = slots.map(n => n.getBoundingClientRect());
-    const apart = sr.length > 1 && Math.abs((sr[0].left + sr[0].width / 2) - (sr[1].left + sr[1].width / 2)) > Math.max(sr[0].width, sr[1].width) * 1.1;
     const allSettled = slots.every(n => Math.abs(n.richSpin || 0) < .08);   // bottles no longer cross, so no 'apart' check
     if (!allSettled) restSince = 0; else if (!restSince) restSince = performance.now();
     const landed = restSince && performance.now() - restSince > 700;   // fruits have arrived too
@@ -111,14 +109,19 @@ async function boot() {
       if (nm) {
         const settled = Math.abs(node.richSpin || 0) < .08;
         // 11-08: centred under its bottle; if a fruit sits there, shift the least distance that clears it.
-        const cx = r.left + r.width / 2 - v.left, top = r.top + r.height / 2 - v.top + height / 2 + 22;
-        const spot = clearOfFruit(cx, top, nm.offsetWidth, nm.offsetHeight, v);
-        nm.style.left = spot.x.toFixed(1) + 'px';
-        nm.style.top = spot.y.toFixed(1) + 'px';
-        placed.push({ l: spot.x - nm.offsetWidth / 2, r: spot.x + nm.offsetWidth / 2, t: spot.y, b: spot.y + nm.offsetHeight });
         const cy = r.top + r.height / 2, hw = Math.max(r.width, height * .32) / 2;
         const over = mx >= r.left + r.width / 2 - hw && mx <= r.left + r.width / 2 + hw && my >= cy - height / 2 && my <= cy + height / 2;
-        nm.style.opacity = settled && landed && over ? '1' : '0';
+        const show = settled && landed && over;
+        // 11-08 smoothness: the fruit-avoiding placement (many layout reads)
+        // only runs while a name is actually shown — never during the clink.
+        if (show) {
+          const cx = r.left + r.width / 2 - v.left, top = r.top + r.height / 2 - v.top + height / 2 + 22;
+          const spot = clearOfFruit(cx, top, nm.offsetWidth, nm.offsetHeight, v);
+          nm.style.left = spot.x.toFixed(1) + 'px';
+          nm.style.top = spot.y.toFixed(1) + 'px';
+          placed.push({ l: spot.x - nm.offsetWidth / 2, r: spot.x + nm.offsetWidth / 2, t: spot.y, b: spot.y + nm.offsetHeight });
+        }
+        nm.style.opacity = show ? '1' : '0';
       }
       key += pet.position.x.toFixed(3) + pet.position.y.toFixed(3) + pet.scale.x.toFixed(4) + pet.rotation.z.toFixed(3) + pet.rotation.y.toFixed(3);
     });
