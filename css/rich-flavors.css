@@ -10,7 +10,7 @@
 .rich-story__window{position:absolute;left:220px;top:420px;width:1000px;height:136px;overflow:hidden;color:#00ac47;text-align:center}
 .rich-story__window p{position:absolute;left:0;top:0;width:100%;margin:0;font-size:52px;font-weight:700;line-height:1.3;letter-spacing:-1.04px;white-space:nowrap}
 .rich-story__new{font-family:"Archivo",sans-serif}
-.rich-story__message{font-family:"Yaldevi Colombo SemiBold","Pretendard","Apple SD Gothic Neo",sans-serif}
+.rich-story__message{font-family:"Pretendard","Apple SD Gothic Neo",sans-serif}
 /* Hide only the source year during the handoff; the carried year occupies its exact box. */
 .history-3d.rich-year-handoff .history-3d-odometer{opacity:0}
 .history-3d.rich-year-handoff .history-3d-caption,.history-3d.rich-year-handoff .history-3d-canvas,.history-3d.rich-year-handoff .history-3d-fallback{opacity:var(--rich-archive-opacity,1)}

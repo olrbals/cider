@@ -1,0 +1,44 @@
+/* 11-08 — contrast & type polish (Codex review, applied selectively).
+   Big type and graphics keep Brand Green #00AC47; small text uses Deep Green;
+   secondary text stays quiet but readable. */
+:root{
+  --c-brand:#00ac47;      /* large display type, graphics */
+  --c-deep:#0e6b3c;       /* small headings, labels, timeline, text on yellow */
+  --c-text:#14271d;
+  --c-secondary:#5f6b66;  /* captions, quiet labels (≈5.6:1 on white) */
+  --c-muted:#66736b;      /* inactive timeline labels */
+  --c-line:#cbd7d0;
+  --c-blue:#2f5fd0;
+}
+
+/* THREE PRINCIPLES — quiet but readable labels; CLEAR in the deeper blue. */
+#brand-values .brand-values__micro,#brand-values .brand-values__title{color:var(--c-secondary)!important;font-weight:600}
+#brand-values .brand-values__word[data-brand-value="1"]{color:var(--c-blue)}
+#brand-values .brand-values__counter[data-at="1"] i.is-on{background:var(--c-blue)}
+#brand-values .brand-values__counter i{background:#d3dbd6}
+.brand-values__recap-lead{color:var(--c-secondary)!important}
+
+/* SEVEN STARS white line — the soft lead in deep green, still lighter in weight. */
+.seven-stars-pop__copy span{color:var(--c-deep)}
+
+/* Edge labels on yellow (FEEL THE FIZZ): white was ~1.1:1 — deep green instead. */
+.scene-edge-overlay .scene-edge-label.is-on-yellow{color:var(--c-deep);text-shadow:none;opacity:.8}
+#korea .korea-stage > .section-edge-label{color:var(--c-deep)!important;opacity:.8}
+
+/* BRAND HISTORY — readable timeline. */
+.history-3d-caption-copy{color:var(--c-deep)}
+.history-era-bar__rail{background:var(--c-line)}
+.history-era-bar__tick>svg{stroke:#9fb0a7}
+.history-era-bar__tick span{color:var(--c-muted);font-weight:600}
+.history-era-bar__tick.is-active>svg{fill:var(--c-deep);stroke:var(--c-deep)}
+.history-era-bar__tick.is-active span{color:var(--c-deep);font-weight:700}
+.history-era-bar__fill{background:var(--c-deep)}
+.history-era-bar__thumb svg{fill:var(--c-deep)}
+
+/* RICH — product names beside the bottles. */
+.rich-duo__name{position:absolute;z-index:6;pointer-events:none;white-space:nowrap;
+  font:800 clamp(16px,1.3889vw,20px)/1 "Archivo","Pretendard",sans-serif;letter-spacing:.08em;
+  color:var(--c-text);opacity:0;transform:translate(-50%,0);transition:opacity .45s ease;margin:0}
+.rich-duo__name b{font-weight:800}
+.rich-duo__name[data-name="peach"] b{color:#e0457b}
+.rich-duo__name[data-name="grape"] b{color:#3f9a2f}

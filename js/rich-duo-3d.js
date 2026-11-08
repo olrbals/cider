@@ -40,6 +40,13 @@ async function boot() {
   duo.append(canvas);
   duo.classList.add('rich-duo-3d-ready');
 
+  // Product names beside the bottles, so the flavour reads without the label.
+  const names = ['peach', 'grape'].map(k => {
+    const el = document.createElement('p');
+    el.className = 'rich-duo__name'; el.dataset.name = k;
+    el.innerHTML = 'RICH <b>' + k.toUpperCase() + '</b>';
+    duo.append(el); return el;
+  });
   let W = 0, H = 0, raf = 0, last = '';
   function resize() {
     W = duo.clientWidth; H = duo.clientHeight;
@@ -71,6 +78,13 @@ async function boot() {
       pet.position.y += Math.sin(tt * 1.3) * .045;
       pet.rotation.z = -(node.richAngle || 0) * Math.PI / 180 + Math.sin(tt * .9) * .03;
       pet.rotation.y = (node.richSpin || 0) + Math.sin(tt * .8) * .16;
+      const nm = names[i];
+      if (nm) {
+        const settled = Math.abs(node.richSpin || 0) < .08;
+        nm.style.left = (r.left + r.width / 2 - v.left).toFixed(1) + 'px';
+        nm.style.top = (r.top + r.height / 2 - v.top + height / 2 + 18).toFixed(1) + 'px';
+        nm.style.opacity = settled ? '1' : '0';
+      }
       key += pet.position.x.toFixed(3) + pet.position.y.toFixed(3) + pet.scale.x.toFixed(4) + pet.rotation.z.toFixed(3) + pet.rotation.y.toFixed(3);
     });
     if (key !== last) { last = key; renderer.render(scene, camera); }

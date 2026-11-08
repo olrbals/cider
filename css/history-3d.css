@@ -46,7 +46,7 @@
 .history-3d-caption{
   position:relative;flex:0 0 auto;min-width:0;
   width:100%;max-width:100%;text-align:center;
-  font-family:"Yaldevi Colombo SemiBold","Pretendard","Apple SD Gothic Neo",sans-serif;
+  font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;
 }
 .history-3d-caption-window{
   position:relative;width:100%;height:1.3em;overflow:hidden;
