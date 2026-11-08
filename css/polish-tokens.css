@@ -46,10 +46,9 @@
 .rich-duo__name[data-name="grape"] b{color:#3f9a2f}
 
 /* Seven rising stars overlay */
-/* SEVEN STARS story overlay — glossy heritage star centred, morphing into the new star */
-.seven-story{position:fixed;inset:0;z-index:26;pointer-events:none;visibility:hidden}
-.seven-story.is-on{visibility:visible}
-.seven-story__film{position:absolute;left:0;top:0;transform-origin:0 0}
-#identity.has-seven-story .identity-main-star{opacity:0!important}
+/* SEVEN STARS — the official film, big on the stage */
+#identity .seven-film{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none}
+#identity.has-seven-film .identity-display,
+#identity.has-seven-film .identity-liquid-layer{opacity:0!important}
 /* sizes: footer emblem bigger, hero wordmark smaller */
 .footer-emblem{width:clamp(340px,30vw,460px)}

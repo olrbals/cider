@@ -37,6 +37,8 @@
   history.classList.toggle('has-star-entry',!reduced.matches);
 
   function captureSource() {
+    const story=window.__sevenStoryAnchor?.();   // SEVEN STARS film: grow from its biggest star
+    if(story){source=story;return;}
     // scene-polish.js replaces the A of STARS with this SVG;
     // use its rendered bounding box to avoid a jump when the overlay takes over.
     const element=identity.querySelector('.identity-display .identity-main-star');
@@ -131,7 +133,7 @@
     if(progress<.32)source=null;
     if(progress>.34&&progress<.43)captureSource();
     const historyRect=history.getBoundingClientRect();
-    const takeover=between(progress,.42,.47);
+    const takeover=window.__sevenStoryAnchor?.()?between(progress,.40,.42):between(progress,.42,.47);   // film: its solid star hands over at once
     const landing=between(progress,.945,.995);
     const visible=fall>.40 && progress<.995 && r.bottom>0 && r.top<h && !document.hidden;
     // 11-07: history is fully there under the white tide sheet (seven-stars-pop.js).
