@@ -1,5 +1,5 @@
 /* 11-07 — CAFFEINE FREE: the CAFFEINE letters crumble into coffee-coloured
-   powder that blows away on the wind (left → right sweep), leaving only a
+   powder that crumbles and falls straight down where it was (left → right), leaving only a
    faint trace of the word — caffeine gone; FREE stays solid.
    Triggered when brand-flow-preview marks the word `.is-playing`. */
 (() => {
@@ -57,9 +57,9 @@
         out.push({
           x: ax, y: ay, x0: ax, y0: ay,
           delay: sweep * .48 + Math.random() * .06,
-          vx: (Math.random() - .35) * 260, vy: (Math.random() - .65) * 260,
+          vx: (Math.random() - .5) * 46, vy: -Math.random() * 40,
           wob: Math.random() * 6.28, s: step * (.8 + Math.random() * .7),
-          life: 1.1 + Math.random() * 1, c: COLORS[(Math.random() * COLORS.length) | 0]
+          life: .9 + Math.random() * .8, c: COLORS[(Math.random() * COLORS.length) | 0]
         });
         if (out.length > 16000) return out;
       }
@@ -80,12 +80,12 @@
       const k = a / p.life;
       if (k >= 1) continue;
       alive = true;
-      // Bursts apart in place, then the wind takes it up and to the right.
-      const drag = Math.exp(-dt * 2.6);
-      p.vx = p.vx * drag + 190 * dt * Math.min(1, a * 1.6);
-      p.vy = p.vy * drag - 95 * dt;
-      p.x += (p.vx + Math.sin(a * 5 + p.wob) * 40) * dt;
-      p.y += (p.vy + Math.cos(a * 4 + p.wob) * 22) * dt;
+      // 11-08: crumbles where it is and falls — no flying off upward.
+      const drag = Math.exp(-dt * 1.8);
+      p.vx = p.vx * drag;
+      p.vy = p.vy * drag + 620 * dt;
+      p.x += (p.vx + Math.sin(a * 6 + p.wob) * 6) * dt;
+      p.y += p.vy * dt;
       ctx.fillStyle = 'rgba(' + p.c + ',' + (Math.min(1, a * 12) * (1 - k) ** 1.2).toFixed(3) + ')';
       const s = p.s * (1 - k * .5);
       ctx.fillRect(p.x, p.y, s, s);

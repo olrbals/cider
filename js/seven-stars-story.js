@@ -105,7 +105,6 @@
     return out;
   })();
   const morphD = m => 'M' + roundPts.map((a, i) => { const b = sharpPts[i]; return (a[0] + (b[0] - a[0]) * m).toFixed(1) + ' ' + (a[1] + (b[1] - a[1]) * m).toFixed(1); }).join('L') + 'Z';
-  const TIPS = [0, 2, 4, 6, 8].map(i => SHARP[i]);
   const whiteSVG = '<svg class="seven-gel__svg" viewBox="0 0 600 600" overflow="visible" aria-hidden="true" focusable="false"><path d="' + SHARP_D + '" fill="#fff"/></svg>';
 
   const layer = document.createElement('div');
@@ -117,11 +116,9 @@
     el.className = 'seven-gel__star' + (i === BIG ? ' seven-gel__star--gel' : '');
     el.style.setProperty('--twinkle-delay', (i * .23).toFixed(2) + 's');
     el.innerHTML = i === BIG ? gelSVG(uid) : whiteSVG;
-    const g = document.createElement('span'); g.className = 'seven-gel__spark'; el.append(g);
     layer.append(el);
     return el;
   });
-  const sparks = stars.map(el => el.querySelector('.seven-gel__spark'));
   const flash = stars.map(() => ({ next: 0, at: -1, dur: .2 }));
   const canvas = document.createElement('canvas');
   canvas.className = 'seven-gel__fizz';
@@ -198,7 +195,7 @@
     body.style.opacity = (1 - sm(SWEEP[1] - .02, SWEEP[1] + .02, p)).toFixed(3);
     const resting = p >= SPLIT[1] - .005 && p < FIZZ[0] + .03 && !reduced.matches;
     layer.classList.toggle('is-resting', resting);
-    // Twinkle: one quick flash per star at irregular moments, with a glint on a random tip.
+    // Twinkle: one quick flash of light per star at irregular moments (no cross glint).
     const now = performance.now() / 1000;
     stars.forEach((el, i) => {
       const f = flash[i];
@@ -206,9 +203,6 @@
       if (!f.next) f.next = now + .05 + Math.random() * .7;   // each star flashes once, at its own moment
       if (now >= f.next && f.at < 0) {
         f.at = now; f.dur = .14 + Math.random() * .16;
-        const tip = TIPS[(Math.random() * TIPS.length) | 0];
-        sparks[i].style.left = (tip[0] / 6).toFixed(1) + '%'; sparks[i].style.top = (tip[1] / 6).toFixed(1) + '%';
-        sparks[i].style.setProperty('--rot', (Math.random() * 40 - 20).toFixed(0) + 'deg');
       }
       let v = 0;
       if (f.at >= 0) {

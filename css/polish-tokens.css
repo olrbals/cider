@@ -55,11 +55,7 @@
 #identity .seven-gel__star--gel .seven-gel__sheen--top{animation:seven-gel-glint 4.8s ease-in-out infinite}
 #identity .seven-gel__star--gel .seven-gel__sheen--side{animation:seven-gel-glint 5.8s ease-in-out .9s infinite}
 #identity .seven-gel__star--gel .seven-gel__sheen--base{animation:seven-gel-glint 5.3s ease-in-out .35s infinite}
-#identity .seven-gel.is-resting .seven-gel__star{filter:drop-shadow(0 0 calc(var(--tw,0) * 16px) rgba(255,255,255,calc(var(--tw,0) * .95))) brightness(calc(1 + var(--tw,0) * .08))}
-#identity .seven-gel__spark{position:absolute;width:42%;height:42%;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(calc(var(--tw,0) * 1));opacity:var(--tw,0);pointer-events:none;
-  background:radial-gradient(closest-side,#fff 0 7%,rgba(255,255,255,.5) 16%,transparent 55%),
-    linear-gradient(90deg,transparent 48%,#fff 49.6% 50.4%,transparent 52%),linear-gradient(0deg,transparent 48%,#fff 49.6% 50.4%,transparent 52%);
-  -webkit-mask:radial-gradient(closest-side,#000 35%,transparent 100%);mask:radial-gradient(closest-side,#000 35%,transparent 100%)}
+#identity .seven-gel.is-resting .seven-gel__star{filter:drop-shadow(0 0 calc(var(--tw,0) * 22px) rgba(255,255,255,calc(var(--tw,0) * .95))) brightness(calc(1 + var(--tw,0) * .08))}
 @keyframes seven-gel-breathe{0%,100%{transform:scaleX(1.04) scaleY(.98)}38%{transform:scaleX(1.03) scaleY(.99)}68%{transform:scaleX(1.05) scaleY(.975)}}
 @keyframes seven-gel-glint{0%,100%{opacity:.36}48%{opacity:.7}72%{opacity:.48}}
 @keyframes seven-gel-twinkle{0%,55%,100%{filter:none}25%{filter:drop-shadow(0 0 10px rgba(255,255,255,.95)) brightness(1.06)}}

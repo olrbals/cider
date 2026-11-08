@@ -48,9 +48,12 @@ function updateChrome(s, boundary) {
   hero.style.setProperty('--hero-type-fade', String(1 - smooth(s, .2, .55)));
   hero.style.setProperty('--hero-type-lift', (-70 * smooth(s, .2, .55)).toFixed(1) + 'px');
   if (header) {
-    const offHero = nextSection ? boundary <= .08 : s > 1.5;
+    // 11-08: the header belongs to the hero only — it leaves as soon as the
+    // white wave rolls in, so it never sits over PURE or later sections.
+    const leaving = s >= 1.2 || hero.dataset.waveTop < 110;
+    const offHero = leaving || (nextSection ? boundary <= .08 : s > 1.5);
     header.classList.toggle('is-off-hero', offHero);
-    header.classList.toggle('is-on-light', !offHero && (s >= 1.2 || hero.dataset.waveTop < 110));
+    header.classList.remove('is-on-light');
   }
 }
 
