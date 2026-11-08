@@ -65,13 +65,14 @@
       // gather around it.
       const recapEl=values.querySelector('.brand-values__recap');
       const keyFrom=recapEl.querySelector('.bv-key'),keyTo=zest.querySelector('.bz-key');
-      const rest=between(full,.79,.86);   // step 1: only 청량감 stays (page rests here)                      // everything but 청량감 fades
-      const move=between(full,.875,.92),eased=move*move*(3-2*move);
-      const handed=full>=.87;
+      const rest=between(full,.785,.835);   // only 청량감 stays (and turns bold)                      // everything but 청량감 fades
+      const move=between(full,.84,.888),eased=move*move*(3-2*move);
+      const handed=full>=.838;
       const main=recapEl.querySelector('.brand-values__recap-main');
       [...main.childNodes].forEach(n=>{if(n.nodeType===3){if(!n.__wrap){const sp=document.createElement('span');sp.className='bv-fade';n.replaceWith(sp);sp.append(n);sp.__wrap=1;}}});
       main.querySelectorAll('b,.bv-fade').forEach(el=>el.style.opacity=(1-rest).toFixed(3));
       keyFrom.style.opacity=handed?'0':'1';
+      keyFrom.style.fontWeight=rest>.5?'800':'';   // bold as soon as it stands alone
       keyTo.style.transform='none';
       const a=keyFrom.getBoundingClientRect(),b=keyTo.getBoundingClientRect();
       const scale=1;
@@ -81,12 +82,12 @@
       keyTo.style.transform='translate3d('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px,0) scale('+scale.toFixed(4)+')';
       recapEl.style.opacity='1';
       [...zest.querySelectorAll('.bz-w')].forEach((w,i)=>{
-        const k=between(full,.905+i*.01,.935+i*.01);   // fully in by ~.94, before the page rests
+        const k=between(full,.875+i*.01,.91+i*.01);   // fully in by ~.94, before the page rests
         w.style.opacity=k.toFixed(3);
         w.style.transform='translate3d(0,'+((1-k)*14).toFixed(1)+'px,0)';
         w.style.filter=k<1?'blur('+((1-k)*5).toFixed(1)+'px)':'none';
       });
-      zest.setAttribute('aria-hidden',String(full<.875));
+      zest.setAttribute('aria-hidden',String(full<.84));
     }
     const counter=values.querySelector('.brand-values__counter');
     // 11-07 시안: three principles, each with a Korean line and a small gag.
@@ -122,7 +123,7 @@
       const main=between(progress,.76,.82),lead=between(progress,.8,.86);
       recap.classList.toggle('is-playing',main>.9);
       recap.querySelector('.brand-values__recap-main').style.cssText='opacity:'+main.toFixed(3)+';transform:translate3d(0,'+((1-main)*30).toFixed(1)+'px,0) scale('+(.95+.05*main).toFixed(3)+')';
-      recap.querySelector('.brand-values__recap-lead').style.cssText='opacity:'+(lead*(1-between(full,.79,.86))).toFixed(3)+';transform:translate3d(0,'+((1-lead)*16).toFixed(1)+'px,0)';
+      recap.querySelector('.brand-values__recap-lead').style.cssText='opacity:'+(lead*(1-between(full,.785,.835))).toFixed(3)+';transform:translate3d(0,'+((1-lead)*16).toFixed(1)+'px,0)';
       // Corner labels stay for the three words and step aside for the recap.
       values.style.setProperty('--bv-labels',(1-between(progress,.74,.79)).toFixed(3));
     }

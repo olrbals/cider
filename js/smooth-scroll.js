@@ -22,7 +22,7 @@
     slowStops = new Map();
     const span = el => Math.max(1, el.offsetHeight - vh());
     const bv = $('brand-values');
-    if (bv) { const t = absTop(bv), r = span(bv); [0, .06, .40, .645, .9].forEach(p => out.push(t + r * p * .85)); out.push(t + r * .87, t + r * .962); slowStops.set(Math.min(maxY(), Math.round(t + r * .87)), 1500); slowStops.set(Math.min(maxY(), Math.round(t + r * .962)), 2000); }   // 청량감 alone → new line   // + lemon-lime copy, eased in slowly
+    if (bv) { const t = absTop(bv), r = span(bv); [0, .06, .40, .645, .9].forEach(p => out.push(t + r * p * .85)); out.push(t + r * .945); slowStops.set(Math.min(maxY(), Math.round(t + r * .945)), 1700); }   // 청량감 carries over into the new line, one smooth step   // + lemon-lime copy, eased in slowly
     const ko = $('korea'); if (ko) { out.push(absTop(ko)); slowStops.set(Math.min(maxY(), Math.round(absTop(ko))), 1500); }   // FEEL THE FIZZ rises in unhurried
     const id = $('identity');
     if (id) {
