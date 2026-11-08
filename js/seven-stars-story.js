@@ -43,7 +43,8 @@
   const clamp = v => Math.max(0, Math.min(1, v));
   const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
   const lin = (a, b, x) => clamp((x - a) / (b - a));
-  let p = 0, raf = 0, lastKey = '', size = 0;
+  let p = 0, raf = 0, lastKey = '', size = 0, twinkleAt = 0;
+  const base = document.createElement('canvas'), bctx = base.getContext('2d');
 
   function frameAt(v) {
     if (v < S0) return lin(M0, M1, v) * (MORPH - 1);
@@ -77,23 +78,61 @@
     const f = frameAt(p), i = Math.floor(f), mix = f - i;
     const fade = 1 - sm(FADE0, FADE1, p);                 // the other six stars step back
     const a = nearest(i), b = mix > .01 && i + 1 < N && frames[i + 1];
-    const hold = p >= S1 - .004;                            // the biggest star stays solid
-    const key = [i, mix.toFixed(2), fade.toFixed(2), px, !!a && a.src, !!b, hold].join('|');
-    if (key === lastKey) return;
-    lastKey = key;
+    const key = [i, mix.toFixed(2), fade.toFixed(2), px, !!a && a.src, !!b].join('|');
+    if (key !== lastKey) {                                  // film frame → offscreen buffer
+      lastKey = key;
+      if (base.width !== px) base.width = base.height = px;
+      bctx.clearRect(0, 0, px, px);
+      if (a) { bctx.globalAlpha = fade; bctx.drawImage(a, 0, 0, px, px); }
+      if (b) { bctx.globalAlpha = fade * mix; bctx.drawImage(b, 0, 0, px, px); }
+      bctx.globalAlpha = 1;
+    }
     ctx.clearRect(0, 0, px, px);
-    if (a) { ctx.globalAlpha = fade; ctx.drawImage(a, 0, 0, px, px); }
-    if (b) { ctx.globalAlpha = fade * mix; ctx.drawImage(b, 0, 0, px, px); }
-    ctx.globalAlpha = 1;
-    if (hold) {
-      const k = px / SRC, box = BIG.w * k / .86;
+    ctx.drawImage(base, 0, 0);
+    // Constellation complete: the biggest star stays solid and twinkles,
+    // hinting that it is the one about to grow.
+    const hold = p >= S1 - .004;
+    if (!hold) { twinkleAt = 0; return; }
+    const now = performance.now();
+    if (!twinkleAt) twinkleAt = now;
+    const t = (now - twinkleAt) / 1000;
+    const ph = (t % 1.7) / 1.7, pulse = ph < .5 ? Math.sin(Math.PI * ph / .5) : 0;
+    const k = px / SRC, box = BIG.w * k / .86;
+    const cx = BIG.x * k, cy = BIG.y * k + box * .0375;
+    const grow = 1 + .055 * pulse;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(grow, grow);
+    ctx.translate(-box / 2, -box / 2);
+    ctx.scale(box / 100, box / 100);
+    ctx.shadowColor = 'rgba(255,255,255,' + (.35 + .6 * pulse).toFixed(3) + ')';
+    ctx.shadowBlur = (6 + 26 * pulse) * box / 100;
+    ctx.fillStyle = '#fff';
+    ctx.fill(STAR);
+    ctx.restore();
+    // glint: a four-point flare on the upper-right tip
+    const g = Math.max(0, Math.sin(Math.PI * Math.min(1, ph / .42)));
+    if (g > .01) {
+      const fx = cx + box * (.93 - .5) * grow * .98, fy = cy + box * (.36 - .5) * grow;
+      const L = box * .34 * g, w = box * .035 * g;
       ctx.save();
-      ctx.translate(BIG.x * k - box / 2, BIG.y * k + box * .0375 - box / 2);
-      ctx.scale(box / 100, box / 100);
+      ctx.translate(fx, fy);
+      ctx.rotate(.35 * ph);
+      ctx.globalAlpha = g;
+      ctx.shadowColor = 'rgba(255,255,255,.95)';
+      ctx.shadowBlur = box * .08;
       ctx.fillStyle = '#fff';
-      ctx.fill(STAR);
+      ctx.beginPath();
+      for (let q = 0; q < 4; q++) {
+        const ang = q * Math.PI / 2, len = q % 2 ? L * .62 : L;
+        ctx.lineTo(Math.cos(ang) * len, Math.sin(ang) * len);
+        ctx.lineTo(Math.cos(ang + Math.PI / 4) * w, Math.sin(ang + Math.PI / 4) * w);
+      }
+      ctx.closePath();
+      ctx.fill();
       ctx.restore();
     }
+    if (p < HANDOFF) raf = requestAnimationFrame(paint);   // keep twinkling while the visitor rests here
   }
   function kick() { if (!raf) raf = requestAnimationFrame(paint); }
   addEventListener('chilsung:star-progress', e => { p = e.detail; kick(); });
