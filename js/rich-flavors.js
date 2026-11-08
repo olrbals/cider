@@ -127,7 +127,7 @@
   const DEPTH_DELAY=[0,.12,.05,.2,.09,.16,.03,.22,.14,.07,.18,.1];
   const burstOut=k=>{const c=2.4,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/680):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/560):(t>=clinkT-.33?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
@@ -154,8 +154,11 @@
   }
   function cheers(t,poses){
     // Fire once when scrolling down through the clink; re-arm when scrolling back.
-    if(t<clinkT-.05)clinked=false;
-    if(!clinked&&t>=clinkT&&lastT<clinkT&&lastT>=0&&t-clinkT<.5&&!reduce.matches){
+    // 11-08: fire while the bottles are still flying in, so the fruits have
+    // all arrived by the time the bottles land.
+    const fire=clinkT-.35;
+    if(t<fire-.05)clinked=false;
+    if(!clinked&&t>=fire&&lastT<fire&&lastT>=0&&t-fire<.5&&!reduce.matches){
       clinked=true;clinkAt=performance.now();
       const p=poses.peach,g=poses.grape;
       clinkPt={x:(p.x+g.x)/2,y:(p.y+g.y)/2-90};
