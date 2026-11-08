@@ -65,21 +65,23 @@
       // gather around it.
       const recapEl=values.querySelector('.brand-values__recap');
       const keyFrom=recapEl.querySelector('.bv-key'),keyTo=zest.querySelector('.bz-key');
-      const rest=between(full,.85,.885);                      // everything but 청량감 fades
-      const move=between(full,.878,.92),eased=move*move*(3-2*move);
-      const handed=full>=.876;
+      const rest=between(full,.848,.892);                      // everything but 청량감 fades
+      const move=between(full,.88,.935),eased=move*move*(3-2*move);
+      const handed=full>=.879;
       const main=recapEl.querySelector('.brand-values__recap-main');
       [...main.childNodes].forEach(n=>{if(n.nodeType===3){if(!n.__wrap){const sp=document.createElement('span');sp.className='bv-fade';n.replaceWith(sp);sp.append(n);sp.__wrap=1;}}});
       main.querySelectorAll('b,.bv-fade').forEach(el=>el.style.opacity=(1-rest).toFixed(3));
       keyFrom.style.opacity=handed?'0':'1';
       keyTo.style.transform='none';
       const a=keyFrom.getBoundingClientRect(),b=keyTo.getBoundingClientRect();
+      const sc=a.height/Math.max(1,b.height),scale=sc+(1-sc)*eased;
       const dx=(a.left-b.left)*(1-eased),dy=(a.top-b.top)*(1-eased);
       keyTo.style.opacity=handed?'1':'0';
-      keyTo.style.transform='translate3d('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px,0)';
+      keyTo.style.transformOrigin='0 0';
+      keyTo.style.transform='translate3d('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px,0) scale('+scale.toFixed(4)+')';
       recapEl.style.opacity='1';
       [...zest.querySelectorAll('.bz-w')].forEach((w,i)=>{
-        const k=between(full,.91+i*.009,.945+i*.009);
+        const k=between(full,.922+i*.009,.962+i*.009);
         w.style.opacity=k.toFixed(3);
         w.style.transform='translate3d(0,'+((1-k)*14).toFixed(1)+'px,0)';
         w.style.filter=k<1?'blur('+((1-k)*5).toFixed(1)+'px)':'none';
@@ -120,7 +122,7 @@
       const main=between(progress,.76,.82),lead=between(progress,.8,.86);
       recap.classList.toggle('is-playing',main>.9);
       recap.querySelector('.brand-values__recap-main').style.cssText='opacity:'+main.toFixed(3)+';transform:translate3d(0,'+((1-main)*30).toFixed(1)+'px,0) scale('+(.95+.05*main).toFixed(3)+')';
-      recap.querySelector('.brand-values__recap-lead').style.cssText='opacity:'+(lead*(1-between(full,.85,.885))).toFixed(3)+';transform:translate3d(0,'+((1-lead)*16).toFixed(1)+'px,0)';
+      recap.querySelector('.brand-values__recap-lead').style.cssText='opacity:'+(lead*(1-between(full,.848,.892))).toFixed(3)+';transform:translate3d(0,'+((1-lead)*16).toFixed(1)+'px,0)';
       // Corner labels stay for the three words and step aside for the recap.
       values.style.setProperty('--bv-labels',(1-between(progress,.74,.79)).toFixed(3));
     }

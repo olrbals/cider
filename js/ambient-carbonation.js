@@ -99,7 +99,7 @@
       wobble: random(.8, 1.7),
       amp: random(4, 14),
       alpha: random(depth ? .63 : .74, depth ? .8 : 1),
-      kind: Math.random() < .04 ? 2 : depth,
+      kind: Math.random() < .085 ? 2 : depth,   // 11-08: a few more little stars
       age: random(0, 10)
     };
   }

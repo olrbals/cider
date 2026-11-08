@@ -98,7 +98,7 @@
 #history .history-3d-era{display:none}
 .history-era-bar{
   position:absolute;z-index:6;left:50%;bottom:clamp(28px,5.5svh,56px);transform:translateX(-50%);
-  width:min(64vw,920px);padding:30px 0 0;pointer-events:auto;touch-action:none;
+  width:min(64vw,920px);padding:30px 0 20px;pointer-events:auto;touch-action:none;
   cursor:grab;user-select:none;-webkit-user-select:none;outline:none;color:#00ac47;
 }
 .history-era-bar.is-dragging{cursor:grabbing}

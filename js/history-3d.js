@@ -575,7 +575,7 @@ async function initHistory(section) {
   function goTo(v) { target = clamp(v); if (!raf) raf = requestAnimationFrame(tick); }
   // Scroll steps through the eras: each equal slice of the section is one
   // year, so crossing a slice fires the next whip-spin.
-  let scrollEra = -1;
+  let scrollEra = -1, hinted = false;
   function fromScroll() {
     const r = section.getBoundingClientRect();
     const p = clamp(-r.top / Math.max(1, r.height - innerHeight));
@@ -585,6 +585,7 @@ async function initHistory(section) {
   const valueAt = x => { const r = rail.getBoundingClientRect(); return clamp((x - r.left) / Math.max(1, r.width)); };
   bar.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;
+    bar.classList.remove('is-hint'); hinted = true;
     dragging = true; autoEnd = false;
     bar.setPointerCapture(e.pointerId); bar.classList.add('is-dragging');
     goTo(valueAt(e.clientX)); e.preventDefault();
@@ -618,6 +619,7 @@ async function initHistory(section) {
     // receive the cursor until RICH actually takes over.
     const live = r.top < innerHeight && r.bottom > innerHeight * .75 && !section.classList.contains('rich-year-handoff');
     document.documentElement.classList.toggle('history-bar-live', live);
+    bar.classList.toggle('is-hint', live && !hinted && !dragging);   // demo drag until the first touch
   };
   addEventListener('scroll', toEnd, { passive: true });
   toEnd();
