@@ -18,11 +18,11 @@
 
   // Constellation (stage units 0–1100, after the official mark): centre x, centre y, star width.
   // Clean diagonal constellation: no overlaps, centred (stage units 0–1100): centre x, centre y, star width.
-  const LAYOUT = [
-    [578, 227, 120], [723, 227, 120],
-    [538, 397, 150], [713, 397, 150],
-    [493, 592, 180], [703, 592, 180],
-    [438, 817, 240]                                         // the biggest = the gel star itself
+  const LAYOUT = [                                          // measured from the official mark (overlaps included)
+    [577, 220, 129], [764, 219, 130],
+    [523, 403, 167], [710, 403, 167],
+    [457, 620, 206], [645, 620, 208],
+    [404, 818, 265]
   ];
   const UNIT = 1100, BIG = 6, GEL = 0, GEL_SCALE = 3.8;   // the gel star becomes the first small star
   const STAR_W = 493 / 600, STAR_CX = 301.5 / 600, STAR_CY = 302.5 / 600;
