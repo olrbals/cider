@@ -90,7 +90,7 @@
       sheet(base + 26, t, amp * .8, 1.3, 'rgba(255,255,255,.45)');   // trailing foam
       sheet(base, t, amp, 0, '#ffffff');                              // the receding sheet
       // Bubbles ride and shed off the edge while it moves.
-      if (tide > 0 && tide < 1 && !reduced.matches && foam.length < 140) {
+      if (tide > 0 && tide < 1 && !reduced.matches && !window.__sevenStoryBubbles && foam.length < 140) {   // 11-08: no bubbles into 1950
         const n = 2 + Math.round(dt * 160);
         for (let i = 0; i < n; i++) {
           const x = Math.random() * w;

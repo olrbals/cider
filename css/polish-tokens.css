@@ -80,3 +80,4 @@
 #brand-values .brand-values__zest b{font-weight:800}
 #brand-values .bz-w{display:inline-block;opacity:0;will-change:transform,opacity}
 #brand-values .bz-lemonlime{font-weight:800;background:linear-gradient(100deg,#f2b705 0%,#e6c81a 38%,#9fd33a 64%,#5fb52f 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+#identity.has-seven-film .identity-outline-stars{opacity:0!important;visibility:hidden}   /* plain green behind the stars */

@@ -199,7 +199,7 @@
     const ir = ident?.getBoundingClientRect();
     const iBase = ir ? Math.max(1, ir.height - innerHeight * 1.7) : 1;   // same scroll base as the star story
     const ip = ir ? -ir.top / iBase : -1;
-    const hk = Math.max(0, Math.min(1, (ip - .03) / .1));
+    const hk = Math.max(0, Math.min(1, (ip - .02) / .28));   // fades gently while the star turns white and splits
     historyFade = 1 - hk * hk * (3 - 2 * hk);
     targetCount = Math.max(0, Math.round(desiredCount() * (.25 + .75 * historyFade)));
     canvas.style.opacity = String((richProductsActive ? .55 : .84) * historyFade);

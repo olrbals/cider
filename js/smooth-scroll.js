@@ -30,7 +30,7 @@
       out.push(t, t + base * .14, t + base * .32, t + base * .70 + hold * .5);   // SEVEN STARS · white star · seven stars · white line
       // the star story plays through these steps
       slowStops.set(Math.min(maxY(), Math.round(t + base * .14)), 950);
-      slowStops.set(Math.min(maxY(), Math.round(t + base * .32)), 1350);
+      slowStops.set(Math.min(maxY(), Math.round(t + base * .32)), 2200);
       slowStops.set(Math.min(maxY(), Math.round(t + base * .70 + hold * .5)), 1500);   // fizz → white, ~2.4s
     }
     const hi = $('history-3d');

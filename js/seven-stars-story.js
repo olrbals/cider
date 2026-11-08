@@ -30,7 +30,7 @@
   // Scroll map (identity progress). Paging stops: 0 · .14 · .32 · white line (smooth-scroll.js).
   const SWEEP = [.055, .125];                                  // ① the gel star turns into the new white star
   const SHARPEN = [.02, .085];                                //    while its outline sharpens point by point
-  const SPLIT = [.15, .29];                                  // ② it parts into seven
+  const SPLIT = [.15, .31];                                  // ② it parts into seven
   const STAGGER = [0, .014, .006, .019, .003, .011, 0];
   const FIZZ = [.36, .56];                                   // ③ stars fizz into bubbles
   const WHITE = [.43, .63];                                  //    and the screen turns white (paper is white at .68)
@@ -168,15 +168,24 @@
     const w = stage.clientWidth, h = stage.clientHeight;
     return Math.min(h * 1.14, w * (w < 700 ? 1.1 : .95));   // constellation ≈ 80% of the screen height
   }
+  // As in the official film: the white star shrinks down into the biggest
+  // star's place, then the others grow in one by one — up the left column,
+  // then down the right (row3L → row2L → row1L → row1R → row2R → row3R).
+  const POP_ORDER = [2, 3, 1, 4, 0, 5];                     // pop index per star 0–5
+  const SHRINK = [SPLIT[0], SPLIT[0] + .085], POP0 = SPLIT[0] + .055, POP_STEP = .011, POP_DUR = .045;
   function starPos(i, box) {                                 // stage-pixel centre, width and alpha of star i
     const k = box / UNIT, ox = (stage.clientWidth - box) / 2, oy = (stage.clientHeight - box) / 2;
     const [cx, cy, w] = LAYOUT[i];
     const tx = ox + cx * k, ty = oy + cy * k, mx = stage.clientWidth / 2, my = stage.clientHeight / 2;
-    const s0 = SPLIT[0] + STAGGER[i], f = easeIO(lin(s0, s0 + (SPLIT[1] - SPLIT[0]) - .02, p));
     const still = reduced.matches;
-    const g = still ? (p >= SPLIT[0] ? 1 : 0) : f;
-    const scale = i === BIG ? GEL_SCALE + (1 - GEL_SCALE) * g : 1;
-    return { x: mx + (tx - mx) * g, y: my + (ty - my) * g, w: w * k * scale, appear: i === BIG ? 1 : (still ? g : clamp(g * 3)) };
+    if (i === BIG) {
+      const g = still ? (p >= SPLIT[0] ? 1 : 0) : easeIO(lin(SHRINK[0], SHRINK[1], p));
+      return { x: mx + (tx - mx) * g, y: my + (ty - my) * g, w: w * k * (GEL_SCALE + (1 - GEL_SCALE) * g), appear: 1, grow: 1 };
+    }
+    const s0 = POP0 + POP_ORDER[i] * POP_STEP;
+    const f = still ? (p >= SPLIT[0] ? 1 : 0) : lin(s0, s0 + POP_DUR, p);
+    const grow = easeOut(f);
+    return { x: tx, y: ty, w: w * k, appear: f > 0 ? 1 : 0, grow };
   }
 
   function paint() {
@@ -230,7 +239,7 @@
         const k = lin(SHARPEN[0], SWEEP[1], p), bump = Math.sin(Math.PI * k);
         extra = ' scale(' + (1 + .1 * bump).toFixed(4) + ',' + (1 + .03 * bump).toFixed(4) + ')';
       }
-      el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0)' + extra + ' scale(' + (1 - .12 * gone).toFixed(3) + ')';
+      el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0)' + extra + ' scale(' + (Math.max(.001, s.grow) * (1 - .12 * gone)).toFixed(3) + ')';
       el.style.zIndex = i === BIG ? '3' : '2';
     });
 
