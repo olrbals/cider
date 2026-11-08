@@ -74,7 +74,7 @@
       keyFrom.style.opacity=handed?'0':'1';
       keyTo.style.transform='none';
       const a=keyFrom.getBoundingClientRect(),b=keyTo.getBoundingClientRect();
-      const sc=a.height/Math.max(1,b.height),scale=sc+(1-sc)*eased;
+      const scale=1;
       const dx=(a.left-b.left)*(1-eased),dy=(a.top-b.top)*(1-eased);
       keyTo.style.opacity=handed?'1':'0';
       keyTo.style.transformOrigin='0 0';

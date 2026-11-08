@@ -16,14 +16,15 @@
   let width=innerWidth,height=innerHeight,designScale=1,raf=0,anchor=null;
   const productStart=1.98,signoffStart=99; // V9: no in-section signoff; the green footer waves in after RICH
   const slots=[
-    {key:'slice',side:0,pre:[246.695,388.8275,180,143.59,29.53],post:[465.426,394.34,180,143.59,29.53]},
+    {key:'slice',side:0,pre:[200,360,180,143.59,29.53],post:[392,352,180,143.59,29.53]},
     {key:'peach',side:0,pre:[376.854,438.017,212,530.134,7],post:[591.7145,417.862,212,530.134,-8]},
-    {key:'whole',side:0,pre:[258.122,704.122,140,140,-162.11],post:[478.2995,713.2995,140,140,-162.11]},
-    {key:'bunch',side:1,pre:[1107.835,404.835,240,240,-55.55],post:[924.447,418.447,240,240,-55.55]},
+    {key:'whole',side:0,pre:[210,700,140,140,-162.11],post:[398,690,140,140,-162.11]},
+    {key:'bunch',side:1,pre:[1250,380,240,240,-55.55],post:[1078,372,240,240,-55.55]},
     {key:'grape',side:1,pre:[952.233,450.0195,222.965,557.554,-7],post:[823.994,522.649,222.965,557.554,12]},
-    {key:'single',side:1,pre:[1259.3015,634.3015,100,100,-30],post:[987.3015,742.3015,100,100,-30]}
+    {key:'single',side:1,pre:[1260,640,100,100,-30],post:[1092,636,100,100,-30]}
   ].map(s=>({...s,node:duo.querySelector('[data-rich-slot="'+s.key+'"]'),fruit:!['peach','grape'].includes(s.key)}));
-  const depth=[[16.759,737.49,600,478.632,160,.52],[1362.41,936.41,800,800,-30,.52],[1361.8075,-53.1925,600,600,-30,.56],[241.229,45.229,313.054,313.054,-25.16,.48],[240.807,449.807,89.915,89.915,-25.16,.32],[674.5055,80.5055,77.146,77.146,72.23,.20],[1258.1805,466.1805,150,150,76.76,.32],[789.713,92.713,100,100,-81.46,.20],[110,395,220,175.5,20,.42],[1160,195,200,200,-25,.38],[455,835,170,170,40,.40],[1075,815,190,190,-60,.36]];
+  // 11-08: spread out so nothing piles up (two background fruits retired: alpha 0).
+  const depth=[[16.759,737.49,600,478.632,160,.52],[1480,1020,700,700,-30,.52],[1361.8075,-53.1925,600,600,-30,.56],[241.229,45.229,313.054,313.054,-25.16,.48],[240.807,449.807,89.915,89.915,-25.16,0],[674.5055,80.5055,77.146,77.146,72.23,.24],[1258.1805,466.1805,150,150,76.76,0],[789.713,92.713,100,100,-81.46,.24],[110,395,220,175.5,20,.42],[1330,560,160,160,-25,.38],[600,860,140,140,40,.40],[1000,840,170,170,-60,.36]];
   const depthNodes=[...duo.querySelectorAll('[data-rich-depth]')];
 
   function captureAnchor(){
@@ -126,28 +127,31 @@
   const DEPTH_DELAY=[0,.12,.05,.2,.09,.16,.03,.22,.14,.07,.18,.1];
   const burstOut=k=>{const c=2.4,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/720):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/780):(t>=clinkT+.02?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
       // 파팍: scattered pops, not one clump — each fruit starts already spread
       // out on its own side and lands on its own beat.
-      const delay=DEPTH_DELAY[i%DEPTH_DELAY.length];
+      const delay=DEPTH_DELAY[i%DEPTH_DELAY.length]*.7;
       const ki=Math.max(0,Math.min(1,(k-delay)/(1-delay)));
       // 슈우웅 → 파악: rushes in from deep behind the bottles (tiny, blurred),
       // overshoots past full size as it reaches the viewer, then settles.
       const e=1-Math.pow(1-ki,4);
-      const ox=mix(clinkPt.x,x,.12),oy=mix(clinkPt.y,y,.12);
+      const ox=clinkPt.x,oy=clinkPt.y;   // 11-08: every fruit flies out from the centre and spreads
       const px=mix(ox,x,e)+Math.sin(t*4.5+i*1.3)*22*drift;
       const py=mix(oy,y,e)+Math.cos(t*3.7+i)*18*drift;
       // Comes right up to the screen (≈1.5× at its closest) before settling back.
       // Grows straight to its own size and stays — no shrink-back bounce.
-      const scale=.02+.98*(1-Math.pow(1-ki,3));
-      const blur=(1-ki)*12;
+      // 11-08 '파악 슈욱': a crisp spring — shoots out, pops just past its size, snaps back; a quick twist.
+      const spring=ki>=1?1:1-Math.exp(-7*ki)*Math.cos(9.5*ki);
+      const scale=.3+.7*spring;                                // visible from the start, so the flight reads
+      const blur=(1-ki)*(1-ki)*6;
+      const twist=(i%2?1:-1)*38*(1-e);
       n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
-      n.style.transform='translate(-50%,-50%) rotate('+rotation.toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
+      n.style.transform='translate(-50%,-50%) rotate('+(rotation+twist).toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
       n.style.filter=blur>.2?'blur('+blur.toFixed(1)+'px)':'';
-      n.style.opacity=(alpha*Math.min(1,ki*5)).toFixed(4);
+      n.style.opacity=(alpha*Math.min(1,ki*12)).toFixed(4);
     });
   }
   function cheers(t,poses){

@@ -517,6 +517,7 @@ async function initHistory(section) {
       + (i / (years.length - 1) * 100) + '%"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.7l-6.4 3.5L7 14.1 1.7 9.1l7.2-.9z\"/></svg><span>' + y + '</span></button>').join('')
     + '<span class="history-era-bar__trail"></span><span class="history-era-bar__thumb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.7l-6.4 3.5L7 14.1 1.7 9.1l7.2-.9z"/></svg></span></div>';
   stage.append(bar);
+  bar.classList.add('is-hint');   // demo drag from the moment the bar is seen, until the first touch
   const rail = bar.querySelector('.history-era-bar__rail');
   const fill = bar.querySelector('.history-era-bar__fill');
   const thumb = bar.querySelector('.history-era-bar__thumb');
@@ -619,7 +620,7 @@ async function initHistory(section) {
     // receive the cursor until RICH actually takes over.
     const live = r.top < innerHeight && r.bottom > innerHeight * .75 && !section.classList.contains('rich-year-handoff');
     document.documentElement.classList.toggle('history-bar-live', live);
-    bar.classList.toggle('is-hint', live && !hinted && !dragging);   // demo drag until the first touch
+
   };
   addEventListener('scroll', toEnd, { passive: true });
   toEnd();

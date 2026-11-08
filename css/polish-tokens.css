@@ -55,7 +55,7 @@
 #identity .seven-gel__star--gel .seven-gel__sheen--top{animation:seven-gel-glint 4.8s ease-in-out infinite}
 #identity .seven-gel__star--gel .seven-gel__sheen--side{animation:seven-gel-glint 5.8s ease-in-out .9s infinite}
 #identity .seven-gel__star--gel .seven-gel__sheen--base{animation:seven-gel-glint 5.3s ease-in-out .35s infinite}
-#identity .seven-gel.is-resting .seven-gel__star{filter:drop-shadow(0 0 calc(var(--tw,0) * 22px) rgba(255,255,255,calc(var(--tw,0) * .95))) brightness(calc(1 + var(--tw,0) * .08))}
+#identity .seven-gel.is-resting .seven-gel__star{filter:drop-shadow(0 0 calc((var(--tw,0) + var(--shine,0)) * 30px) rgba(255,255,255,calc(min(1,var(--tw,0) + var(--shine,0)) * .95))) brightness(calc(1 + (var(--tw,0) + var(--shine,0)) * .1))}
 @keyframes seven-gel-breathe{0%,100%{transform:scaleX(1.04) scaleY(.98)}38%{transform:scaleX(1.03) scaleY(.99)}68%{transform:scaleX(1.05) scaleY(.975)}}
 @keyframes seven-gel-glint{0%,100%{opacity:.36}48%{opacity:.7}72%{opacity:.48}}
 @keyframes seven-gel-twinkle{0%,55%,100%{filter:none}25%{filter:drop-shadow(0 0 10px rgba(255,255,255,.95)) brightness(1.06)}}
@@ -80,7 +80,7 @@
 #brand-values .brand-values__zest b{font-weight:800}
 #brand-values .bz-key{display:inline-block;opacity:0;will-change:transform}
 #brand-values .bz-w{display:inline-block;opacity:0;will-change:transform,opacity}
-#brand-values .bz-lemonlime{font-weight:800;background:linear-gradient(100deg,#f2b705 0%,#e6c81a 38%,#9fd33a 64%,#5fb52f 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+#brand-values .bz-lemonlime{font-weight:800}   /* bold only, in the line's green */
 #identity.has-seven-film .identity-outline-stars{opacity:0!important;visibility:hidden}   /* plain green behind the stars */
 /* 11-08: 순수 · 맑은 · 카페인 없이 — a light lift, one after another */
 #brand-values .brand-values__recap-main b{display:inline-block}
@@ -91,14 +91,6 @@
 @media (prefers-reduced-motion:reduce){#brand-values .brand-values__recap.is-playing .brand-values__recap-main b{animation:none}}
 #brand-values .bv-key{font-weight:400}
 #brand-values .bz-key{font-weight:800}   /* 청량감 bold only in the new line */
-/* 11-08: '모두와 함께 큰 별' hierarchy for the recap and the lemon-lime line — small deep-green lead above, big bold green line below */
-#brand-values .brand-values__recap{gap:.5em}
-#brand-values .brand-values__recap-lead{font:400 clamp(18px,1.6667vw,26px)/1.2 "Pretendard",sans-serif!important;letter-spacing:-.01em;color:var(--c-deep)!important}
-#brand-values .brand-values__recap-main{font-weight:400}
-#brand-values .brand-values__zest{display:flex;flex-direction:column;align-items:center;gap:.35em;font-size:inherit}
-#brand-values .bz-lead{display:block;font:400 clamp(18px,1.6667vw,26px)/1.2 "Pretendard",sans-serif;letter-spacing:-.01em;color:var(--c-deep)}
-#brand-values .bz-main{display:block;font:800 clamp(40px,4.4444vw,68px)/1.15 "Pretendard",sans-serif;letter-spacing:-.04em;color:#00ac47}
-#brand-values .bz-lead .bz-key{color:#00ac47}
 /* 11-08: era bar — the whole bar (stars and years) is clickable; the thumb
    shows a little demo drag until the visitor touches it */
 .history-era-bar{cursor:pointer}
@@ -107,3 +99,5 @@
 @keyframes era-hint{0%,12%{transform:translateX(0) scale(1)}30%{transform:translateX(0) scale(1.22);filter:drop-shadow(0 0 8px rgba(0,172,71,.8))}
   52%{transform:translateX(46px) scale(1.12)}70%{transform:translateX(46px) scale(1.12)}88%,100%{transform:translateX(0) scale(1)}}
 @media (prefers-reduced-motion:reduce){.history-era-bar.is-hint .history-era-bar__thumb svg{animation:none}}
+/* the big star's landing flash (scroll-driven --shine) */
+#identity .seven-gel__star--gel{filter:drop-shadow(0 0 calc(var(--shine,0) * 34px) rgba(255,255,255,calc(var(--shine,0) * .95))) brightness(calc(1 + var(--shine,0) * .12))}

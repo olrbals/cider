@@ -137,7 +137,7 @@
     const textTarget = arrived ? Math.max(scrollText, DANCE_START + .01) : scrollText;
     const dtText = smoothLast ? Math.min(.05, (now - smoothLast) / 1000) : 1 / 60;
     smoothLast = now;
-    smoothText += (textTarget - smoothText) * (1 - Math.exp(-dtText * 3.2));
+    smoothText += (textTarget - smoothText) * (1 - Math.exp(-dtText * 7.5));   // 11-08: much quicker
     if (Math.abs(textTarget - smoothText) < .0008) smoothText = textTarget;
     const textProgress = smoothText;
     const textSettling = smoothText !== textTarget;
@@ -164,8 +164,8 @@
     // Preserve the original independent cream-to-green fill timeline.
     const progress = clamp(-koreaRect.top / available);
     // The cream→green fill follows the letters in, then keeps its scroll link.
-    const fillTarget = arrived ? Math.max(ease(progress / .68), clamp((smoothText - .3) / .3)) : ease(progress / .68);
-    smoothFill += (fillTarget - smoothFill) * (1 - Math.exp(-dtText * 3.2));
+    const fillTarget = arrived ? Math.max(ease(progress / .68), clamp((smoothText - .25) / .22)) : ease(progress / .68);
+    smoothFill += (fillTarget - smoothFill) * (1 - Math.exp(-dtText * 8));
     if (Math.abs(fillTarget - smoothFill) < .0008) smoothFill = fillTarget;
     korea.style.setProperty('--korea-fill', (smoothFill * 100).toFixed(2) + '%');
     window.dispatchEvent(new Event('chilsung:korea-fill'));

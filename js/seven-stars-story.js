@@ -168,23 +168,31 @@
     const w = stage.clientWidth, h = stage.clientHeight;
     return Math.min(h * 1.14, w * (w < 700 ? 1.1 : .95));   // constellation ≈ 80% of the screen height
   }
-  // As in the official film: the white star shrinks down into the biggest
-  // star's place, then the others grow in one by one — up the left column,
-  // then down the right (row3L → row2L → row1L → row1R → row2R → row3R).
-  const POP_ORDER = [2, 3, 1, 4, 0, 5];                     // pop index per star 0–5
-  const SHRINK = [SPLIT[0], SPLIT[0] + .085], POP0 = SPLIT[0] + .055, POP_STEP = .011, POP_DUR = .045;
+  // 11-08 (h): the white star floats up to the side while the six small
+  // stars land one by one (똥똥똥똥), then it drops into the biggest place
+  // last and flashes — '모두와 함께, 큰 별'.
+  const POP_ORDER = [0, 1, 2, 3, 4, 5];                     // top to bottom
+  const HOVER = [292, 356, .92];                            // stage units: x, y, size vs final
+  const FLOAT = [SPLIT[0], SPLIT[0] + .06], POP0 = SPLIT[0] + .045, POP_STEP = .012, POP_DUR = .04;
+  const LAND = [.268, .298], FLASH = [.292, .34];
   function starPos(i, box) {                                 // stage-pixel centre, width and alpha of star i
     const k = box / UNIT, ox = (stage.clientWidth - box) / 2, oy = (stage.clientHeight - box) / 2;
     const [cx, cy, w] = LAYOUT[i];
     const tx = ox + cx * k, ty = oy + cy * k, mx = stage.clientWidth / 2, my = stage.clientHeight / 2;
     const still = reduced.matches;
     if (i === BIG) {
-      const g = still ? (p >= SPLIT[0] ? 1 : 0) : easeIO(lin(SHRINK[0], SHRINK[1], p));
-      return { x: mx + (tx - mx) * g, y: my + (ty - my) * g, w: w * k * (GEL_SCALE + (1 - GEL_SCALE) * g), appear: 1, grow: 1 };
+      if (still) { const g = p >= SPLIT[0] ? 1 : 0; return { x: mx + (tx - mx) * g, y: my + (ty - my) * g, w: w * k * (GEL_SCALE + (1 - GEL_SCALE) * g), appear: 1, grow: 1 }; }
+      const hx = ox + HOVER[0] * k, hy = oy + HOVER[1] * k;
+      const f = easeIO(lin(FLOAT[0], FLOAT[1], p)), l = lin(LAND[0], LAND[1], p), le = l * l * l;   // drops in, accelerating
+      const x = mx + (hx - mx) * f + (tx - hx) * le, y = my + (hy - my) * f + (ty - hy) * le;
+      const size = GEL_SCALE + (HOVER[2] - GEL_SCALE) * f + (1 - HOVER[2]) * le;
+      const bob = Math.sin(Math.PI * lin(FLOAT[1], LAND[0], p)) * .012 * box;   // a gentle hover
+      const squash = Math.sin(Math.PI * lin(LAND[1] - .004, LAND[1] + .024, p));   // 쾅 — lands with a little squash
+      return { x, y: y - bob, w: w * k * size, appear: 1, grow: 1, squash };
     }
     const s0 = POP0 + POP_ORDER[i] * POP_STEP;
     const f = still ? (p >= SPLIT[0] ? 1 : 0) : lin(s0, s0 + POP_DUR, p);
-    const grow = easeOut(f);
+    const grow = f >= 1 ? 1 : 1 - Math.exp(-6 * f) * Math.cos(8 * f);   // 똥 — a small springy pop
     return { x: tx, y: ty, w: w * k, appear: f > 0 ? 1 : 0, grow };
   }
 
@@ -208,7 +216,7 @@
     const now = performance.now() / 1000;
     stars.forEach((el, i) => {
       const f = flash[i];
-      if (!resting) { el.style.setProperty('--tw', '0'); f.next = 0; return; }
+      if (!resting || i !== BIG) { el.style.setProperty('--tw', '0'); f.next = 0; return; }   // only the big star shines
       if (!f.next) f.next = now + Math.random() * .32;   // each star flashes once, at its own moment
       if (now >= f.next && f.at < 0) {
         f.at = now; f.dur = .1 + Math.random() * .08;
@@ -239,7 +247,9 @@
         const k = lin(SHARPEN[0], SWEEP[1], p), bump = Math.sin(Math.PI * k);
         extra = ' scale(' + (1 + .1 * bump).toFixed(4) + ',' + (1 + .03 * bump).toFixed(4) + ')';
       }
-      el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0)' + extra + ' scale(' + (Math.max(.001, s.grow) * (1 - .12 * gone)).toFixed(3) + ')';
+      const sq = s.squash || 0;
+      el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0)' + extra + ' scale(' + (Math.max(.001, s.grow) * (1 - .12 * gone) * (1 + .1 * sq)).toFixed(3) + ',' + (Math.max(.001, s.grow) * (1 - .12 * gone) * (1 - .12 * sq)).toFixed(3) + ')';
+      if (i === BIG && !reduced.matches) el.style.setProperty('--shine', Math.sin(Math.PI * lin(FLASH[0], FLASH[1], p)).toFixed(3));
       el.style.zIndex = i === BIG ? '3' : '2';
     });
 
