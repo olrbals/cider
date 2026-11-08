@@ -198,12 +198,12 @@
     body.style.opacity = (1 - sm(SWEEP[1] - .02, SWEEP[1] + .02, p)).toFixed(3);
     const resting = p >= SPLIT[1] - .005 && p < FIZZ[0] + .03 && !reduced.matches;
     layer.classList.toggle('is-resting', resting);
-    // Twinkle: quick, irregular flashes here and there, each with a glint on a random tip.
+    // Twinkle: one quick flash per star at irregular moments, with a glint on a random tip.
     const now = performance.now() / 1000;
     stars.forEach((el, i) => {
       const f = flash[i];
       if (!resting) { el.style.setProperty('--tw', '0'); f.next = 0; return; }
-      if (!f.next) f.next = now + Math.random() * .35;
+      if (!f.next) f.next = now + .05 + Math.random() * .7;   // each star flashes once, at its own moment
       if (now >= f.next && f.at < 0) {
         f.at = now; f.dur = .14 + Math.random() * .16;
         const tip = TIPS[(Math.random() * TIPS.length) | 0];
@@ -213,7 +213,7 @@
       let v = 0;
       if (f.at >= 0) {
         const k = (now - f.at) / f.dur;
-        if (k >= 1) { f.at = -1; f.next = now + .12 + Math.random() * .75; }
+        if (k >= 1) { f.at = -1; f.next = Infinity; }
         else v = Math.sin(Math.PI * k);
       }
       el.style.setProperty('--tw', v.toFixed(3));
