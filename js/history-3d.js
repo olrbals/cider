@@ -547,7 +547,7 @@ async function initHistory(section) {
     const active = Math.round(v * last);
     if (active !== lastActive) {
       lastActive = active;
-      ticks.forEach((t, i) => t.classList.toggle('is-active', i === active));
+      ticks.forEach((t, i) => { t.classList.toggle('is-active', i === active); t.classList.toggle('is-past', i < active); });
       bar.setAttribute('aria-valuenow', years[active]);
       bar.setAttribute('aria-valuetext', years[active] + '년');
     }

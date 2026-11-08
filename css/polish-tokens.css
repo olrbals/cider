@@ -12,7 +12,7 @@
 }
 
 /* THREE PRINCIPLES — quiet but readable labels; CLEAR in the deeper blue. */
-#brand-values .brand-values__micro,#brand-values .brand-values__title{color:var(--c-secondary)!important;font-weight:600}
+#brand-values .brand-values__micro,#brand-values .brand-values__title{color:var(--c-secondary)!important;font-weight:400!important}
 #brand-values .brand-values__word[data-brand-value="1"]{color:var(--c-blue)}
 #brand-values .brand-values__counter[data-at="1"] i.is-on{background:var(--c-blue)}
 #brand-values .brand-values__counter i{background:#d3dbd6}
@@ -29,7 +29,9 @@
 .history-3d-caption-copy{color:var(--c-deep)}
 .history-era-bar__rail{background:var(--c-line)}
 .history-era-bar__tick>svg{stroke:#9fb0a7}
-.history-era-bar__tick span{color:var(--c-muted);font-weight:600}
+.history-era-bar__tick span{color:var(--c-muted);font-weight:400}
+.history-era-bar__tick.is-past span{color:#a9b3ad}
+.history-era-bar__tick.is-past>svg{stroke:#c3cdc7}
 .history-era-bar__tick.is-active>svg{fill:var(--c-deep);stroke:var(--c-deep)}
 .history-era-bar__tick.is-active span{color:var(--c-deep);font-weight:700}
 .history-era-bar__fill{background:var(--c-deep)}
