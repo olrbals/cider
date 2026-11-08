@@ -54,7 +54,22 @@
     const rect=values.getBoundingClientRect();
     const h=viewport();
     if(rect.top>h||rect.bottom<0)return;
-    const progress=clamp(-rect.top/Math.max(1,rect.height-h));
+    // 11-08: the last 15% of the section introduces the lemon-lime copy;
+    // everything before keeps its original timing on a 0–1 scale.
+    const full=clamp(-rect.top/Math.max(1,rect.height-h));
+    const progress=clamp(full/.85);
+    const zest=values.querySelector('.brand-values__zest');
+    if(zest){
+      const out=between(full,.86,.895);                       // recap steps back
+      values.querySelector('.brand-values__recap').style.opacity=(1-out).toFixed(3);
+      [...zest.querySelectorAll('.bz-w')].forEach((w,i)=>{
+        const k=between(full,.885+i*.012,.93+i*.012);
+        w.style.opacity=k.toFixed(3);
+        w.style.transform='translate3d(0,'+((1-k)*18).toFixed(1)+'px,0)';
+        w.style.filter=k<1?'blur('+((1-k)*6).toFixed(1)+'px)':'none';
+      });
+      zest.setAttribute('aria-hidden',String(full<.88));
+    }
     const counter=values.querySelector('.brand-values__counter');
     // 11-07 시안: three principles, each with a Korean line and a small gag.
     const cuts=[[0,.27],[.26,.52],[.51,.77]];

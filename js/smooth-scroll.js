@@ -22,7 +22,7 @@
     slowStops = new Map();
     const span = el => Math.max(1, el.offsetHeight - vh());
     const bv = $('brand-values');
-    if (bv) { const t = absTop(bv), r = span(bv); [0, .06, .40, .645, .9].forEach(p => out.push(t + r * p)); }
+    if (bv) { const t = absTop(bv), r = span(bv); [0, .06, .40, .645, .9].forEach(p => out.push(t + r * p * .85)); out.push(t + r * .965); }   // + lemon-lime copy
     const ko = $('korea'); if (ko) out.push(absTop(ko));
     const id = $('identity');
     if (id) {
