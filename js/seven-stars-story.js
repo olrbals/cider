@@ -23,11 +23,12 @@
     [462, 622, 208], [647.5, 622, 208],
     [408.5, 818, 263]                                       // the biggest = the gel star itself
   ];
-  const UNIT = 1100, BIG = 6, GEL_SCALE = 1.35;
+  const UNIT = 1100, BIG = 6, GEL_SCALE = 1.75;
   const STAR_W = 493 / 600, STAR_CX = 301.5 / 600, STAR_CY = 302.5 / 600;
 
   // Scroll map (identity progress). Paging stops: 0 · .14 · .32 · white line (smooth-scroll.js).
-  const SWEEP = [.04, .13];                                  // ① the gel star turns into the new white star
+  const SWEEP = [.05, .13];                                  // ① the gel star turns into the new white star
+  const SHARPEN = [.025, .12];                               //    while its outline sharpens point by point
   const SPLIT = [.15, .29];                                  // ② it parts into seven
   const STAGGER = [0, .014, .006, .019, .003, .011, 0];
   const FIZZ = [.36, .56];                                   // ③ stars fizz into bubbles
@@ -80,7 +81,30 @@
       '<use href="#' + id('shape') + '" fill="#fff" mask="' + url('sweep') + '"/>' +
       '</svg>';
   }
-  const whiteSVG = '<svg class="seven-gel__svg" viewBox="0 0 600 600" overflow="visible" aria-hidden="true" focusable="false"><path d="' + SHAPE + '" fill="#fff"/></svg>';
+  // The new, sharp star fitted to the gel star's box — the gel sharpens into it (as in the film).
+  const SHARP = [[50,6],[61.7,36],[93,36],[68,55.3],[77.5,86.5],[50,68.2],[22.5,86.5],[32,55.3],[7,36],[38.3,36]]
+    .map(([x, y]) => [55 + (x - 7) / 86 * 493, 64 + (y - 6) / 80.5 * 477]);
+  const SHARP_D = 'M' + SHARP.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('L') + 'Z';
+  const N = 200;
+  const roundPts = (() => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'path'); el.setAttribute('d', SHAPE);
+    const L = el.getTotalLength(), out = [];
+    for (let i = 0; i < N; i++) { const q = el.getPointAtLength(i / N * L); out.push([q.x, q.y]); }
+    return out;
+  })();
+  const sharpPts = (() => {
+    const seg = SHARP.map((a, i) => { const b = SHARP[(i + 1) % SHARP.length]; return Math.hypot(b[0] - a[0], b[1] - a[1]); });
+    const total = seg.reduce((a, b) => a + b, 0), out = [];
+    for (let k = 0; k < N; k++) {
+      let d = k / N * total, i = 0;
+      while (d > seg[i]) { d -= seg[i]; i++; }
+      const a = SHARP[i], b = SHARP[(i + 1) % SHARP.length], f = d / seg[i];
+      out.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
+    }
+    return out;
+  })();
+  const morphD = m => 'M' + roundPts.map((a, i) => { const b = sharpPts[i]; return (a[0] + (b[0] - a[0]) * m).toFixed(1) + ' ' + (a[1] + (b[1] - a[1]) * m).toFixed(1); }).join('L') + 'Z';
+  const whiteSVG = '<svg class="seven-gel__svg" viewBox="0 0 600 600" overflow="visible" aria-hidden="true" focusable="false"><path d="' + SHARP_D + '" fill="#fff"/></svg>';
 
   const layer = document.createElement('div');
   layer.className = 'seven-gel';
@@ -101,6 +125,8 @@
   const gel = stars[BIG];
   const s1 = gel.querySelector('.seven-gel__s1'), s2 = gel.querySelector('.seven-gel__s2');
   const body = gel.querySelector('.seven-gel__body');
+  const shapeEl = gel.querySelector('defs > path');
+  let lastM = -1;
 
   const clamp = v => Math.max(0, Math.min(1, v));
   const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
@@ -122,23 +148,23 @@
   };
   const bubbles = [];
   LAYOUT.forEach(([, , w], si) => {
-    const n = Math.round(12 + w * .13);                     // bigger star, more bubbles
+    const n = Math.round(10 + w * .09);                     // bigger star, more bubbles
     for (let k = 0; k < n; k++) {
       let x, y;
       do { x = rnd() * 100; y = rnd() * 100; } while (!inStar(x, y));
-      const a = Math.atan2(y - 50, x - 50) + (rnd() - .5) * 1.2;
-      bubbles.push({ si, ux: (x - 50) / 86, uy: (y - 47) / 86, a, d: .25 + rnd() * 1.6, rise: .15 + rnd() * .55,
+      const a = Math.atan2(y - 50, x - 50) + (rnd() - .5) * 1.6;
+      bubbles.push({ si, ux: (x - 50) / 86, uy: (y - 47) / 86, a, d: .4 + rnd() * 2.2, rise: .15 + rnd() * .55,
         r: .006 + rnd() * rnd() * .022, delay: rnd() * .07, life: .1 + rnd() * .09, ring: rnd() < .55, wob: rnd() * 6.28 });
     }
   });
   // A second, wider wave that spreads over the whole screen as it turns white.
   const field = [];
-  for (let k = 0; k < 80; k++) field.push({ x: rnd(), y: .15 + rnd() * .95, r: .004 + rnd() * rnd() * .03, delay: rnd() * .12, rise: .12 + rnd() * .3, ring: rnd() < .6 });
+  for (let k = 0; k < 60; k++) field.push({ x: rnd(), y: .15 + rnd() * .95, r: .004 + rnd() * rnd() * .03, delay: rnd() * .12, rise: .12 + rnd() * .3, ring: rnd() < .6 });
 
   let p = 0, raf = 0, W = 0, H = 0, dpr = 1;
   function stageBox() {
     const w = stage.clientWidth, h = stage.clientHeight;
-    return Math.min(h * .92, w * (w < 700 ? .96 : .72));
+    return Math.min(h * 1.14, w * (w < 700 ? 1.1 : .95));   // constellation ≈ 80% of the screen height
   }
   function starPos(i, box) {                                 // stage-pixel centre, width and alpha of star i
     const k = box / UNIT, ox = (stage.clientWidth - box) / 2, oy = (stage.clientHeight - box) / 2;
@@ -159,6 +185,8 @@
     if (!live) return;
     const box = stageBox();
     // ① gel → new white star (diagonal sweep)
+    const m = reduced.matches ? (p >= SWEEP[1] ? 1 : 0) : sm(SHARPEN[0], SHARPEN[1], p);
+    if (Math.abs(m - lastM) > .002) { lastM = m; shapeEl.setAttribute('d', m >= 1 ? SHARP_D : morphD(m)); }
     const sw = sm(SWEEP[0], SWEEP[1], p), edge = -.3 + 1.55 * sw;
     s1.setAttribute('offset', Math.max(0, edge).toFixed(3));
     s2.setAttribute('offset', Math.max(0, edge + .12).toFixed(3));
