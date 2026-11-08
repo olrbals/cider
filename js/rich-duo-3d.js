@@ -85,6 +85,9 @@ async function boot() {
     const pop = parseFloat(duo.style.getPropertyValue('--rich-pop')) || 0;
     let key = '';
     placed = [];
+    // Names only once the bottles stand apart — never during the '건배' clink where they cross.
+    const sr = slots.map(n => n.getBoundingClientRect());
+    const apart = sr.length > 1 && Math.abs((sr[0].left + sr[0].width / 2) - (sr[1].left + sr[1].width / 2)) > Math.max(sr[0].width, sr[1].width) * 1.1;
     slots.forEach((node, i) => {
       const r = node.getBoundingClientRect();
       const pet = pets[i];
@@ -106,7 +109,7 @@ async function boot() {
         nm.style.left = spot.x.toFixed(1) + 'px';
         nm.style.top = spot.y.toFixed(1) + 'px';
         placed.push({ l: spot.x - nm.offsetWidth / 2, r: spot.x + nm.offsetWidth / 2, t: spot.y, b: spot.y + nm.offsetHeight });
-        nm.style.opacity = settled ? '1' : '0';
+        nm.style.opacity = settled && apart ? '1' : '0';
       }
       key += pet.position.x.toFixed(3) + pet.position.y.toFixed(3) + pet.scale.x.toFixed(4) + pet.rotation.z.toFixed(3) + pet.rotation.y.toFixed(3);
     });

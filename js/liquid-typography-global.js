@@ -120,6 +120,9 @@
   function spawnParticle(isRipple = false) {
     // Small rings appear behind the moving droplet, never as a confetti cloud.
     if (!activeScene || bubbles.childElementCount >= 220) return;
+    // 11-08: no bubbles once SEVEN STARS' star has turned white, nor anywhere after it.
+    const ident = document.getElementById('identity');
+    if (ident) { const r = ident.getBoundingClientRect(); if (-r.top / Math.max(1, r.height - innerHeight * 1.7) > .1) return; }
     const particle = document.createElement('span');
     particle.className = isRipple
       ? 'site-liquid-cursor-ripple' : 'site-liquid-cursor-bubble';
