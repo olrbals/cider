@@ -65,7 +65,7 @@
     section.insertBefore(svg, section.firstChild);
     // Preserve the original left/right wave order for every existing scene.
     return { section, svg, body, shimmer, edge,
-      index, diagonal: spec.id === 'footer'
+      index, diagonal: false   // 11-08: footer rides the same liquid wave as the other sections
     };
   }).filter(Boolean);
 
