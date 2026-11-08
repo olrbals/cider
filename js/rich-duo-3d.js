@@ -47,6 +47,24 @@ async function boot() {
     el.innerHTML = 'RICH <b>' + k.toUpperCase() + '</b>';
     duo.append(el); return el;
   });
+  // Every fruit image in the scene (not the soft background fields, not the bottles).
+  const fruits = [...duo.querySelectorAll('img')].filter(img => !img.closest('.rich-duo__field') && !img.classList.contains('rich-duo__field')
+    && !img.closest('[data-rich-slot="peach"],[data-rich-slot="grape"]'));
+  function clearOfFruit(cx, top, w, h, v) {
+    const pad = 10, boxes = fruits.map(f => f.getBoundingClientRect()).filter(b => b.width > 4)
+      .map(b => ({ l: b.left - v.left + b.width * .15, r: b.right - v.left - b.width * .15, t: b.top - v.top + b.height * .15, b: b.bottom - v.top - b.height * .15 }))
+      .concat(placed);                                       // and the name already placed this frame
+    const hits = (x, y) => boxes.some(b => x - w / 2 - pad < b.r && x + w / 2 + pad > b.l && y - pad < b.b && y + h + pad > b.t);
+    if (!hits(cx, top)) return { x: cx, y: top };
+    let best = null;
+    for (let dy = 0; dy <= 72; dy += 6) for (let dx = 0; dx <= w; dx += 4) for (const sx of [1, -1]) {
+      const cost = dx + dy * 1.6;
+      if (best && cost >= best.cost) continue;
+      if (!hits(cx + sx * dx, top + dy)) best = { x: cx + sx * dx, y: top + dy, cost };
+    }
+    return best || { x: cx, y: top };
+  }
+  let placed = [];
   let W = 0, H = 0, raf = 0, last = '';
   function resize() {
     W = duo.clientWidth; H = duo.clientHeight;
@@ -66,6 +84,7 @@ async function boot() {
     const scale = parseFloat(getComputedStyle(root).getPropertyValue('--rich-duo-scale')) || 1;
     const pop = parseFloat(duo.style.getPropertyValue('--rich-pop')) || 0;
     let key = '';
+    placed = [];
     slots.forEach((node, i) => {
       const r = node.getBoundingClientRect();
       const pet = pets[i];
@@ -81,8 +100,12 @@ async function boot() {
       const nm = names[i];
       if (nm) {
         const settled = Math.abs(node.richSpin || 0) < .08;
-        nm.style.left = (r.left + r.width / 2 - v.left).toFixed(1) + 'px';
-        nm.style.top = (r.top + r.height / 2 - v.top + height / 2 + 18).toFixed(1) + 'px';
+        // 11-08: centred under its bottle; if a fruit sits there, shift the least distance that clears it.
+        const cx = r.left + r.width / 2 - v.left, top = r.top + r.height / 2 - v.top + height / 2 + 22;
+        const spot = clearOfFruit(cx, top, nm.offsetWidth, nm.offsetHeight, v);
+        nm.style.left = spot.x.toFixed(1) + 'px';
+        nm.style.top = spot.y.toFixed(1) + 'px';
+        placed.push({ l: spot.x - nm.offsetWidth / 2, r: spot.x + nm.offsetWidth / 2, t: spot.y, b: spot.y + nm.offsetHeight });
         nm.style.opacity = settled ? '1' : '0';
       }
       key += pet.position.x.toFixed(3) + pet.position.y.toFixed(3) + pet.scale.x.toFixed(4) + pet.rotation.z.toFixed(3) + pet.rotation.y.toFixed(3);
