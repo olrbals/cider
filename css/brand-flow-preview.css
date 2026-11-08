@@ -222,10 +222,10 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 @keyframes bv-shine{0%{opacity:1;left:-20%}100%{opacity:1;left:110%}}
 /* CAFFEINE FREE — 가루: each CAFFEINE letter crumbles into coffee powder
    (js/caffeine-dust.js) in a left → right sweep and is left as a faint trace. */
-#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l{animation:bv-dust .3s calc(var(--i) * .075s + .04s) ease-out both}
+#brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-l{animation:bv-dust 2.2s calc(var(--i) * .06s) linear both}
 #brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free .bv-l{animation:none}
 #brand-values .brand-values__word[data-brand-value="2"].is-playing .bv-free{animation:bv-free .5s .7s cubic-bezier(.3,1.6,.5,1) both}
-@keyframes bv-dust{0%{opacity:1}100%{opacity:.18}}
+@keyframes bv-dust{0%{opacity:1}6%{opacity:0}80%{opacity:0}100%{opacity:.12}}
 .caffeine-dust{position:fixed;inset:0;width:100%;height:100%;z-index:30;pointer-events:none;display:none}
 .caffeine-dust.is-on{display:block}
 @keyframes bv-free{
@@ -250,3 +250,17 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 #identity .identity-stage > .section-edge-label{opacity:.55}
 .site-header > nav,.site-header .header-utils{opacity:.72}
 .history-era-bar__hint{color:rgba(20,159,92,.4)!important}
+
+/* 11-08 — progress dots instead of 01 - 03; the current principle's dot fills in. */
+#brand-values .brand-values__counter{display:flex;gap:12px;align-items:center}
+#brand-values .brand-values__counter i{display:block;width:10px;height:10px;border-radius:50%;background:#dfe3e1;transition:background .3s,transform .3s}
+#brand-values .brand-values__counter i.is-on{transform:scale(1.15)}
+#brand-values .brand-values__counter[data-at="0"] i.is-on{background:#149f5c}
+#brand-values .brand-values__counter[data-at="1"] i.is-on{background:#3271e5}
+#brand-values .brand-values__counter[data-at="2"] i.is-on{background:#6b4428}
+/* 02 — recap lead in grey */
+.brand-values__recap-lead{color:#9aa19e!important}
+/* 03 — white-screen line: soft lead, strong statement */
+.seven-stars-pop__copy{display:flex;flex-direction:column;align-items:center;gap:.35em;text-align:center}
+.seven-stars-pop__copy span{font:400 clamp(18px,1.6667vw,26px)/1.2 "Pretendard",sans-serif;letter-spacing:-.01em;color:#5fae86}
+.seven-stars-pop__copy b{font:800 clamp(40px,4.4444vw,68px)/1.15 "Pretendard",sans-serif;letter-spacing:-.04em;color:#149f5c}

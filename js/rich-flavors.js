@@ -127,7 +127,7 @@
   const DEPTH_DELAY=[0,.12,.05,.2,.09,.16,.03,.22,.14,.07,.18,.1];
   const burstOut=k=>{const c=2.4,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/560):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/620):(t>=clinkT+.02?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
@@ -135,14 +135,17 @@
       // out on its own side and lands on its own beat.
       const delay=DEPTH_DELAY[i%DEPTH_DELAY.length];
       const ki=Math.max(0,Math.min(1,(k-delay)/(1-delay)));
-      const e=burstOut(ki);
-      const ox=mix(clinkPt.x,x,.58),oy=mix(clinkPt.y,y,.58);
-      const px=mix(ox,x,Math.min(1,e))+Math.sin(t*4.5+i*1.3)*22*drift;
-      const py=mix(oy,y,Math.min(1,e))+Math.cos(t*3.7+i)*18*drift;
-      const scale=.04+.96*e+.28*Math.sin(Math.min(1,ki)*Math.PI);                                     // overshoots > 1: flies at the viewer
-      const angle=rotation; // 11-07: no spin — the fruits just burst outward for freshness
+      // 슈우웅 → 파악: rushes in from deep behind the bottles (tiny, blurred),
+      // overshoots past full size as it reaches the viewer, then settles.
+      const e=1-Math.pow(1-ki,4);
+      const ox=mix(clinkPt.x,x,.22),oy=mix(clinkPt.y,y,.22);
+      const px=mix(ox,x,e)+Math.sin(t*4.5+i*1.3)*22*drift;
+      const py=mix(oy,y,e)+Math.cos(t*3.7+i)*18*drift;
+      const scale=ki<.78?.03+1.12*(1-Math.pow(1-ki/.78,3)):1.15-.15*smooth(.78,1,ki);
+      const blur=(1-ki)*9;
       n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
-      n.style.transform='translate(-50%,-50%) rotate('+angle.toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
+      n.style.transform='translate(-50%,-50%) rotate('+rotation.toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
+      n.style.filter=blur>.2?'blur('+blur.toFixed(1)+'px)':'';
       n.style.opacity=(alpha*Math.min(1,ki*5)).toFixed(4);
     });
   }

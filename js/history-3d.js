@@ -515,7 +515,7 @@ async function initHistory(section) {
   bar.innerHTML = '<div class="history-era-bar__rail"><span class="history-era-bar__fill"></span>'
     + years.map((y, i) => '<button type="button" tabindex="-1" class="history-era-bar__tick" data-era="' + i + '" style="left:'
       + (i / (years.length - 1) * 100) + '%"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.7l-6.4 3.5L7 14.1 1.7 9.1l7.2-.9z\"/></svg><span>' + y + '</span></button>').join('')
-    + '<span class="history-era-bar__trail"></span><span class="history-era-bar__thumb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.7l-6.4 3.5L7 14.1 1.7 9.1l7.2-.9z"/></svg></span></div><p class="history-era-bar__hint">SCROLL OR DRAG</p>';
+    + '<span class="history-era-bar__trail"></span><span class="history-era-bar__thumb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.7l-6.4 3.5L7 14.1 1.7 9.1l7.2-.9z"/></svg></span></div>';
   stage.append(bar);
   const rail = bar.querySelector('.history-era-bar__rail');
   const fill = bar.querySelector('.history-era-bar__fill');

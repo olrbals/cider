@@ -41,3 +41,7 @@
 .rich-duo-3d{position:absolute;inset:0;z-index:3;width:100%;height:100%;display:block;pointer-events:none}
 .rich-duo-3d-ready .rich-duo__slot[data-rich-slot="peach"] img,.rich-duo-3d-ready .rich-duo__slot[data-rich-slot="grape"] img{visibility:hidden}
 .rich-duo-bubbles{position:absolute;inset:0;z-index:2;width:100%;height:100%;display:block;pointer-events:none}
+
+/* 11-08 — only 과즙의 풍미 is bold */
+.rich-story__message{font-family:"Pretendard","Apple SD Gothic Neo",sans-serif!important;font-weight:400!important}
+.rich-story__message b{font-weight:800}

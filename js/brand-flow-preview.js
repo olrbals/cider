@@ -55,7 +55,7 @@
     const counter=values.querySelector('.brand-values__counter');
     // 11-07 시안: three principles, each with a Korean line and a small gag.
     const cuts=[[0,.27],[.26,.52],[.51,.77]];
-    if(counter)counter.textContent=String(progress<.26?1:progress<.51?2:3).padStart(2,'0')+' - 03';
+    if(counter){const at=progress<.26?0:progress<.51?1:2;[...counter.children].forEach((d,i)=>d.classList.toggle('is-on',i===at));counter.dataset.at=at;}
     words.forEach((word,i)=>{
       const [a,b]=cuts[i];
       const entering=i===0?1:between(progress,a-.028,a+.045);

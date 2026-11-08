@@ -142,3 +142,10 @@
 }
 #history.rich-year-handoff .history-era-bar,.history-3d.rich-year-handoff .history-era-bar{opacity:0;pointer-events:none}
 .history-bar-live .rich-flavors,.history-bar-live .rich-flavors__viewport{pointer-events:none}
+
+/* 11-08 — only the selected year is green; the rest of the bar stays grey. */
+.history-era-bar__tick>svg{stroke:#c3c8c6}
+.history-era-bar__tick span{color:#b3b9b6}
+.history-era-bar__tick.is-active>svg{fill:#149f5c;stroke:#149f5c}
+.history-era-bar__tick.is-active span{color:#149f5c}
+.history-era-bar__rail{background:#e3e7e5}

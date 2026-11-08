@@ -12,7 +12,7 @@
   const pop = document.createElement('div');
   pop.className = 'seven-stars-pop';
   pop.setAttribute('aria-hidden', 'true');
-  pop.innerHTML = '<canvas></canvas><p class="seven-stars-pop__copy">시대를 깨운 청량함, 모두와 함께 큰 별</p>';
+  pop.innerHTML = '<canvas></canvas><p class="seven-stars-pop__copy"><span>대한민국이 사랑한 사이다</span><b>모두와 함께 큰 별</b></p>';
   document.body.append(pop);
   const canvas = pop.querySelector('canvas');
   const ctx = canvas.getContext('2d');

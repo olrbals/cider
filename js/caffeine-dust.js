@@ -38,7 +38,7 @@
     if (!list.length) return [];
     const cs = getComputedStyle(list[0].el);
     const font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
-    const step = Math.max(3, Math.round(parseFloat(cs.fontSize) / 46));
+    const step = Math.max(2, Math.round(parseFloat(cs.fontSize) / 64));
     const span = Math.max(1, list[list.length - 1].r.right - list[0].r.left);
     const out = [];
     list.forEach(({ el, r }) => {
@@ -56,12 +56,12 @@
         const sweep = (ax - list[0].r.left) / span;              // dissolve sweeps left → right
         out.push({
           x: ax, y: ay, x0: ax, y0: ay,
-          delay: sweep * .55 + Math.random() * .18,
-          vx: 70 + Math.random() * 230, vy: -(30 + Math.random() * 150),
-          wob: Math.random() * 6.28, s: step * (.55 + Math.random() * .6),
-          life: 1 + Math.random() * .9, c: COLORS[(Math.random() * COLORS.length) | 0]
+          delay: sweep * .48 + Math.random() * .06,
+          vx: (Math.random() - .35) * 260, vy: (Math.random() - .65) * 260,
+          wob: Math.random() * 6.28, s: step * (.8 + Math.random() * .7),
+          life: 1.1 + Math.random() * 1, c: COLORS[(Math.random() * COLORS.length) | 0]
         });
-        if (out.length > 9000) return out;
+        if (out.length > 16000) return out;
       }
     });
     return out;
@@ -80,10 +80,13 @@
       const k = a / p.life;
       if (k >= 1) continue;
       alive = true;
-      p.vy -= 40 * dt;                                         // powder lifts as it drifts
+      // Bursts apart in place, then the wind takes it up and to the right.
+      const drag = Math.exp(-dt * 2.6);
+      p.vx = p.vx * drag + 190 * dt * Math.min(1, a * 1.6);
+      p.vy = p.vy * drag - 95 * dt;
       p.x += (p.vx + Math.sin(a * 5 + p.wob) * 40) * dt;
       p.y += (p.vy + Math.cos(a * 4 + p.wob) * 22) * dt;
-      ctx.fillStyle = 'rgba(' + p.c + ',' + (.9 * (1 - k) ** 1.3).toFixed(3) + ')';
+      ctx.fillStyle = 'rgba(' + p.c + ',' + (Math.min(1, a * 12) * (1 - k) ** 1.2).toFixed(3) + ')';
       const s = p.s * (1 - k * .5);
       ctx.fillRect(p.x, p.y, s, s);
     }
