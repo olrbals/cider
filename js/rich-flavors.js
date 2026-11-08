@@ -127,13 +127,15 @@
   const DEPTH_DELAY=[0,.12,.05,.2,.09,.16,.03,.22,.14,.07,.18,.1];
   const burstOut=k=>{const c=2.4,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/420):(t>=Math.max(.3,clinkT-.7)+.02?1:0);
+    // 11-08: the fruits ride the same scene clock as the bottles, so they all
+    // land in the very same moment the bottles do (bottles settle at t≈.98).
+    const k=reduce.matches?1:Math.max(0,Math.min(1,(t-.56)/(.98-.56)));
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
       // 파팍: scattered pops, not one clump — each fruit starts already spread
       // out on its own side and lands on its own beat.
-      const delay=DEPTH_DELAY[i%DEPTH_DELAY.length]*.7;
+      const delay=DEPTH_DELAY[i%DEPTH_DELAY.length]*.35;   // staggered starts, one shared landing
       const ki=Math.max(0,Math.min(1,(k-delay)/(1-delay)));
       // 11-08 '슈우우우웅!': like a ball thrown from far away — a perspective
       // approach (z 9 → 1): it stays small in the distance, then rushes up to
@@ -174,7 +176,7 @@
   function tickDuo(now){
     duoRaf=0;
     const dt=Math.min(.05,(now-(duoLast||now))/1000);duoLast=now;
-    duoClock+=(duoTarget-duoClock)*(1-Math.exp(-dt*2.8));   // 11-08: bottles glide in a little slower
+    duoClock+=(duoTarget-duoClock)*(1-Math.exp(-dt*1.6));   // 둥실 — the bottles drift in slowly   // 11-08: bottles glide in a little slower
     if(Math.abs(duoTarget-duoClock)<.0008)duoClock=duoTarget;
     paintDuo(duoClock,scrollDuo);
     if(duoClock!==duoTarget)duoRaf=requestAnimationFrame(tickDuo);else duoLast=0;
