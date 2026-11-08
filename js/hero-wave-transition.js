@@ -65,7 +65,7 @@
     section.insertBefore(svg, section.firstChild);
     // Preserve the original left/right wave order for every existing scene.
     return { section, svg, body, shimmer, edge,
-      index
+      index, diagonal: spec.id === 'footer'
     };
   }).filter(Boolean);
 
@@ -103,18 +103,19 @@
 
       // Preserve the diagonal wipe while introducing a visible S-bend,
       // rather than adding small periodic ripples at the boundary.
-      const rise = .16 + .72 * diagonal +
+      const rise = scene.diagonal ? .1 + .95 * front :   // 11-08: footer = the package's clean green/white diagonal
+        .16 + .72 * diagonal +
         .20 * shoulder - .18 * valley + .27 * curl -
         .075 * tip + .085 * globalRoll;
       const swell = 575 * lift * rise;
-      const lag = 15 * lift * Math.sin(front * Math.PI * 1.55 -
+      const lag = scene.diagonal ? 0 : 15 * lift * Math.sin(front * Math.PI * 1.55 -
         travel * Math.PI * 1.35);
       const y = Math.max(55, Math.min(997, base - swell + lag));
       points.push([u * 1000, y]);
 
       // Thickness breathes with the curl: a broad soft highlight follows the
       // leading face so the shape reads as flowing liquid, not a flat mask.
-      const thickness = 25 + lift * (23 + 34 * curl + 14 * shoulder);
+      const thickness = scene.diagonal ? 18 + lift * 14 : 25 + lift * (23 + 34 * curl + 14 * shoulder);
       inset.push([u * 1000, Math.min(1000, y + thickness)]);
     }
 

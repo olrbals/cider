@@ -44,3 +44,13 @@
 .rich-duo__name b{font-weight:800}
 .rich-duo__name[data-name="peach"] b{color:#e0457b}
 .rich-duo__name[data-name="grape"] b{color:#3f9a2f}
+
+/* 11-08 — CFC concept: translucent "Sense of Joy" glass-green star. */
+.identity .identity-main-star-liquid{fill:url(#identity-main-star-glass)}
+.identity .identity-main-star-gloss{fill:#fff;opacity:calc(.55 * (var(--identity-star-fill-n,1)));clip-path:inset(calc(100% - var(--identity-star-fill)) 0 0 0)}
+.identity .identity-main-star{filter:drop-shadow(0 0 .06em rgba(220,255,236,.55))}
+/* Seven rising stars overlay */
+.seven-rising{position:fixed;inset:0;z-index:26;pointer-events:none;visibility:hidden}
+.seven-rising.is-on{visibility:visible}
+.seven-rising svg{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;overflow:visible;fill:#fff;
+  filter:drop-shadow(0 0 6px rgba(220,255,236,.85))}

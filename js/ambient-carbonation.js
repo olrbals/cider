@@ -68,7 +68,16 @@
 
     return sprite;
   }
-  const sprites = [makeBubbleSprite(0), makeBubbleSprite(1)];
+  // 11-08 — every so often a tiny star rises among the bubbles (CFC: stars = fizz).
+  function makeStarSprite() {
+    const c = document.createElement('canvas'); c.width = c.height = 96;
+    const g = c.getContext('2d'); if (!g) return c;
+    const path = new Path2D('M48 10 L57.8 36 H85 L63.5 52.5 L71.5 79 L48 63 L24.5 79 L32.5 52.5 L11 36 H38.2 Z');
+    g.fillStyle = 'rgba(255,255,255,.55)'; g.fill(path);
+    g.lineJoin = 'round'; g.lineWidth = 4.5; g.strokeStyle = 'rgba(5,148,91,.75)'; g.stroke(path);
+    return c;
+  }
+  const sprites = [makeBubbleSprite(0), makeBubbleSprite(1), makeStarSprite()];
 
   function desiredCount() {
     return clamp(Math.round((width * height / 20200) * densityFactor), 30, lowPower ? 60 : 90);
@@ -90,7 +99,7 @@
       wobble: random(.8, 1.7),
       amp: random(4, 14),
       alpha: random(depth ? .63 : .74, depth ? .8 : 1),
-      kind: depth,
+      kind: Math.random() < .04 ? 2 : depth,
       age: random(0, 10)
     };
   }

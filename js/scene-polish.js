@@ -18,7 +18,11 @@
   const fivePoint = 'M50 6 L61.7 36 H93 L68 55.3 L77.5 86.5 L50 68.2 L22.5 86.5 L32 55.3 L7 36 H38.3 Z';
   const svgStar = (className) =>
     '<svg class="' + className + '" viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
+      '<defs><linearGradient id="' + className + '-glass" x1="0" y1="0" x2=".35" y2="1">' +
+        '<stop offset="0" stop-color="#ffffff" stop-opacity=".96"/><stop offset=".55" stop-color="#c9f7dc" stop-opacity=".78"/>' +
+        '<stop offset="1" stop-color="#7fe0a8" stop-opacity=".62"/></linearGradient></defs>' +
       '<path class="identity-main-star-liquid" d="' + fivePoint + '"/>' +
+      '<path class="identity-main-star-gloss" d="M30 40 L45 37 L50 22 Z"/>' +
       '<path class="identity-main-star-outline" d="' + fivePoint + '"/>' +
     '</svg>';
 
