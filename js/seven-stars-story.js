@@ -208,9 +208,9 @@
       el.style.visibility = alpha > .005 ? 'visible' : 'hidden';
       let extra = '';
       if (i === BIG && !reduced.matches) {
-        // As in the film: the tilted gel star stretches as it sharpens, then settles upright.
+        // As in the film: the gel star stretches as it sharpens, then settles (always upright).
         const k = lin(SHARPEN[0], SWEEP[1], p), bump = Math.sin(Math.PI * k);
-        extra = ' rotate(' + (-9 * (1 - sm(SHARPEN[0], SWEEP[1], p))).toFixed(2) + 'deg) scale(' + (1 + .1 * bump).toFixed(4) + ',' + (1 + .03 * bump).toFixed(4) + ')';
+        extra = ' scale(' + (1 + .1 * bump).toFixed(4) + ',' + (1 + .03 * bump).toFixed(4) + ')';
       }
       el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0)' + extra + ' scale(' + (1 - .12 * gone).toFixed(3) + ')';
       el.style.zIndex = i === BIG ? '3' : '2';
