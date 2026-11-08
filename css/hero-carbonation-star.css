@@ -64,3 +64,20 @@
 .site-header .header-utils { height:44px; line-height:1; }
 .site-header .header-utils > * { display:flex; align-items:center; height:16px; line-height:1; }
 .site-header .header-utils svg { width:18px; height:18px; }
+
+/* 11-08 (b) — header rebuilt on the official site's hierarchy:
+   strong logo · evenly boxed bold menu · quiet utilities with 칠성몰 emphasised. */
+.site-header { height:96px; padding:0 clamp(28px,2.8vw,48px); grid-template-columns:1fr auto 1fr; }
+.site-header .header-logo { height:96px; }
+.site-header .header-logo img { height:38px; }
+.site-header nav { gap:0; }
+.site-header nav span { justify-content:center; width:clamp(92px,7.6vw,116px); min-height:96px; font-size:17px; font-weight:700; letter-spacing:-.01em; }
+.site-header .header-utils { gap:0; height:96px; font-size:15px; font-weight:400; letter-spacing:.02em; }
+.site-header .header-utils > * { height:18px; padding:0 18px; border-left:0; }
+.site-header .header-utils > * + * { border-left:1px solid rgba(255,255,255,.3); }
+.site-header .header-utils svg { width:22px; height:22px; box-sizing:content-box; opacity:.75; }
+.site-header .header-utils > span:not(.header-utils__mall) { opacity:.75; }
+.site-header .header-utils .header-utils__mall { padding-right:0; font-size:17px; font-weight:800; letter-spacing:-.01em; border-left:2px solid #fff; }
+.site-header > nav,.site-header .header-utils{opacity:1}
+.site-header .header-utils .header-utils__mall{height:24px}
+.site-header .header-utils .header-utils__mall img{display:block;height:24px;width:auto}

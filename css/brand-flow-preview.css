@@ -248,7 +248,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 
 /* 11-07 (d) — design note: anything that isn't the main content goes grey or light. */
 #identity .identity-stage > .section-edge-label{opacity:.55}
-.site-header > nav,.site-header .header-utils{opacity:.72}
+
 .history-era-bar__hint{color:rgba(0,172,71,.4)!important}
 
 /* 11-08 — progress dots instead of 01 - 03; the current principle's dot fills in. */
