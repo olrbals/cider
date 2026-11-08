@@ -303,7 +303,8 @@ async function start() {
     const layout = Math.min(width / 1440, height / 900);
     // Render only the box the can can occupy (spin sway, tip, recoil), not the
     // whole screen: a camera view offset keeps the framing pixel-identical.
-    const cx = width / 2 + (722 - 720) * layout, cy = height / 2 + (590 - 450) * layout;
+    const CAN_Y = 566;   // 11-08: lifted a touch so the scroll cue sits clear below the can
+    const cx = width / 2 + (722 - 720) * layout, cy = height / 2 + (CAN_Y - 450) * layout;
     view.bw = Math.min(width, Math.round(620 * layout));
     view.bh = Math.min(height, Math.round(760 * layout));
     view.bx = Math.round(cx - view.bw / 2);
@@ -317,8 +318,8 @@ async function start() {
     view.width = width;
     view.height = height;
     view.unit = unit;
-    view.home.set((722 - 720) * layout * unit, -(590 - 450) * layout * unit, 0); // lifted so the larger can clears the bottom edge
-    view.scale = 466 * layout * unit / (canLength + .16); // V9: matches the Brand History can on screen (~520px incl. lid at 1440×900)
+    view.home.set((722 - 720) * layout * unit, -(CAN_Y - 450) * layout * unit, 0); // lifted so the larger can clears the bottom edge
+    view.scale = 430 * layout * unit / (canLength + .16); // V9: matches the Brand History can on screen (~520px incl. lid at 1440×900)
     if (ghost) { ghost.remove(); ghost = null; }
     dirty = true;
   }
