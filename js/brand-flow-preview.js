@@ -85,7 +85,7 @@
     }
     // Corner labels blend between the principle colours with the words.
     const mix=(x,y,k)=>x.map((v,j)=>Math.round(v+(y[j]-v)*k));
-    const pal=[[20,159,92],[20,159,92],[20,159,92]];   // 11-07: all three principles in Chilsung green
+    const pal=[[0,172,71],[0,172,71],[0,172,71]];   // 11-07: all three principles in Chilsung green
     const k1=between(progress,.26-.028,.26+.045),k2=between(progress,.51-.028,.51+.045);
     let rgb=k2>0?mix(pal[1],pal[2],k2):mix(pal[0],pal[1],k1);
     values.style.setProperty('--bv-accent','rgb('+rgb.join(',')+')');
@@ -166,7 +166,7 @@
     // Match the narrower footprint of the artwork on the curved label.
     const width=projected?size*(1+(projected.width/projected.size-1)*move):size;
     const tint=between(fall,.76,.96);
-    const green=[255,255,255].map((v,i)=>v+([20,159,92][i]-v)*between(fall,.40,.68));
+    const green=[255,255,255].map((v,i)=>v+([0,172,71][i]-v)*between(fall,.40,.68));
     const color=green.map((value,i)=>Math.round(value+([202,40,49][i]-value)*tint));
     graphic.style.color='rgb('+color.join(',')+')';
     graphic.style.filter='none';

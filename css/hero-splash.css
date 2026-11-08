@@ -1,6 +1,6 @@
 /* Hero-only can opening. The 3D can owns its spray; the late curtain stays scoped here. */
 #top.hero { height: 300svh; max-height: none; min-height: 0; overflow: clip; --hs-tab: 0; --hs-focus: 0; }
-#top .hero-splash-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; isolation: isolate; background: #149f5c; }
+#top .hero-splash-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; isolation: isolate; background: #00ac47; }
 #top .hero-type, #top .hero-ring, #top .hero-product-layer, #top .hero-figma-star { opacity: calc(1 - var(--hs-reveal,0)); }
 #top .hero-type, #top .hero-ring { filter: blur(calc(var(--hs-focus) * 1.6px)); }
 #top .hero-product-layer { transform: translateX(-50%) scale(.8); transform-origin: 50% 50%; }

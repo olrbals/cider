@@ -20,7 +20,7 @@
   position:absolute;inset:0;z-index:2;pointer-events:none;
   display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
   padding-inline:clamp(24px,13.889vw,200px);
-  color:#149f5c;user-select:none;
+  color:#00ac47;user-select:none;
 }
 .history-3d-info{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -32,7 +32,7 @@
   display:flex;align-items:flex-end;justify-content:center;overflow:hidden;
   font:400 clamp(52px,calc(7.223vw - 4px),100px)/1.3 "Archivo Black",Arial,sans-serif;
   font-variant-numeric:tabular-nums;letter-spacing:-2.08px;
-  color:#149f5c;white-space:nowrap;
+  color:#00ac47;white-space:nowrap;
 }
 .history-3d-digit{
   position:relative;display:block;flex:0 0 1ch;
@@ -99,32 +99,32 @@
 .history-era-bar{
   position:absolute;z-index:6;left:50%;bottom:clamp(28px,5.5svh,56px);transform:translateX(-50%);
   width:min(64vw,920px);padding:30px 0 0;pointer-events:auto;touch-action:none;
-  cursor:grab;user-select:none;-webkit-user-select:none;outline:none;color:#149f5c;
+  cursor:grab;user-select:none;-webkit-user-select:none;outline:none;color:#00ac47;
 }
 .history-era-bar.is-dragging{cursor:grabbing}
-.history-era-bar__rail{position:relative;height:4px;border-radius:4px;background:rgba(20,159,92,.18)}
-.history-era-bar__fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#149f5c}
+.history-era-bar__rail{position:relative;height:4px;border-radius:4px;background:rgba(0,172,71,.18)}
+.history-era-bar__fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#00ac47}
 .history-era-bar__tick{
   position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;padding:0;border:0;background:none;
-  cursor:inherit;pointer-events:none;color:#149f5c;
+  cursor:inherit;pointer-events:none;color:#00ac47;
 }
-.history-era-bar__tick>svg{display:block;width:100%;height:100%;fill:#f7faf8;stroke:#149f5c;stroke-width:2.4;stroke-linejoin:round;transition:fill .2s}
-.history-era-bar__tick.is-active>svg{fill:#149f5c}
+.history-era-bar__tick>svg{display:block;width:100%;height:100%;fill:#f7faf8;stroke:#00ac47;stroke-width:2.4;stroke-linejoin:round;transition:fill .2s}
+.history-era-bar__tick.is-active>svg{fill:#00ac47}
 .history-era-bar__tick span{
   position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
-  font:400 clamp(11px,.9722vw,14px)/1 "Archivo",Arial,sans-serif;letter-spacing:.02em;color:rgba(20,159,92,.55);
+  font:400 clamp(11px,.9722vw,14px)/1 "Archivo",Arial,sans-serif;letter-spacing:.02em;color:rgba(0,172,71,.55);
   transition:color .2s,transform .2s;
 }
-.history-era-bar__tick.is-active span{color:#149f5c;transform:translateX(-50%) scale(1.15)}
+.history-era-bar__tick.is-active span{color:#00ac47;transform:translateX(-50%) scale(1.15)}
 /* Star thumb */
 .history-era-bar__thumb{
   position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;
-  filter:drop-shadow(0 0 6px rgba(20,159,92,.35)) drop-shadow(0 4px 10px rgba(20,159,92,.25));
+  filter:drop-shadow(0 0 6px rgba(0,172,71,.35)) drop-shadow(0 4px 10px rgba(0,172,71,.25));
   transition:transform .2s,filter .2s;
 }
-.history-era-bar__thumb svg{display:block;width:100%;height:100%;fill:#149f5c;stroke:#fff;stroke-width:1.6;stroke-linejoin:round}
-.history-era-bar:hover .history-era-bar__thumb,.history-era-bar.is-dragging .history-era-bar__thumb{transform:scale(1.14) rotate(8deg);filter:drop-shadow(0 0 10px rgba(20,159,92,.45)) drop-shadow(0 6px 14px rgba(20,159,92,.3))}
-.history-era-bar:focus-visible .history-era-bar__thumb{filter:drop-shadow(0 0 0 #fff) drop-shadow(0 0 4px #149f5c)}
+.history-era-bar__thumb svg{display:block;width:100%;height:100%;fill:#00ac47;stroke:#fff;stroke-width:1.6;stroke-linejoin:round}
+.history-era-bar:hover .history-era-bar__thumb,.history-era-bar.is-dragging .history-era-bar__thumb{transform:scale(1.14) rotate(8deg);filter:drop-shadow(0 0 10px rgba(0,172,71,.45)) drop-shadow(0 6px 14px rgba(0,172,71,.3))}
+.history-era-bar:focus-visible .history-era-bar__thumb{filter:drop-shadow(0 0 0 #fff) drop-shadow(0 0 4px #00ac47)}
 /* Faint glowing star comet left behind on each era change */
 .history-era-bar__trail{position:absolute;inset:0;pointer-events:none}
 .history-era-bar__spark{
@@ -138,7 +138,7 @@
 }
 .history-era-bar__hint{
   margin:18px 0 0;text-align:center;font:400 clamp(10px,.8333vw,12px)/1 "Archivo",Arial,sans-serif;
-  letter-spacing:.18em;color:rgba(20,159,92,.6);
+  letter-spacing:.18em;color:rgba(0,172,71,.6);
 }
 #history.rich-year-handoff .history-era-bar,.history-3d.rich-year-handoff .history-era-bar{opacity:0;pointer-events:none}
 .history-bar-live .rich-flavors,.history-bar-live .rich-flavors__viewport{pointer-events:none}
@@ -146,6 +146,6 @@
 /* 11-08 — only the selected year is green; the rest of the bar stays grey. */
 .history-era-bar__tick>svg{stroke:#c3c8c6}
 .history-era-bar__tick span{color:#b3b9b6}
-.history-era-bar__tick.is-active>svg{fill:#149f5c;stroke:#149f5c}
-.history-era-bar__tick.is-active span{color:#149f5c}
+.history-era-bar__tick.is-active>svg{fill:#00ac47;stroke:#00ac47}
+.history-era-bar__tick.is-active span{color:#00ac47}
 .history-era-bar__rail{background:#e3e7e5}

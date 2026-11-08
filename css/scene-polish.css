@@ -49,7 +49,7 @@
   width: .92em;
   height: .92em;
   overflow: visible;
-  color: #149f5c;
+  color: #00ac47;
   opacity: var(--identity-star-opacity);
   transform: translate(-50%,-49%) scale(var(--identity-star-scale));
   transform-origin: center;
@@ -91,7 +91,7 @@
   z-index: 2;
   pointer-events: none;
   overflow: hidden;
-  color: #149f5c;
+  color: #00ac47;
 }
 .identity-outline-star {
   position: absolute;
@@ -147,7 +147,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label {
   visibility: hidden;
   opacity: 0;
   transition: opacity .16s ease, visibility .16s ease;
-  color: #149f5c;
+  color: #00ac47;
 }
 .scene-edge-overlay.is-visible {
   visibility: visible;
@@ -156,7 +156,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label {
 .scene-edge-overlay .scene-edge-label {
   position: absolute;
   display: block;
-  color: #149f5c;
+  color: #00ac47;
   font-family: "Archivo", Arial, sans-serif;
   font-size: clamp(12px, 1.3889vw, 20px);
   font-weight: 400;

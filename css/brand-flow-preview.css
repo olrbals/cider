@@ -5,7 +5,7 @@
   min-height: 1920px;
   isolation: isolate;
   background: #ffffff;
-  color: #149f5c;
+  color: #00ac47;
 }
 .brand-values__stage {
   position: sticky;
@@ -56,7 +56,7 @@
 .brand-values__micro {
   position: absolute;
   z-index: 2;
-  color: #13975b;
+  color: #00ac47;
   font: 500 clamp(11px,1vw,14px)/1 "Archivo",sans-serif;
   letter-spacing: .13em;
   writing-mode: vertical-rl;
@@ -64,17 +64,17 @@
 .brand-values__micro { font:400 clamp(12px,1.3889vw,20px)/1.1 "Archivo",sans-serif; letter-spacing:0; }
 .brand-values__micro--left { left:1.7361%; top:50%; transform:translateY(-50%); }
 .brand-values__micro--right { right:1.8056%; top:50%; transform:translateY(-50%) rotate(180deg); }
-.brand-values__title,.brand-values__counter { position:absolute; z-index:2; left:50%; transform:translateX(-50%); color:#149f5c; font:400 clamp(12px,1.3889vw,20px)/1.1 "Archivo",sans-serif; white-space:nowrap; }
+.brand-values__title,.brand-values__counter { position:absolute; z-index:2; left:50%; transform:translateX(-50%); color:#00ac47; font:400 clamp(12px,1.3889vw,20px)/1.1 "Archivo",sans-serif; white-space:nowrap; }
 .brand-values__title { top:4.4444%; }
 .brand-values__counter { top:93.1111%; }
-.brand-values__word { font-size:min(13.88889vw,22.22222svh,200px); letter-spacing:0; line-height:1.09; color:#149f5c; }
+.brand-values__word { font-size:min(13.88889vw,22.22222svh,200px); letter-spacing:0; line-height:1.09; color:#00ac47; }
 .brand-values__word--long { font-size:min(12.36vw,19.77svh,178px); }
 .brand-values__bubble {
   position: absolute;
   z-index: 1;
   width: var(--size);
   height: var(--size);
-  border: 1.5px solid rgba(20,159,92,.28);
+  border: 1.5px solid rgba(0,172,71,.28);
   border-radius: 50%;
   left: var(--x);
   bottom: -25%;
@@ -97,7 +97,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 /* One expanding white star opens the archive, without a separate color fade. */
 #identity.identity.experience-02 { height:430svh; min-height:2270px; } /* +70svh: hold on the white line */
 #identity.identity.experience-02,
-#identity .identity-stage { background:rgb(var(--bf-surface,20,159,92)); color:#fff; }
+#identity .identity-stage { background:rgb(var(--bf-surface,0,172,71)); color:#fff; }
 #identity .identity-display,
 #identity .identity-liquid-type,
 #identity .identity-main-star,
@@ -136,7 +136,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
   height: 100px;
   overflow: visible;
   transform-origin: 0 0;
-  color: #149f5c;
+  color: #00ac47;
   filter: drop-shadow(0 5px 12px rgba(79,35,30,.08));
   will-change: transform,color;
 }
@@ -175,14 +175,14 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 
 /* V5.2 — one color per principle (Figma 1431:33 / 1456:2; navy replaces
    yellow so CAFFEINE FREE reads on white and pairs with the yellow FIZZ). */
-#brand-values .brand-values__word[data-brand-value="0"] { color: #149f5c; }
+#brand-values .brand-values__word[data-brand-value="0"] { color: #00ac47; }
 #brand-values .brand-values__word[data-brand-value="1"] { color: #3271e5; }
 #brand-values .brand-values__word[data-brand-value="2"] { color: #6b4428; }
 /* 11-07 — corner labels follow the active principle colour. */
 #brand-values .brand-values__micro,#brand-values .brand-values__title,#brand-values .brand-values__counter { color:#b7bdba; }
 
 /* 11-07 — FIZZ edge labels in Chilsung green. */
-#korea .korea-stage > .section-edge-label { color: rgba(20,159,92,.5) !important; }
+#korea .korea-stage > .section-edge-label { color: rgba(0,172,71,.5) !important; }
 
 /* 11-07 — SEVEN STARS → history: carbonation pop + line on the white screen. */
 .seven-stars-pop{position:fixed;inset:0;z-index:27;pointer-events:none;visibility:hidden}
@@ -191,7 +191,7 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 .seven-stars-pop__copy{
   position:absolute;left:50%;top:50%;margin:0;white-space:nowrap;
   font-family:var(--font-family-display,"Archivo Black",Impact,"Pretendard",sans-serif);font-weight:800;
-  font-size:clamp(28px,3.3333vw,52px);line-height:1.2;letter-spacing:-.02em;color:#149f5c;
+  font-size:clamp(28px,3.3333vw,52px);line-height:1.2;letter-spacing:-.02em;color:#00ac47;
   opacity:var(--pop-copy,0);
   transform:translate(-50%,-50%) translateY(calc((1 - var(--pop-copy,0)) * 18px + var(--pop-lift,0px))) scale(calc(.96 + var(--pop-copy,0) * .04));
 }
@@ -240,8 +240,8 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 }
 /* Recap before FEEL THE FIZZ */
 .brand-values__recap{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4svh;pointer-events:none;text-align:center}
-.brand-values__recap-main{margin:0;opacity:0;font:400 clamp(40px,4.4444vw,68px)/1.2 "Pretendard",sans-serif;letter-spacing:-.04em;color:#149f5c}
-.brand-values__recap-lead{margin:0;opacity:0;font:600 clamp(18px,1.6667vw,24px)/1.2 "Pretendard",sans-serif;letter-spacing:-.01em;color:#149f5c}
+.brand-values__recap-main{margin:0;opacity:0;font:400 clamp(40px,4.4444vw,68px)/1.2 "Pretendard",sans-serif;letter-spacing:-.04em;color:#00ac47}
+.brand-values__recap-lead{margin:0;opacity:0;font:600 clamp(18px,1.6667vw,24px)/1.2 "Pretendard",sans-serif;letter-spacing:-.01em;color:#00ac47}
 /* Longer hold per principle so each gag can finish and be seen. */
 #brand-values.brand-values{height:440svh;min-height:2600px}
 .brand-values__recap-main b{font-weight:800}
@@ -249,13 +249,13 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 /* 11-07 (d) — design note: anything that isn't the main content goes grey or light. */
 #identity .identity-stage > .section-edge-label{opacity:.55}
 .site-header > nav,.site-header .header-utils{opacity:.72}
-.history-era-bar__hint{color:rgba(20,159,92,.4)!important}
+.history-era-bar__hint{color:rgba(0,172,71,.4)!important}
 
 /* 11-08 — progress dots instead of 01 - 03; the current principle's dot fills in. */
 #brand-values .brand-values__counter{display:flex;gap:12px;align-items:center}
 #brand-values .brand-values__counter i{display:block;width:10px;height:10px;border-radius:50%;background:#dfe3e1;transition:background .3s,transform .3s}
 #brand-values .brand-values__counter i.is-on{transform:scale(1.15)}
-#brand-values .brand-values__counter[data-at="0"] i.is-on{background:#149f5c}
+#brand-values .brand-values__counter[data-at="0"] i.is-on{background:#00ac47}
 #brand-values .brand-values__counter[data-at="1"] i.is-on{background:#3271e5}
 #brand-values .brand-values__counter[data-at="2"] i.is-on{background:#6b4428}
 /* 02 — recap lead in grey */
@@ -263,4 +263,4 @@ html.has-scene-edge-overlay .korea-stage > .section-edge-label { display: block;
 /* 03 — white-screen line: soft lead, strong statement */
 .seven-stars-pop__copy{display:flex;flex-direction:column;align-items:center;gap:.35em;text-align:center}
 .seven-stars-pop__copy span{font:400 clamp(18px,1.6667vw,26px)/1.2 "Pretendard",sans-serif;letter-spacing:-.01em;color:#5fae86}
-.seven-stars-pop__copy b{font:800 clamp(40px,4.4444vw,68px)/1.15 "Pretendard",sans-serif;letter-spacing:-.04em;color:#149f5c}
+.seven-stars-pop__copy b{font:800 clamp(40px,4.4444vw,68px)/1.15 "Pretendard",sans-serif;letter-spacing:-.04em;color:#00ac47}

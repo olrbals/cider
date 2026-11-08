@@ -2,12 +2,12 @@
 .rich-flavors{position:relative;z-index:5;height:445svh;margin-top:-100svh;background:transparent;isolation:isolate}
 .rich-flavors__viewport{position:sticky;top:0;left:0;width:100vw;max-width:100vw;height:100svh;overflow:hidden;isolation:isolate;background:transparent}
 .rich-copy{position:absolute;inset:0;z-index:0;overflow:hidden;isolation:isolate;pointer-events:none;background:rgba(255,255,255,var(--rich-paper,0));opacity:var(--rich-copy-opacity,1)}
-.rich-year{position:absolute;left:50%;top:45%;color:#149f5c;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rich-year{position:absolute;left:50%;top:45%;color:#00ac47;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
 .rich-year>span{position:absolute;left:0;top:0;display:block;transform:translate(-50%,-50%);transform-origin:center;white-space:nowrap}
 .rich-year__archive{font:400 100px/1.3 "Archivo Black",Arial,sans-serif;letter-spacing:-2.08px}
 .rich-year__current{font:600 40px/1.3 "Archivo",sans-serif;letter-spacing:-.8px}
 .rich-story{position:absolute;left:50%;top:50%;width:1440px;height:900px;transform:translate(-50%,-50%) scale(var(--rich-design-scale,1));transform-origin:center}
-.rich-story__window{position:absolute;left:220px;top:452px;width:1000px;height:136px;overflow:hidden;color:#149f5c;text-align:center}
+.rich-story__window{position:absolute;left:220px;top:452px;width:1000px;height:136px;overflow:hidden;color:#00ac47;text-align:center}
 .rich-story__window p{position:absolute;left:0;top:0;width:100%;margin:0;font-size:52px;font-weight:700;line-height:1.3;letter-spacing:-1.04px;white-space:nowrap}
 .rich-story__new{font-family:"Archivo",sans-serif}
 .rich-story__message{font-family:"Yaldevi Colombo SemiBold","Pretendard","Apple SD Gothic Neo",sans-serif}
@@ -31,7 +31,7 @@
 .rich-duo__slot[data-rich-slot="whole"] img,.rich-duo__depth>span[data-rich-depth="0"] img,.rich-duo__depth>span[data-rich-depth="6"] img,.rich-duo__depth>span[data-rich-depth="8"] img,.rich-duo__depth>span[data-rich-depth="11"] img{transform:scaleY(-1)}
 .rich-duo__depth{position:absolute;inset:0;z-index:0;pointer-events:none}
 
-.rich-signoff{position:absolute;inset:0;z-index:2;display:grid;place-items:center;visibility:hidden;opacity:0;background:#149f5c;overflow:hidden}
+.rich-signoff{position:absolute;inset:0;z-index:2;display:grid;place-items:center;visibility:hidden;opacity:0;background:#00ac47;overflow:hidden}
 .rich-signoff img{display:block;width:clamp(180px,24vw,340px);height:auto;filter:brightness(0) invert(1);opacity:var(--rich-logo-opacity,0);transform:translateY(calc(8px * (1 - var(--rich-logo-opacity,0))))}
 @media(prefers-reduced-motion:reduce){.rich-signoff img{transform:none}}
 

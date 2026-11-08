@@ -8,7 +8,7 @@
   max-height: none;
   padding: 0;
   background: #fff;
-  color: #149f5c;
+  color: #00ac47;
   isolation: isolate;
   overflow: clip;
   touch-action: pan-y;
@@ -35,7 +35,7 @@
   width: 92%;
   margin: 0;
   transform: translate(-50%, -50%);
-  color: #149f5c;
+  color: #00ac47;
   font-family: var(--font-family-display);
   /* Main display type is capped at 220px; retain responsive scaling. */
   font-size: min(20.83333vw, 33.33333svh, 220px);
@@ -68,9 +68,9 @@
   height: 320px;
   transform: translate(-50%,-50%) scale(calc(.93 + .07 * var(--cursor-pressure, 0)));
   border-radius: 47% 55% 56% 44% / 58% 45% 55% 42%;
-  background: radial-gradient(ellipse at 30% 26%, rgba(255,255,255,.48), rgba(155,229,188,.16) 38%, rgba(20,159,92,.10) 70%, transparent 73%);
-  border: 1px solid rgba(20,159,92,.14);
-  box-shadow: inset 21px 25px 40px rgba(255,255,255,.15), inset -22px -20px 30px rgba(17,125,75,.08), 0 0 45px rgba(20,159,92,.1);
+  background: radial-gradient(ellipse at 30% 26%, rgba(255,255,255,.48), rgba(155,229,188,.16) 38%, rgba(0,172,71,.10) 70%, transparent 73%);
+  border: 1px solid rgba(0,172,71,.14);
+  box-shadow: inset 21px 25px 40px rgba(255,255,255,.15), inset -22px -20px 30px rgba(17,125,75,.08), 0 0 45px rgba(0,172,71,.1);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   will-change: transform, left, top;
@@ -91,8 +91,8 @@
   pointer-events: none;
   user-select: none;
 }
-/* SEVEN STARS: Figma white / #149f5c; FIZZ edge labels remain white. */
-.identity-stage .section-edge-label { color: #149f5c; }
+/* SEVEN STARS: Figma white / #00ac47; FIZZ edge labels remain white. */
+.identity-stage .section-edge-label { color: #00ac47; }
 .section-edge-label--top-left,
 .section-edge-label--bottom-left { left: 3.0556%; }
 .section-edge-label--top-right,
@@ -146,7 +146,7 @@
 .korea-type-base { z-index: 1; color: #ece4d5; }
 .korea-type-reveal {
   z-index: 2;
-  color: #149f5c;
+  color: #00ac47;
   clip-path: inset(calc(100% - var(--korea-fill)) 0 0 0);
   will-change: clip-path;
 }
@@ -230,7 +230,7 @@ body[data-experience-hover="true"] .identity { cursor: none; }
 
 /* 01 HERO: original Figma type, rings, upright product and star coordinates. */
 .hero {
-  background: #149f5c;
+  background: #00ac47;
   color: #fff;
 }
 .hero::before { display: none; }

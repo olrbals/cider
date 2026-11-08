@@ -53,7 +53,7 @@
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     if (fill) { ctx.fillStyle = 'rgba(61,187,126,' + (.45 * a).toFixed(3) + ')'; ctx.fill(); return; }
-    ctx.strokeStyle = 'rgba(20,159,92,' + (.7 * a).toFixed(3) + ')';
+    ctx.strokeStyle = 'rgba(0,172,71,' + (.7 * a).toFixed(3) + ')';
     ctx.lineWidth = Math.max(1, r * .18); ctx.stroke();
     ctx.beginPath(); ctx.arc(x - r * .35, y - r * .35, r * .22, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(255,255,255,' + (.9 * a).toFixed(3) + ')'; ctx.fill();

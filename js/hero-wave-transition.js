@@ -10,11 +10,11 @@
   const palette = [
     { id: 'brand-values', color: '#ffffff', accent: '#ffffff', edge: '#ffffff' },
     { id: 'korea', color: '#ffdd00', accent: '#fff4a0', edge: '#fff0a7' },
-    { id: 'identity', color: '#149f5c', accent: '#3dbb7e', edge: '#a3debf' },
+    { id: 'identity', color: '#00ac47', accent: '#3dbb7e', edge: '#a3debf' },
     { id: 'history', color: '#f7faf8', accent: '#eff8f2', edge: '#e0f0e7' },
     { id: 'products', color: '#f9f4e7', accent: '#ffffff', edge: '#ffffff' },
     { id: 'pop', color: '#ece4d5', accent: '#ffffff', edge: '#fff9eb' },
-    { id: 'footer', color: '#149f5c', accent: '#3dbb7e', edge: '#a3debf' }
+    { id: 'footer', color: '#00ac47', accent: '#3dbb7e', edge: '#a3debf' }
   ];
   const clamp = v => Math.max(0, Math.min(1, v));
   const smooth = v => { const t = clamp(v); return t * t * (3 - 2 * t); };

@@ -1,6 +1,6 @@
 /* Brand signoff + site footer — green, layout after the Lotte Chilsung corporate footer, in the
    site's type. Full-height so the liquid wave can sweep in completely. */
-.site-footer{position:relative;z-index:6;isolation:isolate;overflow:visible;min-height:100svh;display:flex;background:#149f5c;color:rgba(255,255,255,.86);font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;padding:0 clamp(24px,5.5vw,80px)}
+.site-footer{position:relative;z-index:6;isolation:isolate;overflow:visible;min-height:100svh;display:flex;background:#00ac47;color:rgba(255,255,255,.86);font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;padding:0 clamp(24px,5.5vw,80px)}
 /* 11-07 — readable layout: brand moment on top, one aligned info panel below. */
 .site-footer__inner{position:relative;width:min(1200px,100%);margin:0 auto;display:flex;flex-direction:column;min-height:100svh}
 .site-footer__hero{flex:1;display:grid;place-items:center;padding:14svh 0 8svh}
@@ -8,13 +8,13 @@
 .site-footer__panel{padding:0 0 clamp(32px,5svh,56px);display:grid;gap:22px;text-align:left}
 .site-footer__top{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.28)}
 .site-footer__brand{margin:0;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;letter-spacing:.04em;color:#fff}
-.site-footer__mark{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#fff;color:#149f5c;font:italic 700 18px/1 Georgia,serif;letter-spacing:0}
+.site-footer__mark{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#fff;color:#00ac47;font:italic 700 18px/1 Georgia,serif;letter-spacing:0}
 .site-footer__selects{display:flex;align-items:center;gap:10px}
 .site-footer__family{display:flex;align-items:center;gap:6px}
 .site-footer select option{color:#222}
 .site-footer select{appearance:none;-webkit-appearance:none;height:40px;padding:0 40px 0 18px;border:1px solid rgba(255,255,255,.5);border-radius:999px;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff'/%3E%3C/svg%3E") no-repeat right 16px center;font-family:inherit;font-size:14px;letter-spacing:.02em;color:#fff}
 .site-footer__family select,.site-footer__sns select{min-width:190px}
-.site-footer__family button{width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#149f5c;font-family:inherit;font-weight:700;font-size:13px}
+.site-footer__family button{width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#00ac47;font-family:inherit;font-weight:700;font-size:13px}
 .site-footer__links{display:flex;flex-wrap:wrap;align-items:center;gap:8px 0}
 .site-footer__links > span{font-size:15px;line-height:1.5;color:rgba(255,255,255,.86);padding:0 16px;position:relative}
 .site-footer__links > span:first-child{padding-left:0}
@@ -34,7 +34,7 @@
 /* 11-07 — portfolio footer: nothing is clickable or focusable. */
 .site-footer,.site-footer *{pointer-events:none!important;cursor:default!important;user-select:none}
 .site-footer select:disabled,.site-footer button:disabled{opacity:1;color:inherit}
-.site-footer__family button:disabled{color:#149f5c}
+.site-footer__family button:disabled{color:#00ac47}
 
 /* 11-07 (c) — official Lotte Chilsung mark, no select boxes. */
 .site-footer__brand img{display:block;height:40px;width:auto}
