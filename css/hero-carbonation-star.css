@@ -103,3 +103,5 @@
 /* 11-08 (e) — +20px breathing room above, +12px between menu items. */
 .site-header { box-sizing:border-box; height:108px; padding-top:20px; }
 .site-header nav span { width:clamp(116px,9.45vw,136px); }
+/* 11-08 (f) — Lotte Chilsung mark ×1.2 */
+.site-header .header-logo img { height:52px; }
