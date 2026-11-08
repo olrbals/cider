@@ -17,18 +17,19 @@
   window.__sevenStoryBubbles = true;                         // seven-stars-pop: skip its clock burst
 
   // Constellation (stage units 0–1100, after the official mark): centre x, centre y, star width.
+  // Clean diagonal constellation: no overlaps, centred (stage units 0–1100): centre x, centre y, star width.
   const LAYOUT = [
-    [579.5, 226.5, 129], [764, 227, 130],
-    [526.5, 408.5, 165], [710.5, 408.5, 165],
-    [462, 622, 208], [647.5, 622, 208],
-    [408.5, 818, 263]                                       // the biggest = the gel star itself
+    [578, 227, 120], [723, 227, 120],
+    [538, 397, 150], [713, 397, 150],
+    [493, 592, 180], [703, 592, 180],
+    [438, 817, 240]                                         // the biggest = the gel star itself
   ];
-  const UNIT = 1100, BIG = 6, GEL_SCALE = 1.75;
+  const UNIT = 1100, BIG = 6, GEL_SCALE = 1.9;
   const STAR_W = 493 / 600, STAR_CX = 301.5 / 600, STAR_CY = 302.5 / 600;
 
   // Scroll map (identity progress). Paging stops: 0 · .14 · .32 · white line (smooth-scroll.js).
-  const SWEEP = [.05, .13];                                  // ① the gel star turns into the new white star
-  const SHARPEN = [.025, .12];                               //    while its outline sharpens point by point
+  const SWEEP = [.055, .125];                                  // ① the gel star turns into the new white star
+  const SHARPEN = [.02, .085];                                //    while its outline sharpens point by point
   const SPLIT = [.15, .29];                                  // ② it parts into seven
   const STAGGER = [0, .014, .006, .019, .003, .011, 0];
   const FIZZ = [.36, .56];                                   // ③ stars fizz into bubbles
@@ -187,9 +188,9 @@
     // ① gel → new white star (diagonal sweep)
     const m = reduced.matches ? (p >= SWEEP[1] ? 1 : 0) : sm(SHARPEN[0], SHARPEN[1], p);
     if (Math.abs(m - lastM) > .002) { lastM = m; shapeEl.setAttribute('d', m >= 1 ? SHARP_D : morphD(m)); }
-    const sw = sm(SWEEP[0], SWEEP[1], p), edge = -.3 + 1.55 * sw;
+    const sw = lin(SWEEP[0], SWEEP[1], p), edge = .12 + .82 * sw;   // sweep spans exactly the star
     s1.setAttribute('offset', Math.max(0, edge).toFixed(3));
-    s2.setAttribute('offset', Math.max(0, edge + .12).toFixed(3));
+    s2.setAttribute('offset', Math.max(0, edge + .015).toFixed(3));   // crisp edge, like the film
     body.style.opacity = (1 - sm(SWEEP[1] - .02, SWEEP[1] + .02, p)).toFixed(3);
     const resting = p >= SPLIT[1] - .005 && p < FIZZ[0] + .03 && !reduced.matches;
     layer.classList.toggle('is-resting', resting);
@@ -205,7 +206,13 @@
       el.style.width = el.style.height = size + 'px';
       el.style.opacity = alpha.toFixed(3);
       el.style.visibility = alpha > .005 ? 'visible' : 'hidden';
-      el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0) scale(' + (1 - .12 * gone).toFixed(3) + ')';
+      let extra = '';
+      if (i === BIG && !reduced.matches) {
+        // As in the film: the tilted gel star stretches as it sharpens, then settles upright.
+        const k = lin(SHARPEN[0], SWEEP[1], p), bump = Math.sin(Math.PI * k);
+        extra = ' rotate(' + (-9 * (1 - sm(SHARPEN[0], SWEEP[1], p))).toFixed(2) + 'deg) scale(' + (1 + .1 * bump).toFixed(4) + ',' + (1 + .03 * bump).toFixed(4) + ')';
+      }
+      el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0)' + extra + ' scale(' + (1 - .12 * gone).toFixed(3) + ')';
       el.style.zIndex = i === BIG ? '3' : '2';
     });
 
