@@ -137,3 +137,7 @@
 #top .hero-scroll-cue svg{animation:hero-cue 1.8s cubic-bezier(.45,0,.3,1) infinite}
 @keyframes hero-cue{0%,100%{transform:translateY(-3px);opacity:.55}50%{transform:translateY(5px);opacity:1}}
 @media (prefers-reduced-motion:reduce){#top .hero-scroll-cue svg{animation:none}}
+/* 11-08 — Lotte Chilsung mark in white everywhere (black on the light peek bar so it stays visible) */
+.site-header .header-logo .header-logo__color{display:none}
+.site-header .header-logo .header-logo__white{display:block}
+.site-header.is-off-hero.is-peek .header-logo .header-logo__white{filter:brightness(0)}
