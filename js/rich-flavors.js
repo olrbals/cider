@@ -129,7 +129,7 @@
   function placeDepth(t){
     // 11-08: the fruits ride the same scene clock as the bottles, so they all
     // land in the very same moment the bottles do (bottles settle at t≈.98).
-    const k=reduce.matches?1:Math.max(0,Math.min(1,(t-.56)/(.98-.56)));
+    const k=reduce.matches?1:Math.max(0,Math.min(1,(t-.36)/(.8-.36)));   // finishes with the bottles landing (t≈.8)
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
@@ -194,7 +194,7 @@
     duo.style.visibility=alpha>0?'visible':'hidden';duo.style.opacity=alpha.toFixed(4);
     duo.style.transform='translate3d(0,'+(-14*exit).toFixed(2)+'px,0)';
     // Background blooms pink/lime right at the clink.
-    duo.style.setProperty('--rich-bloom',smooth(clinkT-.04,clinkT+.28,t).toFixed(4));
+    duo.style.setProperty('--rich-bloom',smooth(.48,.8,t).toFixed(4));   // background colour blooms in with the landing
     const poses={};
     slots.forEach(slot=>{
       const {node,key,pre,fruit}=slot;
