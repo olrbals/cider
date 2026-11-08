@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Water Star — SVG Texture Study</title>
+  <style>
+    :root {
+      color-scheme: light;
+      background: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 320vh;
+      margin: 0;
+      overflow-x: hidden;
+      background: #fff;
+    }
+
+    main {
+      position: relative;
+      display: grid;
+      min-height: 320vh;
+      place-items: center;
+      isolation: isolate;
+    }
+
+    .mode-control {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mode-switch {
+      position: fixed;
+      z-index: 10;
+      top: 24px;
+      right: 28px;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid rgba(91, 119, 112, 0.2);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 8px 24px rgba(23, 71, 60, 0.1);
+      backdrop-filter: blur(12px);
+    }
+
+    .mode-switch label {
+      padding: 8px 12px 7px;
+      border-radius: 999px;
+      color: #607873;
+      cursor: pointer;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      line-height: 1;
+      text-transform: uppercase;
+      transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+    }
+
+    #mode-water:checked ~ main .mode-switch label[for="mode-water"],
+    #mode-glossy:checked ~ main .mode-switch label[for="mode-glossy"] {
+      color: #fff;
+      background: #087f5b;
+      box-shadow: 0 3px 10px rgba(8, 127, 91, 0.24);
+    }
+
+    .study-label {
+      position: fixed;
+      top: 28px;
+      left: 32px;
+      margin: 0;
+      color: #789195;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      line-height: 1.5;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+
+    .panel {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
+    }
+
+    .water-panel {
+      background:
+        radial-gradient(circle at 50% 44%, rgba(223, 246, 247, 0.38), transparent 31rem),
+        #fff;
+    }
+
+    .glossy-panel {
+      background:
+        radial-gradient(circle at 52% 47%, rgba(145, 255, 154, 0.2), transparent 25rem),
+        #00b95d;
+    }
+
+    #mode-water:checked ~ main .water-panel,
+    #mode-glossy:checked ~ main .glossy-panel {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .star-stage {
+      width: min(72vmin, 680px);
+      aspect-ratio: 1;
+    }
+
+    .water-star {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .glossy-star {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      transform-origin: 50% 52%;
+      animation: gel-breathe 5.8s ease-in-out infinite;
+    }
+
+    .glossy-motion {
+      transform: translate3d(0, 3vh, 0) scale(1.16) rotate(-1.2deg);
+      transform-origin: 50% 52%;
+      will-change: transform;
+    }
+
+    .glossy-sheen--top {
+      animation: top-glint 4.8s ease-in-out infinite;
+    }
+
+    .glossy-sheen--side {
+      animation: side-glint 5.8s ease-in-out 0.9s infinite;
+    }
+
+    .glossy-sheen--base {
+      animation: base-glint 5.3s ease-in-out 0.35s infinite;
+    }
+
+    .scroll-hint {
+      position: fixed;
+      z-index: 10;
+      right: 30px;
+      bottom: 27px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      opacity: 0;
+      pointer-events: none;
+      text-transform: uppercase;
+      transition: opacity 180ms ease;
+    }
+
+    .scroll-hint::after {
+      width: 5px;
+      height: 5px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      content: "";
+      transform: rotate(45deg) translateY(-2px);
+      animation: scroll-cue 1.5s ease-in-out infinite;
+    }
+
+    #mode-glossy:checked ~ main .scroll-hint {
+      opacity: 1;
+    }
+
+    #mode-glossy:checked ~ main .scroll-hint.is-complete {
+      opacity: 0;
+    }
+
+    @keyframes gel-breathe {
+      0%, 100% { transform: scaleX(1.04) scaleY(0.98); }
+      38% { transform: scaleX(1.03) scaleY(0.99); }
+      68% { transform: scaleX(1.05) scaleY(0.975); }
+    }
+
+    @keyframes top-glint {
+      0%, 18%, 100% { opacity: 0.4; }
+      47% { opacity: 0.68; }
+      70% { opacity: 0.5; }
+    }
+
+    @keyframes side-glint {
+      0%, 100% { opacity: 0.3; }
+      48% { opacity: 0.52; }
+      72% { opacity: 0.4; }
+    }
+
+    @keyframes base-glint {
+      0%, 100% { opacity: 0.32; }
+      42% { opacity: 0.54; }
+      63% { opacity: 0.41; }
+    }
+
+    @keyframes scroll-cue {
+      0%, 100% { opacity: 0.35; transform: rotate(45deg) translate(-2px, -2px); }
+      50% { opacity: 1; transform: rotate(45deg) translate(2px, 2px); }
+    }
+
+    .water-star__shadow {
+      mix-blend-mode: multiply;
+    }
+
+    @media (max-width: 600px) {
+      .study-label {
+        top: 20px;
+        left: 22px;
+      }
+
+      .mode-switch {
+        top: auto;
+        right: 50%;
+        bottom: 20px;
+        transform: translateX(50%);
+      }
+
+      .scroll-hint {
+        right: 20px;
+        bottom: 79px;
+      }
+
+      .star-stage {
+        width: min(88vmin, 560px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .glossy-star,
+      .glossy-sheen--top,
+      .glossy-sheen--side,
+      .glossy-sheen--base,
+      .scroll-hint::after {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <input class="mode-control" type="radio" name="star-mode" id="mode-water">
+  <input class="mode-control" type="radio" name="star-mode" id="mode-glossy" checked>
+
+  <main>
+    <p class="study-label">Seven stars<br>SVG texture study</p>
+
+    <nav class="mode-switch" aria-label="별 질감 선택">
+      <label for="mode-water">Thin film</label>
+      <label for="mode-glossy">Glossy gel</label>
+    </nav>
+
+    <p class="scroll-hint" aria-hidden="true">Scroll to move</p>
+
+    <section class="panel water-panel" aria-label="얇은 물막 별 테스트">
+      <div class="star-stage" aria-label="반투명한 탄산수 막 질감의 별">
+      <svg class="water-star" viewBox="0 0 600 600" role="img" aria-labelledby="star-title star-desc">
+        <title id="star-title">반투명 워터 스타</title>
+        <desc id="star-desc">얇은 탄산수 막처럼 맑고 투명한 표면, 은은한 청록색 가장자리와 흰 하이라이트가 있는 별</desc>
+
+        <defs>
+          <path id="star-shape" d="M300 64 354 228 526 228 387 329 440 493 300 392 160 493 213 329 74 228 246 228Z"/>
+
+          <clipPath id="star-clip">
+            <use href="#star-shape"/>
+          </clipPath>
+
+          <linearGradient id="membrane-fill" x1="112" y1="102" x2="478" y2="500" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#fff" stop-opacity="0.84"/>
+            <stop offset="0.23" stop-color="#eaffff" stop-opacity="0.32"/>
+            <stop offset="0.53" stop-color="#bdecef" stop-opacity="0.18"/>
+            <stop offset="0.78" stop-color="#f8ffff" stop-opacity="0.48"/>
+            <stop offset="1" stop-color="#8edce3" stop-opacity="0.23"/>
+          </linearGradient>
+
+          <radialGradient id="soft-glow" cx="0" cy="0" r="1" gradientTransform="translate(238 214) rotate(56) scale(315 300)" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#fff" stop-opacity="0.86"/>
+            <stop offset="0.34" stop-color="#fff" stop-opacity="0.12"/>
+            <stop offset="0.68" stop-color="#87dce4" stop-opacity="0.13"/>
+            <stop offset="1" stop-color="#40b8c8" stop-opacity="0.28"/>
+          </radialGradient>
+
+          <linearGradient id="rim-color" x1="124" y1="122" x2="460" y2="486" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#73cfd7"/>
+            <stop offset="0.2" stop-color="#d5f4f5"/>
+            <stop offset="0.48" stop-color="#5bc8d2"/>
+            <stop offset="0.72" stop-color="#e9ffff"/>
+            <stop offset="1" stop-color="#46b9c6"/>
+          </linearGradient>
+
+          <linearGradient id="caustic-color" x1="150" y1="178" x2="448" y2="438" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#fff" stop-opacity="0.9"/>
+            <stop offset="0.35" stop-color="#fff" stop-opacity="0.18"/>
+            <stop offset="0.62" stop-color="#7dd6df" stop-opacity="0.32"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0.74"/>
+          </linearGradient>
+
+          <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="170%" color-interpolation-filters="sRGB">
+            <feGaussianBlur stdDeviation="13"/>
+          </filter>
+
+          <filter id="rim-bloom" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+            <feGaussianBlur stdDeviation="3.4"/>
+          </filter>
+
+          <filter id="liquid-surface" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.008 0.021" numOctaves="2" seed="17" result="water-noise"/>
+            <feGaussianBlur in="water-noise" stdDeviation="0.45" result="soft-noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="soft-noise" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+
+          <filter id="tiny-blur" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.15"/>
+          </filter>
+        </defs>
+
+        <!-- A very light footprint keeps the transparent form legible on pure white. -->
+        <use class="water-star__shadow" href="#star-shape" fill="#69c7d0" opacity="0.15" transform="translate(0 13)" filter="url(#soft-shadow)"/>
+
+        <!-- Thin membrane body: low-opacity color, no solid white mass. -->
+        <use href="#star-shape" fill="url(#membrane-fill)" opacity="0.84"/>
+        <use href="#star-shape" fill="url(#soft-glow)" opacity="0.67" filter="url(#liquid-surface)"/>
+
+        <g clip-path="url(#star-clip)">
+          <!-- Broad, almost-flat refraction bands suggest a film rather than a bevel. -->
+          <path d="M96 276C172 241 237 254 304 280S427 320 510 274" fill="none" stroke="url(#caustic-color)" stroke-width="18" stroke-linecap="round" opacity="0.22" filter="url(#tiny-blur)"/>
+          <path d="M111 363C188 326 243 345 303 370S414 413 494 372" fill="none" stroke="#77d1db" stroke-width="7" stroke-linecap="round" opacity="0.16" filter="url(#tiny-blur)"/>
+          <path d="M139 195C211 171 273 183 332 205S430 242 487 220" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.52" filter="url(#tiny-blur)"/>
+
+          <!-- Sparse micro-bubbles keep the reference to carbonated water subtle. -->
+          <g fill="#fff" stroke="#64c5cf" stroke-width="0.7">
+            <circle cx="245" cy="259" r="3.2" opacity="0.46"/>
+            <circle cx="371" cy="259" r="2.2" opacity="0.42"/>
+            <circle cx="289" cy="337" r="1.8" opacity="0.5"/>
+            <circle cx="196" cy="289" r="1.5" opacity="0.38"/>
+            <circle cx="402" cy="341" r="2.7" opacity="0.36"/>
+            <circle cx="249" cy="402" r="1.35" opacity="0.42"/>
+            <circle cx="337" cy="194" r="1.25" opacity="0.54"/>
+          </g>
+
+          <g fill="#fff" opacity="0.58">
+            <ellipse cx="226" cy="217" rx="3.2" ry="1.1" transform="rotate(-24 226 217)"/>
+            <ellipse cx="372" cy="257" rx="2" ry="0.7" transform="rotate(-18 372 257)"/>
+            <ellipse cx="403" cy="339" rx="2.4" ry="0.8" transform="rotate(-15 403 339)"/>
+          </g>
+        </g>
+
+        <!-- Soft color bloom and two crisp rims create the wet edge. -->
+        <use href="#star-shape" fill="none" stroke="#58c5d0" stroke-width="9" stroke-linejoin="round" opacity="0.13" filter="url(#rim-bloom)"/>
+        <use href="#star-shape" fill="none" stroke="url(#rim-color)" stroke-width="2.5" stroke-linejoin="round" opacity="0.84"/>
+        <use href="#star-shape" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="310 980" stroke-dashoffset="-10" opacity="0.9"/>
+        <use href="#star-shape" fill="none" stroke="#39b4c3" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="225 1065" stroke-dashoffset="-650" opacity="0.56"/>
+
+        <!-- Small glints: restrained so the surface stays thin and clear. -->
+        <path d="M279 129C287 109 293 89 300 69" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.72" filter="url(#tiny-blur)"/>
+        <path d="M111 230C134 230 157 230 180 230" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+        <circle cx="354" cy="229" r="4.2" fill="#fff" opacity="0.86"/>
+      </svg>
+      </div>
+    </section>
+
+    <section class="panel glossy-panel" aria-label="글로시 젤 별 테스트">
+      <div class="star-stage glossy-motion">
+        <svg class="glossy-star" viewBox="0 0 600 600" role="img" aria-labelledby="gloss-title gloss-desc">
+          <title id="gloss-title">글로시 그린 스타</title>
+          <desc id="gloss-desc">둥근 모서리, 진한 초록과 라임색의 양면 색상, 강한 반사광을 가진 유광 별</desc>
+
+          <defs>
+            <path id="gloss-star-shape" d="M300 64C314 64 323 74 329 91L369 209C373 221 380 227 393 228L520 232C537 232 548 243 548 257C548 267 542 275 534 281L431 357C420 365 416 376 420 389L456 506C461 522 454 536 441 541C433 544 425 542 417 536L313 466C304 460 296 460 287 466L183 536C169 545 154 540 149 526C146 518 147 510 150 501L187 388C191 375 187 365 176 357L68 280C55 271 55 255 65 244C72 236 80 233 92 232L205 228C218 228 226 221 230 210L271 91C277 74 286 64 300 64Z"/>
+
+            <clipPath id="gloss-star-clip">
+              <use href="#gloss-star-shape"/>
+            </clipPath>
+
+            <linearGradient id="gloss-base" x1="115" y1="130" x2="480" y2="480" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#00a868"/>
+              <stop offset="0.48" stop-color="#00a95e"/>
+              <stop offset="0.53" stop-color="#70bd3e"/>
+              <stop offset="1" stop-color="#92cc45"/>
+            </linearGradient>
+
+            <radialGradient id="gloss-lime-light" cx="0" cy="0" r="1" gradientTransform="translate(397 330) rotate(130) scale(220 185)" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#d9f48b" stop-opacity="0.52"/>
+              <stop offset="0.44" stop-color="#9cd850" stop-opacity="0.28"/>
+              <stop offset="1" stop-color="#71c546" stop-opacity="0"/>
+            </radialGradient>
+
+            <linearGradient id="gloss-edge" x1="160" y1="92" x2="431" y2="530" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#dffff0"/>
+              <stop offset="0.18" stop-color="#00754c"/>
+              <stop offset="0.47" stop-color="#b6f070"/>
+              <stop offset="0.72" stop-color="#006d48"/>
+              <stop offset="1" stop-color="#e9ffd2"/>
+            </linearGradient>
+
+            <linearGradient id="gloss-white-streak" x1="220" y1="104" x2="416" y2="472" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#fff" stop-opacity="0.76"/>
+              <stop offset="0.45" stop-color="#eaffdd" stop-opacity="0.48"/>
+              <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+
+            <filter id="gloss-outer-glow" x="-35%" y="-35%" width="170%" height="175%" color-interpolation-filters="sRGB">
+              <feGaussianBlur stdDeviation="11" result="blur"/>
+              <feColorMatrix in="blur" values="1 0 0 0 0.82  0 1 0 0 1  0 0 1 0 0.88  0 0 0 0.82 0"/>
+            </filter>
+
+            <filter id="gloss-soft-blur" x="-35%" y="-35%" width="170%" height="170%">
+              <feGaussianBlur stdDeviation="8"/>
+            </filter>
+
+            <filter id="gloss-tight-blur" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3.2"/>
+            </filter>
+
+            <filter id="gloss-shadow" x="-30%" y="-30%" width="160%" height="175%" color-interpolation-filters="sRGB">
+              <feGaussianBlur stdDeviation="14"/>
+            </filter>
+          </defs>
+
+          <!-- Milky halo and grounded shadow from the reference. -->
+          <use href="#gloss-star-shape" fill="#004c37" opacity="0.3" transform="translate(0 19)" filter="url(#gloss-shadow)"/>
+          <use href="#gloss-star-shape" fill="none" stroke="#f5fff3" stroke-width="30" opacity="0.84" filter="url(#gloss-outer-glow)"/>
+
+          <!-- Main two-tone body. -->
+          <use href="#gloss-star-shape" fill="url(#gloss-base)"/>
+          <g clip-path="url(#gloss-star-clip)">
+            <!-- The left half stays deliberately flat and nearly single-color. -->
+            <path d="M301 28C355 165 359 292 304 393C274 449 231 493 190 534L64 540V30Z" fill="#00a760"/>
+
+            <!-- A broad S-shaped fold carries most of the depth between the two faces. -->
+            <path d="M310 35C353 157 359 273 321 357C296 414 259 466 213 523" fill="none" stroke="#006344" stroke-width="48" opacity="0.55" filter="url(#gloss-soft-blur)"/>
+            <path d="M311 40C344 159 346 269 313 353C290 411 257 458 220 508" fill="none" stroke="#007e4d" stroke-width="18" opacity="0.62" filter="url(#gloss-tight-blur)"/>
+            <rect x="220" y="120" width="330" height="390" fill="url(#gloss-lime-light)"/>
+
+            <!-- The molded edge remains dark; white reflection is limited to selected edges. -->
+            <use href="#gloss-star-shape" fill="none" stroke="#004936" stroke-width="24" opacity="0.34" filter="url(#gloss-soft-blur)"/>
+            <path d="M365 227C408 232 458 237 507 247" fill="none" stroke="#006a43" stroke-width="22" stroke-linecap="round" opacity="0.44" filter="url(#gloss-soft-blur)"/>
+
+            <!-- Long specular highlights follow the rounded surface. -->
+            <path class="glossy-sheen--top" d="M289 100C278 136 265 179 248 216C240 234 232 245 224 253" fill="none" stroke="url(#gloss-white-streak)" stroke-width="15" stroke-linecap="round" opacity="0.64" filter="url(#gloss-tight-blur)"/>
+            <path d="M319 101C330 139 341 180 358 213C364 224 371 231 380 235" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" opacity="0.58" filter="url(#gloss-tight-blur)"/>
+            <path class="glossy-sheen--side" d="M443 283C398 297 378 326 365 366C351 409 331 435 296 454" fill="none" stroke="#fff8d7" stroke-width="44" stroke-linecap="round" opacity="0.5" filter="url(#gloss-soft-blur)"/>
+            <path class="glossy-sheen--base" d="M181 508C218 474 252 447 286 424" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" opacity="0.52" filter="url(#gloss-tight-blur)"/>
+          </g>
+
+          <!-- Crisp contour and glints keep the soft material legible. -->
+          <use href="#gloss-star-shape" fill="none" stroke="#006c48" stroke-width="3.5" stroke-linejoin="round" opacity="0.66"/>
+          <use href="#gloss-star-shape" fill="none" stroke="url(#gloss-edge)" stroke-width="1.6" stroke-linejoin="round" opacity="0.7"/>
+        </svg>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+
+      const motionTarget = document.querySelector('.glossy-motion');
+      const scrollHint = document.querySelector('.scroll-hint');
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let targetProgress = 0;
+      let currentProgress = 0;
+      let frameId = 0;
+
+      const getScrollProgress = () => {
+        const distance = document.documentElement.scrollHeight - window.innerHeight;
+        return distance > 0 ? Math.min(1, Math.max(0, window.scrollY / distance)) : 0;
+      };
+
+      const render = () => {
+        currentProgress += (targetProgress - currentProgress) * 0.085;
+
+        const eased = currentProgress * currentProgress * (3 - 2 * currentProgress);
+        const scale = 1.16 + eased * 2.41;
+        const translateY = 3 - eased * 2;
+        const rotate = -1.2 + Math.sin(eased * Math.PI) * 1.35;
+
+        motionTarget.style.transform = `translate3d(0, ${translateY}vh, 0) scale(${scale}) rotate(${rotate}deg)`;
+        scrollHint.classList.toggle('is-complete', targetProgress > 0.92);
+
+        if (Math.abs(targetProgress - currentProgress) > 0.0005) {
+          frameId = window.requestAnimationFrame(render);
+        } else {
+          currentProgress = targetProgress;
+          frameId = 0;
+        }
+      };
+
+      const updateMotion = () => {
+        targetProgress = getScrollProgress();
+
+        if (reduceMotion.matches) {
+          currentProgress = targetProgress;
+          const scale = 1.06 + targetProgress * 0.08;
+          motionTarget.style.transform = `translate3d(0, 2vh, 0) scale(${scale})`;
+          return;
+        }
+
+        if (!frameId) frameId = window.requestAnimationFrame(render);
+      };
+
+      window.addEventListener('scroll', updateMotion, { passive: true });
+      window.addEventListener('resize', updateMotion);
+      reduceMotion.addEventListener('change', updateMotion);
+      updateMotion();
+    })();
+  </script>
+</body>
+</html>
