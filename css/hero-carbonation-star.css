@@ -81,3 +81,12 @@
 .site-header > nav,.site-header .header-utils{opacity:1}
 .site-header .header-utils .header-utils__mall{height:24px}
 .site-header .header-utils .header-utils__mall img{display:block;height:24px;width:auto}
+/* 11-08 (c) — larger: logo ×1.37, type scaled to match, wider menu spacing. */
+.site-header { height:110px; }
+.site-header .header-logo { height:110px; }
+.site-header .header-logo img { height:52px; }
+.site-header nav span { width:clamp(118px,9.6vw,150px); min-height:110px; font-size:20px; }
+.site-header .header-utils { height:110px; font-size:18px; }
+.site-header .header-utils > * { height:22px; padding:0 22px; }
+.site-header .header-utils svg { width:26px; height:26px; }
+.site-header .header-utils .header-utils__mall,.site-header .header-utils .header-utils__mall img { height:30px; }
