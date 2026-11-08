@@ -193,12 +193,12 @@
     richProductsActive = story >= 1.98 && story < 3.45 && rect.bottom > innerHeight;
     // 11-07: rising carbonation on every screen — hero first screen through the footer.
     void heroFade; void beyondHero; void fade;
-    // 11-07 (b): from Brand History on, the bubbles thin out and fade away
-    // over ~1.5 screens; RICH and the footer stay clear.
+    // 11-08: the bubbles fade out while Brand History slides in, so none
+    // keep rising behind the years; RICH and the footer stay clear.
     const hist = document.querySelector('#history-3d');
     const hr = hist?.getBoundingClientRect();
     const into = hr ? -hr.top / innerHeight : -1;
-    const hk = Math.max(0, Math.min(1, (into + .2) / 1.7));
+    const hk = Math.max(0, Math.min(1, (into + .75) / .55));   // 11-08: gone before the history years start
     historyFade = 1 - hk * hk * (3 - 2 * hk);
     targetCount = Math.max(0, Math.round(desiredCount() * (.25 + .75 * historyFade)));
     canvas.style.opacity = String((richProductsActive ? .55 : .84) * historyFade);

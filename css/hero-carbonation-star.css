@@ -117,3 +117,5 @@
 /* 11-08 (b) — bigger wordmark, no Korean title in the hero */
 #top .hero-wordmark{width:940px;top:425px}
 #top .hero-korean-title{display:none}
+/* 11-08 (c) — smaller wordmark, set upright in the top-left so the can owns the centre */
+#top .hero-wordmark{width:460px;left:335px;top:285px;transform:translate(-50%,-50%)}
