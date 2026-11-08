@@ -65,3 +65,10 @@
 
 /* sizes: footer emblem bigger, hero wordmark smaller */
 .footer-emblem{width:clamp(340px,30vw,460px)}
+
+/* 11-08: Korean meaning under each principle — English is the graphic, Korean is what you read */
+#brand-values .brand-values__ko{position:absolute;left:50%;top:60%;margin:0;transform:translateX(-50%);opacity:0;pointer-events:none;white-space:nowrap;
+  font:700 clamp(20px,1.95vw,30px)/1.2 "Pretendard",sans-serif;letter-spacing:-.01em;will-change:transform,opacity}
+#brand-values .brand-values__ko[data-ko="0"]{color:#00ac47}
+#brand-values .brand-values__ko[data-ko="1"]{color:#3271e5}
+#brand-values .brand-values__ko[data-ko="2"]{color:#6b4428}

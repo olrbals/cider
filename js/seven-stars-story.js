@@ -200,9 +200,9 @@
     stars.forEach((el, i) => {
       const f = flash[i];
       if (!resting) { el.style.setProperty('--tw', '0'); f.next = 0; return; }
-      if (!f.next) f.next = now + .05 + Math.random() * .7;   // each star flashes once, at its own moment
+      if (!f.next) f.next = now + Math.random() * .32;   // each star flashes once, at its own moment
       if (now >= f.next && f.at < 0) {
-        f.at = now; f.dur = .14 + Math.random() * .16;
+        f.at = now; f.dur = .1 + Math.random() * .08;
       }
       let v = 0;
       if (f.at >= 0) {

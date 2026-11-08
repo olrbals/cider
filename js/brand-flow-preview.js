@@ -7,6 +7,7 @@
   const values=document.querySelector('#brand-values');
   const stage=values?.querySelector('.brand-values__stage');
   const words=[...(values?.querySelectorAll('.brand-values__word')||[])];
+  const kos=[...(values?.querySelectorAll('.brand-values__ko')||[])];
   const identity=document.querySelector('#identity');
   const history=document.querySelector('#history');
   if(!values||!stage||words.length!==3||!identity||!history)return;
@@ -63,15 +64,21 @@
       const entering=i===0?1:between(progress,a-.028,a+.045);
       const leaving=1-between(progress,b-.06,b+.02);
       const opacity=clamp(entering*leaving);
-      const dy=(1-entering)*24+(1-leaving)*-25;
-      word.style.opacity=opacity.toFixed(3);
-      word.style.transform='translate3d(0,'+dy.toFixed(2)+'px,0) scale('+
-        (1-.025*(1-opacity)).toFixed(4)+')';
+      // 11-08: words slide sideways — in from the right, out to the left.
+      const slide=Math.min(innerWidth*.55,760);
+      const dx=(1-entering)*slide-(1-leaving)*slide;
+      const op=clamp(Math.min(entering,leaving)*1.6);
+      word.style.opacity=op.toFixed(3);
+      word.style.transform='translate3d('+dx.toFixed(1)+'px,0,0)';
+      const ko=kos[i];
+      if(ko){ko.style.opacity=op.toFixed(3);ko.style.transform='translate3d(calc(-50% + '+dx.toFixed(1)+'px),0,0)';
+        const fs=parseFloat(getComputedStyle(word).fontSize)||160,lines=i===2?2:1;
+        ko.style.top='calc(50% + '+(fs*(i===2?1.02:1.09)*lines/2+14).toFixed(1)+'px)';}
       word.setAttribute('aria-hidden',opacity<.2?'true':'false');
       // Text motion runs on its own clock once the word has (half) arrived,
       // so fast scrolling never rushes it; re-arms when the word leaves.
       // PURE waits for the visitor's first scroll into the section.
-      const ready=opacity>.5&&(i>0||progress>=.035);
+      const ready=entering>.985&&leaving>.985&&(i>0||progress>=.035);   // settled, so effects start on the letters
       if(ready&&!word.classList.contains('is-playing'))word.classList.add('is-playing');
       else if(opacity<.08||(i===0&&progress<.01))word.classList.remove('is-playing');
       if(i===1){const sh=values.querySelector('.bv-shine');if(sh){sh.style.opacity=opacity.toFixed(3);sh.classList.toggle('is-playing',word.classList.contains('is-playing'));}}

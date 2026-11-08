@@ -47,7 +47,10 @@
       probe.clearRect(0, 0, pw, ph);
       probe.font = font; probe.textBaseline = 'alphabetic'; probe.fillStyle = '#000';
       const m = probe.measureText(el.textContent);
-      const base = (ph + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent)) / 2;
+      // Baseline exactly where the browser puts it in the line box (half-leading),
+      // so the powder starts on the letters themselves, not above them.
+      const fa = m.fontBoundingBoxAscent || m.actualBoundingBoxAscent, fd = m.fontBoundingBoxDescent || m.actualBoundingBoxDescent;
+      const base = 2 + (r.height - (fa + fd)) / 2 + fa;
       probe.fillText(el.textContent, (pw - m.width) / 2, base);
       const data = probe.getImageData(0, 0, pw, ph).data;
       for (let y = 0; y < ph; y += step) for (let x = 0; x < pw; x += step) {

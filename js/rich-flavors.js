@@ -78,7 +78,7 @@
     const delay=side*.055+(fruit?.06:0);
     const entry=reduce.matches?1:smooth(.025+delay,.51+delay,t);
     const cross=reduce.matches?1:smooth(.46+(fruit?.04:0),.98+(fruit?.04:0),t);
-    const bend=fruit?mix(pre[0],post[0],cross):cubic(pre[0],side?700:750,side?450:950,post[0],cross);
+    const bend=mix(pre[0],post[0],cross);   // 11-08: bottles glide to their places side by side — they no longer cross
     const flight=reduce.matches?0:Math.sin(Math.PI*smooth(.50,1.25,t));
     const drift=reduce.matches?0:smooth(1.0,1.3,t);
     const x=bend+(side?760:-760)*(1-entry)+(fruit?(side?1:-1)*160*flight:0);
@@ -87,7 +87,6 @@
     let angle=mix(pre[4],post[4],cross)+(fruit?(side?1:-1)*48*flight+Math.sin(t*4)*9*drift:0);
     let fy=y,fx=x,spin=0;
     if(!fruit&&!reduce.matches){
-      const b=Math.exp(-(((t-clinkT)/.07)**2));angle+=(side?-1:1)*16*b;
       // '챠악': snaps in fast as if swept by a wave — rides up a crest and
       // the 3D PET spins on its own axis (1.5 turns) to land label-front.
       // Flowing entry: one long, soft ease (no snap), riding a gentle swell
