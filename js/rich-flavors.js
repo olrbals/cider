@@ -51,7 +51,7 @@
     const morph=reduce.matches?Number(s>=.55):smooth(0,.55,s);
     const change=smooth(.55,.68,s),appear=smooth(.67,.83,s),roll=smooth(1.02,1.40,s);
     const end=1-smooth(1.88,2.05,s),paper=smooth(0,.38,s);
-    const destinationY=(height-900*designScale)/2+406*designScale;
+    const destinationY=(height-900*designScale)/2+374*designScale;   // 11-08: year + copy centred as one group
     Object.assign(year.style,{left:mix(a.x,width/2,morph).toFixed(3)+'px',top:mix(a.y,destinationY,morph).toFixed(3)+'px',opacity:s>0?String(end):'0'});
     const shrink=mix(1,40*designScale/a.fontSize,morph);
     archiveYear.style.transform='translate(-50%,-50%) scale('+shrink.toFixed(6)+')';
@@ -142,8 +142,9 @@
       const px=mix(ox,x,e)+Math.sin(t*4.5+i*1.3)*22*drift;
       const py=mix(oy,y,e)+Math.cos(t*3.7+i)*18*drift;
       // Comes right up to the screen (≈1.5× at its closest) before settling back.
-      const scale=ki<.72?.02+1.48*(1-Math.pow(1-ki/.72,3)):1.5-.5*smooth(.72,1,ki);
-      const blur=(1-ki)*12+(scale>1.2?(scale-1.2)*10:0);
+      // Grows straight to its own size and stays — no shrink-back bounce.
+      const scale=.02+.98*(1-Math.pow(1-ki,3));
+      const blur=(1-ki)*12;
       n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
       n.style.transform='translate(-50%,-50%) rotate('+rotation.toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
       n.style.filter=blur>.2?'blur('+blur.toFixed(1)+'px)':'';
