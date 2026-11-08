@@ -82,3 +82,10 @@
 #brand-values .bz-w{display:inline-block;opacity:0;will-change:transform,opacity}
 #brand-values .bz-lemonlime{font-weight:800;background:linear-gradient(100deg,#f2b705 0%,#e6c81a 38%,#9fd33a 64%,#5fb52f 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 #identity.has-seven-film .identity-outline-stars{opacity:0!important;visibility:hidden}   /* plain green behind the stars */
+/* 11-08: 순수 · 맑은 · 카페인 없이 — a light lift, one after another */
+#brand-values .brand-values__recap-main b{display:inline-block}
+#brand-values .brand-values__recap.is-playing .brand-values__recap-main b{animation:bv-recap-lift .62s cubic-bezier(.3,1.5,.5,1) both}
+#brand-values .brand-values__recap.is-playing .brand-values__recap-main b:nth-of-type(2){animation-delay:.16s}
+#brand-values .brand-values__recap.is-playing .brand-values__recap-main b:nth-of-type(3){animation-delay:.32s}
+@keyframes bv-recap-lift{0%{transform:translateY(0)}40%{transform:translateY(-.16em)}100%{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){#brand-values .brand-values__recap.is-playing .brand-values__recap-main b{animation:none}}
