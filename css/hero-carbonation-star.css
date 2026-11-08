@@ -107,3 +107,10 @@
 .site-header .header-logo img { height:52px; }
 /* 11-08 (g) — top room −8px */
 .site-header { height:100px; padding-top:12px; }
+
+/* 11-08 — official Chilsung wordmark, set on the brand's 36° baseline. */
+#top .hero-type-top{visibility:hidden}
+#top .hero-wordmark{position:absolute;z-index:4;left:720px;top:400px;width:1020px;height:auto;
+  transform:translate(-50%,-50%) rotate(-36deg);pointer-events:none;user-select:none;
+  opacity:var(--hero-type-fade,1);translate:0 var(--hero-type-lift,0px)}
+#top .hero-korean-title{left:1180px;top:735px}
