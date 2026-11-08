@@ -45,3 +45,6 @@
 /* 11-08 — only 과즙의 풍미 is bold */
 .rich-story__message{font-family:"Pretendard","Apple SD Gothic Neo",sans-serif!important;font-weight:400!important}
 .rich-story__message b{font-weight:800}
+
+/* 11-08 — 2026 in black at 70% */
+#rich-flavors .rich-year,#rich-flavors .rich-year span{color:rgba(0,0,0,.7)!important}

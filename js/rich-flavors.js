@@ -116,7 +116,7 @@
     const k=clinked?Math.min(1,(now-clinkAt)/480):1;
     const pop=Math.sin(k*Math.PI)*(1-k)*1.6;
     duo.style.setProperty('--rich-pop',pop.toFixed(4));
-    if(clinked&&now-clinkAt<800)fxRaf=requestAnimationFrame(drawFx);
+    if(clinked&&now-clinkAt<1000)fxRaf=requestAnimationFrame(drawFx);
     else duo.style.setProperty('--rich-pop','0');
   }
   // Background fruits pop out from the clink and fly toward the viewer:
@@ -127,7 +127,7 @@
   const DEPTH_DELAY=[0,.12,.05,.2,.09,.16,.03,.22,.14,.07,.18,.1];
   const burstOut=k=>{const c=2.4,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/620):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/720):(t>=clinkT+.02?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
@@ -138,11 +138,12 @@
       // 슈우웅 → 파악: rushes in from deep behind the bottles (tiny, blurred),
       // overshoots past full size as it reaches the viewer, then settles.
       const e=1-Math.pow(1-ki,4);
-      const ox=mix(clinkPt.x,x,.22),oy=mix(clinkPt.y,y,.22);
+      const ox=mix(clinkPt.x,x,.12),oy=mix(clinkPt.y,y,.12);
       const px=mix(ox,x,e)+Math.sin(t*4.5+i*1.3)*22*drift;
       const py=mix(oy,y,e)+Math.cos(t*3.7+i)*18*drift;
-      const scale=ki<.78?.03+1.12*(1-Math.pow(1-ki/.78,3)):1.15-.15*smooth(.78,1,ki);
-      const blur=(1-ki)*9;
+      // Comes right up to the screen (≈1.5× at its closest) before settling back.
+      const scale=ki<.72?.02+1.48*(1-Math.pow(1-ki/.72,3)):1.5-.5*smooth(.72,1,ki);
+      const blur=(1-ki)*12+(scale>1.2?(scale-1.2)*10:0);
       n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
       n.style.transform='translate(-50%,-50%) rotate('+rotation.toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
       n.style.filter=blur>.2?'blur('+blur.toFixed(1)+'px)':'';
