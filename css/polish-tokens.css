@@ -50,7 +50,14 @@
 .identity .identity-main-star-gloss{fill:#fff;opacity:calc(.55 * (var(--identity-star-fill-n,1)));clip-path:inset(calc(100% - var(--identity-star-fill)) 0 0 0)}
 .identity .identity-main-star{filter:drop-shadow(0 0 .06em rgba(220,255,236,.55))}
 /* Seven rising stars overlay */
-.seven-rising{position:fixed;inset:0;z-index:26;pointer-events:none;visibility:hidden}
-.seven-rising.is-on{visibility:visible}
-.seven-rising svg{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;overflow:visible;fill:#fff;
-  filter:drop-shadow(0 0 6px rgba(220,255,236,.85))}
+/* SEVEN STARS story overlay (old glossy star → new star → seven stars) */
+.seven-story{position:fixed;inset:0;z-index:26;pointer-events:none;visibility:hidden;perspective:900px}
+.seven-story.is-on{visibility:visible}
+.seven-story__flip{position:absolute;left:0;top:0;transform-style:preserve-3d}
+.seven-story__flip svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;backface-visibility:hidden}
+.seven-story__old{filter:drop-shadow(0 0 10px rgba(220,255,236,.6))}
+.seven-story__new path,.seven-story__s path{fill:#fff}
+.seven-story__s{position:absolute;left:0;top:0;overflow:visible}
+#identity.has-seven-story .identity-main-star{opacity:0!important}
+/* sizes: footer emblem bigger, hero wordmark smaller */
+.footer-emblem{width:clamp(340px,30vw,460px)}
