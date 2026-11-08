@@ -100,3 +100,6 @@
 .site-header .header-utils > * { height:20px; padding:0 18px; }
 .site-header .header-utils svg { width:22px; height:22px; }
 .site-header .header-utils .header-utils__mall,.site-header .header-utils .header-utils__mall img { height:24px; }
+/* 11-08 (e) — +20px breathing room above, +12px between menu items. */
+.site-header { box-sizing:border-box; height:108px; padding-top:20px; }
+.site-header nav span { width:clamp(116px,9.45vw,136px); }
