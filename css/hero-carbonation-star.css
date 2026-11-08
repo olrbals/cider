@@ -77,7 +77,7 @@
 .site-header .header-utils > * + * { border-left:1px solid rgba(255,255,255,.3); }
 .site-header .header-utils svg { width:22px; height:22px; box-sizing:content-box; opacity:.75; }
 .site-header .header-utils > span:not(.header-utils__mall) { opacity:.75; }
-.site-header .header-utils .header-utils__mall { padding-right:0; font-size:17px; font-weight:800; letter-spacing:-.01em; border-left:2px solid #fff; }
+.site-header .header-utils .header-utils__mall { padding-right:0; font-size:17px; font-weight:800; letter-spacing:-.01em; }
 .site-header > nav,.site-header .header-utils{opacity:1}
 .site-header .header-utils .header-utils__mall{height:24px}
 .site-header .header-utils .header-utils__mall img{display:block;height:24px;width:auto}
