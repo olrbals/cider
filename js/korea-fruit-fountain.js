@@ -43,11 +43,11 @@
   let headingX = 1, headingY = 0, speed = 0;
   let lastFrameTime = 0, frame = 0;
   let pixelRatio = 1;
-  let emissionCarry = 0;
+  let emissionCarry = 0, drainT = 0;
 
   // Fractional carry keeps the long-run emitted fruit count at exactly 65%.
   function scaledEmission(count) {
-    emissionCarry += count * .65;
+    emissionCarry += count * .45;   // 11-08: a little less citrus
     const emitted = Math.floor(emissionCarry);
     emissionCarry -= emitted;
     return emitted;
@@ -108,7 +108,7 @@
   }
 
   function stop() {
-    visible = false;
+    visible = false; drainT = 0;
     particles.length = 0;
     canvas.classList.remove('is-visible');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -121,8 +121,13 @@
 
   function tick(now) {
     frame = 0;
-    if (!visible || document.hidden || reducedMotion.matches || !finePointer.matches ||
-        !containsPointer(pointerX, pointerY)) return stop();
+    if (!visible || document.hidden || reducedMotion.matches || !finePointer.matches) return stop();
+    // 11-08: leaving the section no longer cuts the citrus off — emission stops
+    // and what is in the air fades out over ~0.6s.
+    const draining = !containsPointer(pointerX, pointerY);
+    if (draining) { drainT = drainT || now; if (now - drainT > 650 || !particles.length) return stop(); }
+    else drainT = 0;
+    const drainK = drainT ? 1 - (now - drainT) / 650 : 1;
 
     const dt = Math.min(48, Math.max(1, now - (lastFrameTime || now - 16))) / 1000;
     lastFrameTime = now;
@@ -132,7 +137,7 @@
 
     const moving = now - lastMoveTime < 135;
     const gap = moving ? 60 : 185;
-    if (now - lastSpawnTime >= gap) {
+    if (!draining && now - lastSpawnTime >= gap) {
       // Preserve burst cadence, velocities and fruit sizes; emit 65% as many.
       const baseCount = moving ? (speed > 1.15 ? 10 : speed > .5 ? 8 : 5) : 3;
       emit(scaledEmission(baseCount), moving ? 1 : 0);
@@ -154,7 +159,7 @@
       const life = p.age / p.lifetime;
       const fadeIn = Math.min(1, life / .035);
       const fadeOut = clamp((1 - life) / .12, 0, 1);
-      const alpha = p.opacity * fadeIn * fadeOut;
+      const alpha = p.opacity * fadeIn * fadeOut * Math.max(0, drainK);
       ctx.save();
       // Keep citrus opaque over the title too; fade only at birth/end of life.
       ctx.globalAlpha = alpha;
@@ -172,7 +177,7 @@
     const now = performance.now();
     const px = event.clientX, py = event.clientY;
     knownX = px; knownY = py;
-    if (!containsPointer(px, py)) return stop();
+    if (!containsPointer(px, py)) { pointerX = px; pointerY = py; return; }   // tick drains
     const dx = px - pointerX, dy = py - pointerY;
     const distance = Math.hypot(dx, dy);
     if (lastPointerTime && distance > .5) {
@@ -201,7 +206,7 @@
   // Scrolling FEEL THE FIZZ under a resting mouse starts the fountain at the
   // cursor right away, without waiting for the mouse to move.
   function recheck() {
-    if (visible && !containsPointer(pointerX, pointerY)) stop();
+    if (visible && !containsPointer(pointerX, pointerY)) { /* tick drains */ }
     else if (!visible && knownX >= 0 && containsPointer(knownX, knownY)) {
       const now = performance.now();
       start(knownX, knownY, now);

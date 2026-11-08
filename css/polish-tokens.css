@@ -101,3 +101,8 @@
 @media (prefers-reduced-motion:reduce){.history-era-bar.is-hint .history-era-bar__thumb svg{animation:none}}
 /* the big star's landing flash (scroll-driven --shine) */
 #identity .seven-gel__star--gel{filter:drop-shadow(0 0 calc(var(--shine,0) * 34px) rgba(255,255,255,calc(var(--shine,0) * .95))) brightness(calc(1 + var(--shine,0) * .12))}
+/* 11-08 (c): recap in the '모두와 함께 큰 별' hierarchy — small deep-green lead above, big green line below (lemon-lime page unchanged) */
+#brand-values .brand-values__recap{gap:.35em}
+#brand-values .brand-values__recap-lead{font:400 clamp(18px,1.6667vw,26px)/1.2 "Pretendard",sans-serif!important;letter-spacing:-.01em;color:var(--c-deep)!important}
+/* all seven: light by --shine (landing, rest flash, the final blaze) */
+#identity .seven-gel__star{filter:drop-shadow(0 0 calc(var(--shine,0) * 26px) rgba(255,255,255,calc(min(1,var(--shine,0)) * .95))) brightness(calc(1 + var(--shine,0) * .1))}

@@ -24,7 +24,7 @@
     [493, 592, 180], [703, 592, 180],
     [438, 817, 240]                                         // the biggest = the gel star itself
   ];
-  const UNIT = 1100, BIG = 6, GEL_SCALE = 1.9;
+  const UNIT = 1100, BIG = 6, GEL = 0, GEL_SCALE = 3.8;   // the gel star becomes the first small star
   const STAR_W = 493 / 600, STAR_CX = 301.5 / 600, STAR_CY = 302.5 / 600;
 
   // Scroll map (identity progress). Paging stops: 0 · .14 · .32 · white line (smooth-scroll.js).
@@ -32,7 +32,7 @@
   const SHARPEN = [.02, .085];                                //    while its outline sharpens point by point
   const SPLIT = [.15, .31];                                  // ② it parts into seven
   const STAGGER = [0, .014, .006, .019, .003, .011, 0];
-  const FIZZ = [.36, .56];                                   // ③ stars fizz into bubbles
+  const FIZZ = [.36, .56];                                   // ③ all seven blaze and the light takes the screen
   const WHITE = [.43, .63];                                  //    and the screen turns white (paper is white at .68)
 
   const SHAPE = 'M300 64C314 64 323 74 329 91L369 209C373 221 380 227 393 228L520 232C537 232 548 243 548 257C548 267 542 275 534 281L431 357C420 365 416 376 420 389L456 506C461 522 454 536 441 541C433 544 425 542 417 536L313 466C304 460 296 460 287 466L183 536C169 545 154 540 149 526C146 518 147 510 150 501L187 388C191 375 187 365 176 357L68 280C55 271 55 255 65 244C72 236 80 233 92 232L205 228C218 228 226 221 230 210L271 91C277 74 286 64 300 64Z';
@@ -113,9 +113,9 @@
   const uid = 'sg' + Math.random().toString(36).slice(2, 7);
   const stars = LAYOUT.map((_, i) => {
     const el = document.createElement('div');
-    el.className = 'seven-gel__star' + (i === BIG ? ' seven-gel__star--gel' : '');
+    el.className = 'seven-gel__star' + (i === GEL ? ' seven-gel__star--gel' : '') + (i === BIG ? ' seven-gel__star--big' : '');
     el.style.setProperty('--twinkle-delay', (i * .23).toFixed(2) + 's');
-    el.innerHTML = i === BIG ? gelSVG(uid) : whiteSVG;
+    el.innerHTML = i === GEL ? gelSVG(uid) : whiteSVG;
     layer.append(el);
     return el;
   });
@@ -124,7 +124,7 @@
   canvas.className = 'seven-gel__fizz';
   stage.append(layer, canvas);
   const ctx = canvas.getContext('2d');
-  const gel = stars[BIG];
+  const gel = stars[GEL];
   const s1 = gel.querySelector('.seven-gel__s1'), s2 = gel.querySelector('.seven-gel__s2');
   const body = gel.querySelector('.seven-gel__body');
   const shapeEl = gel.querySelector('defs > path');
@@ -168,32 +168,29 @@
     const w = stage.clientWidth, h = stage.clientHeight;
     return Math.min(h * 1.14, w * (w < 700 ? 1.1 : .95));   // constellation ≈ 80% of the screen height
   }
-  // 11-08 (h): the white star floats up to the side while the six small
-  // stars land one by one (똥똥똥똥), then it drops into the biggest place
-  // last and flashes — '모두와 함께, 큰 별'.
-  const POP_ORDER = [0, 1, 2, 3, 4, 5];                     // top to bottom
-  const HOVER = [292, 356, .92];                            // stage units: x, y, size vs final
-  const FLOAT = [SPLIT[0], SPLIT[0] + .06], POP0 = SPLIT[0] + .045, POP_STEP = .012, POP_DUR = .04;
-  const LAND = [.268, .298], FLASH = [.292, .34];
+  // 11-08 (i): the white star simply becomes the first small star and twinkles;
+  // the other small ones land 똥! 똥! 똥! 똥! 똥!, the big one lands last — 두웅!
+  const MOVE = [SPLIT[0], SPLIT[0] + .065], TWINK = [.212, .242];
+  const POP0 = .232, POP_STEP = .012, POP_DUR = .03, BIG_POP = [.288, .318];
+  const springPop = (f, k, w) => f >= 1 ? 1 : 1 - Math.exp(-k * f) * Math.cos(w * f);
   function starPos(i, box) {                                 // stage-pixel centre, width and alpha of star i
     const k = box / UNIT, ox = (stage.clientWidth - box) / 2, oy = (stage.clientHeight - box) / 2;
     const [cx, cy, w] = LAYOUT[i];
     const tx = ox + cx * k, ty = oy + cy * k, mx = stage.clientWidth / 2, my = stage.clientHeight / 2;
     const still = reduced.matches;
-    if (i === BIG) {
-      if (still) { const g = p >= SPLIT[0] ? 1 : 0; return { x: mx + (tx - mx) * g, y: my + (ty - my) * g, w: w * k * (GEL_SCALE + (1 - GEL_SCALE) * g), appear: 1, grow: 1 }; }
-      const hx = ox + HOVER[0] * k, hy = oy + HOVER[1] * k;
-      const f = easeIO(lin(FLOAT[0], FLOAT[1], p)), l = lin(LAND[0], LAND[1], p), le = l * l * l;   // drops in, accelerating
-      const x = mx + (hx - mx) * f + (tx - hx) * le, y = my + (hy - my) * f + (ty - hy) * le;
-      const size = GEL_SCALE + (HOVER[2] - GEL_SCALE) * f + (1 - HOVER[2]) * le;
-      const bob = Math.sin(Math.PI * lin(FLOAT[1], LAND[0], p)) * .012 * box;   // a gentle hover
-      const squash = Math.sin(Math.PI * lin(LAND[1] - .004, LAND[1] + .024, p));   // 쾅 — lands with a little squash
-      return { x, y: y - bob, w: w * k * size, appear: 1, grow: 1, squash };
+    if (i === GEL) {
+      const g = still ? (p >= SPLIT[0] ? 1 : 0) : easeIO(lin(MOVE[0], MOVE[1], p));
+      return { x: mx + (tx - mx) * g, y: my + (ty - my) * g, w: w * k * (GEL_SCALE + (1 - GEL_SCALE) * g), appear: 1, grow: 1,
+        shine: still ? 0 : Math.sin(Math.PI * lin(TWINK[0], TWINK[1], p)) };
     }
-    const s0 = POP0 + POP_ORDER[i] * POP_STEP;
+    if (i === BIG) {
+      const f = still ? (p >= SPLIT[0] ? 1 : 0) : lin(BIG_POP[0], BIG_POP[1], p);
+      return { x: tx, y: ty, w: w * k, appear: f > 0 ? 1 : 0, grow: springPop(f, 4.5, 9),          // 두웅 — a heavier, bouncier landing
+        squash: Math.sin(Math.PI * lin(BIG_POP[0] + .012, BIG_POP[1], p)) };
+    }
+    const s0 = POP0 + (i - 1) * POP_STEP;
     const f = still ? (p >= SPLIT[0] ? 1 : 0) : lin(s0, s0 + POP_DUR, p);
-    const grow = f >= 1 ? 1 : 1 - Math.exp(-6 * f) * Math.cos(8 * f);   // 똥 — a small springy pop
-    return { x: tx, y: ty, w: w * k, appear: f > 0 ? 1 : 0, grow };
+    return { x: tx, y: ty, w: w * k, appear: f > 0 ? 1 : 0, grow: springPop(f, 6, 8) };   // 똥
   }
 
   function paint() {
@@ -216,10 +213,10 @@
     const now = performance.now() / 1000;
     stars.forEach((el, i) => {
       const f = flash[i];
-      if (!resting || i !== BIG) { el.style.setProperty('--tw', '0'); f.next = 0; return; }   // only the big star shines
-      if (!f.next) f.next = now + Math.random() * .32;   // each star flashes once, at its own moment
+      if (!resting) { el.style.setProperty('--tw', '0'); f.next = 0; return; }
+      if (!f.next) f.next = now + .12;   // all seven light up together, once
       if (now >= f.next && f.at < 0) {
-        f.at = now; f.dur = .1 + Math.random() * .08;
+        f.at = now; f.dur = .5;
       }
       let v = 0;
       if (f.at >= 0) {
@@ -235,22 +232,21 @@
       pos.push(s);
       const size = s.w / STAR_W;
       // ③ each star fizzes away in turn (no scaling up)
-      const f0 = FIZZ[0] + (6 - Math.min(6, i)) * .008 + (i === BIG ? .02 : 0);
-      const gone = sm(f0, f0 + .08, p);
+      const gone = 0;                                        // they don't leave — the light swallows them
       const alpha = s.appear * (1 - gone);
       el.style.width = el.style.height = size + 'px';
       el.style.opacity = alpha.toFixed(3);
       el.style.visibility = alpha > .005 ? 'visible' : 'hidden';
       let extra = '';
-      if (i === BIG && !reduced.matches) {
+      if (i === GEL && !reduced.matches) {
         // As in the film: the gel star stretches as it sharpens, then settles (always upright).
         const k = lin(SHARPEN[0], SWEEP[1], p), bump = Math.sin(Math.PI * k);
         extra = ' scale(' + (1 + .1 * bump).toFixed(4) + ',' + (1 + .03 * bump).toFixed(4) + ')';
       }
       const sq = s.squash || 0;
       el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0)' + extra + ' scale(' + (Math.max(.001, s.grow) * (1 - .12 * gone) * (1 + .1 * sq)).toFixed(3) + ',' + (Math.max(.001, s.grow) * (1 - .12 * gone) * (1 - .12 * sq)).toFixed(3) + ')';
-      if (i === BIG && !reduced.matches) el.style.setProperty('--shine', Math.sin(Math.PI * lin(FLASH[0], FLASH[1], p)).toFixed(3));
-      el.style.zIndex = i === BIG ? '3' : '2';
+      el.style.setProperty('--shine', Math.min(1.6, (s.shine || 0) + 1.6 * sm(FIZZ[0], FIZZ[0] + .1, p)).toFixed(3));
+      el.style.zIndex = i === GEL ? '3' : '2';
     });
 
     // Bubbles + white wash, drawn on one canvas over the stage.
@@ -261,23 +257,28 @@
     ctx.clearRect(0, 0, W, H);
     const wash = sm(WHITE[0], WHITE[1], p);
     if (wash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + wash.toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
+    // ③ light beams: from the constellation, rays sweep out and the glow
+    // floods the screen white — no bubbles.
     if (p > FIZZ[0] && p < .7 && !reduced.matches) {
-      const unit = Math.min(W, H);
-      for (const b of bubbles) {
-        const s = pos[b.si];
-        const f0 = FIZZ[0] + (6 - Math.min(6, b.si)) * .008 + (b.si === BIG ? .02 : 0) + b.delay;
-        const t = lin(f0, f0 + b.life + .06, p);
-        if (t <= 0 || t >= 1) continue;
-        const e = easeOut(t);
-        const x = s.x + b.ux * s.w + Math.cos(b.a) * b.d * s.w * .55 * e + Math.sin(b.wob + t * 5) * 4;
-        const y = s.y + b.uy * s.w + Math.sin(b.a) * b.d * s.w * .45 * e - b.rise * unit * .5 * e;
-        draw(x, y, b.r * unit * (1 + 1.6 * t), (t < .12 ? t / .12 : 1) * (1 - sm(.55, 1, t)) * (1 - wash * .6), b.ring);
+      let gx = 0, gy = 0; pos.forEach(q => { gx += q.x; gy += q.y; }); gx /= pos.length; gy /= pos.length;
+      const b = sm(FIZZ[0], FIZZ[1], p), R = Math.hypot(W, H);
+      const core = ctx.createRadialGradient(gx, gy, 0, gx, gy, R * (.15 + .9 * b));
+      core.addColorStop(0, 'rgba(255,255,255,' + Math.min(1, .55 + b).toFixed(3) + ')');
+      core.addColorStop(.35, 'rgba(255,255,255,' + (.45 * b + .1).toFixed(3) + ')');
+      core.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = core; ctx.fillRect(0, 0, W, H);
+      ctx.save(); ctx.translate(gx, gy); ctx.rotate(.25 * b);
+      ctx.globalCompositeOperation = 'lighter';
+      for (let r = 0; r < 16; r++) {
+        const a0 = r / 16 * Math.PI * 2 + (r % 2) * .07, half = (.018 + .03 * b) * (r % 2 ? .6 : 1);
+        const len = R * (.2 + 1.1 * b) * (r % 3 ? 1 : .8);
+        const g = ctx.createLinearGradient(0, 0, Math.cos(a0) * len, Math.sin(a0) * len);
+        g.addColorStop(0, 'rgba(255,255,255,' + (.55 * Math.min(1, b * 2.2)).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, 0);
+        ctx.arc(0, 0, len, a0 - half, a0 + half); ctx.closePath(); ctx.fill();
       }
-      for (const b of field) {
-        const t = lin(WHITE[0] - .04 + b.delay, WHITE[0] + .14 + b.delay, p);
-        if (t <= 0 || t >= 1) continue;
-        draw(b.x * W, (b.y - b.rise * easeOut(t)) * H, b.r * unit * (1 + 2.2 * t), Math.sin(Math.PI * t) * .9 * (1 - wash * .5), b.ring);
-      }
+      ctx.restore();
     }
   }
   function loop() { paint(); if (layer.classList.contains('is-resting')) raf = requestAnimationFrame(loop); }

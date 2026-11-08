@@ -127,7 +127,7 @@
   const DEPTH_DELAY=[0,.12,.05,.2,.09,.16,.03,.22,.14,.07,.18,.1];
   const burstOut=k=>{const c=2.4,u=Math.min(1,k)-1;return 1+(c+1)*u*u*u+c*u*u;};
   function placeDepth(t){
-    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/780):(t>=clinkT+.02?1:0);
+    const k=reduce.matches?1:clinked?Math.min(1,(performance.now()-clinkAt)/900):(t>=clinkT+.02?1:0);
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
@@ -135,23 +135,21 @@
       // out on its own side and lands on its own beat.
       const delay=DEPTH_DELAY[i%DEPTH_DELAY.length]*.7;
       const ki=Math.max(0,Math.min(1,(k-delay)/(1-delay)));
-      // 슈우웅 → 파악: rushes in from deep behind the bottles (tiny, blurred),
-      // overshoots past full size as it reaches the viewer, then settles.
-      const e=1-Math.pow(1-ki,4);
-      const ox=clinkPt.x,oy=clinkPt.y;   // 11-08: every fruit flies out from the centre and spreads
-      const px=mix(ox,x,e)+Math.sin(t*4.5+i*1.3)*22*drift;
-      const py=mix(oy,y,e)+Math.cos(t*3.7+i)*18*drift;
-      // Comes right up to the screen (≈1.5× at its closest) before settling back.
-      // Grows straight to its own size and stays — no shrink-back bounce.
-      // 11-08 '파악 슈욱': a crisp spring — shoots out, pops just past its size, snaps back; a quick twist.
-      const spring=ki>=1?1:1-Math.exp(-7*ki)*Math.cos(9.5*ki);
-      const scale=.3+.7*spring;                                // visible from the start, so the flight reads
-      const blur=(1-ki)*(1-ki)*6;
-      const twist=(i%2?1:-1)*38*(1-e);
+      // 11-08 '슈우우우웅!': like a ball thrown from far away — a perspective
+      // approach (z 9 → 1): it stays small in the distance, then rushes up to
+      // full size in the last moment, lands with a tiny overshoot.
+      const Z0=9,z=Z0-(Z0-1)*ki,persp=(1/z-1/Z0)/(1-1/Z0);        // 0 → 1, accelerating
+      const land=ki>=1?0:Math.max(0,Math.sin(Math.PI*Math.min(1,(ki-.82)/.18)))*.08;
+      const px=mix(clinkPt.x,x,persp)+Math.sin(t*4.5+i*1.3)*22*drift;
+      const py=mix(clinkPt.y,y,persp)+Math.cos(t*3.7+i)*18*drift;
+      const scale=(.04+.96*persp)*(1+land);
+      const speed=ki<1?(1/(z*z))*(Z0-1)/(1-1/Z0):0;               // d(persp)/dk — motion blur follows speed
+      const blur=Math.min(7,speed*1.6)*(ki<.98?1:0);
+      const twist=(i%2?1:-1)*30*(1-persp);
       n.style.left=px.toFixed(2)+'px';n.style.top=py.toFixed(2)+'px';
       n.style.transform='translate(-50%,-50%) rotate('+(rotation+twist).toFixed(2)+'deg) scale('+scale.toFixed(4)+')';
       n.style.filter=blur>.2?'blur('+blur.toFixed(1)+'px)':'';
-      n.style.opacity=(alpha*Math.min(1,ki*12)).toFixed(4);
+      n.style.opacity=(alpha*Math.min(1,ki*8)).toFixed(4);
     });
   }
   function cheers(t,poses){
