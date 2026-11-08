@@ -32,7 +32,7 @@
   const SHARPEN = [.02, .085];                                //    while its outline sharpens point by point
   const SPLIT = [.15, .31];                                  // ② it parts into seven
   const STAGGER = [0, .014, .006, .019, .003, .011, 0];
-  const FIZZ = [.36, .56];                                   // ③ all seven blaze and the light takes the screen
+  const FIZZ = [.36, .56];                                   // ③ all seven glow, then fizz into bubbles
   const WHITE = [.43, .63];                                  //    and the screen turns white (paper is white at .68)
 
   const SHAPE = 'M300 64C314 64 323 74 329 91L369 209C373 221 380 227 393 228L520 232C537 232 548 243 548 257C548 267 542 275 534 281L431 357C420 365 416 376 420 389L456 506C461 522 454 536 441 541C433 544 425 542 417 536L313 466C304 460 296 460 287 466L183 536C169 545 154 540 149 526C146 518 147 510 150 501L187 388C191 375 187 365 176 357L68 280C55 271 55 255 65 244C72 236 80 233 92 232L205 228C218 228 226 221 230 210L271 91C277 74 286 64 300 64Z';
@@ -232,7 +232,8 @@
       pos.push(s);
       const size = s.w / STAR_W;
       // ③ each star fizzes away in turn (no scaling up)
-      const gone = 0;                                        // they don't leave — the light swallows them
+      const f0 = FIZZ[0] + (6 - Math.min(6, i)) * .008 + (i === BIG ? .02 : 0);
+      const gone = sm(f0, f0 + .08, p);
       const alpha = s.appear * (1 - gone);
       el.style.width = el.style.height = size + 'px';
       el.style.opacity = alpha.toFixed(3);
@@ -245,7 +246,7 @@
       }
       const sq = s.squash || 0;
       el.style.transform = 'translate3d(' + (s.x - size * STAR_CX).toFixed(1) + 'px,' + (s.y - size * STAR_CY).toFixed(1) + 'px,0)' + extra + ' scale(' + (Math.max(.001, s.grow) * (1 - .12 * gone) * (1 + .1 * sq)).toFixed(3) + ',' + (Math.max(.001, s.grow) * (1 - .12 * gone) * (1 - .12 * sq)).toFixed(3) + ')';
-      el.style.setProperty('--shine', Math.min(1.6, (s.shine || 0) + 1.6 * sm(FIZZ[0], FIZZ[0] + .1, p)).toFixed(3));
+      el.style.setProperty('--shine', ((s.shine || 0) + Math.sin(Math.PI * lin(FIZZ[0] - .02, FIZZ[0] + .06, p))).toFixed(3));
       el.style.zIndex = i === GEL ? '3' : '2';
     });
 
@@ -257,28 +258,24 @@
     ctx.clearRect(0, 0, W, H);
     const wash = sm(WHITE[0], WHITE[1], p);
     if (wash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + wash.toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
-    // ③ light beams: from the constellation, rays sweep out and the glow
-    // floods the screen white — no bubbles.
+    // ③ the seven glow, then fizz away into bubbles that wash the screen white.
     if (p > FIZZ[0] && p < .7 && !reduced.matches) {
-      let gx = 0, gy = 0; pos.forEach(q => { gx += q.x; gy += q.y; }); gx /= pos.length; gy /= pos.length;
-      const b = sm(FIZZ[0], FIZZ[1], p), R = Math.hypot(W, H);
-      const core = ctx.createRadialGradient(gx, gy, 0, gx, gy, R * (.15 + .9 * b));
-      core.addColorStop(0, 'rgba(255,255,255,' + Math.min(1, .55 + b).toFixed(3) + ')');
-      core.addColorStop(.35, 'rgba(255,255,255,' + (.45 * b + .1).toFixed(3) + ')');
-      core.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = core; ctx.fillRect(0, 0, W, H);
-      ctx.save(); ctx.translate(gx, gy); ctx.rotate(.25 * b);
-      ctx.globalCompositeOperation = 'lighter';
-      for (let r = 0; r < 16; r++) {
-        const a0 = r / 16 * Math.PI * 2 + (r % 2) * .07, half = (.018 + .03 * b) * (r % 2 ? .6 : 1);
-        const len = R * (.2 + 1.1 * b) * (r % 3 ? 1 : .8);
-        const g = ctx.createLinearGradient(0, 0, Math.cos(a0) * len, Math.sin(a0) * len);
-        g.addColorStop(0, 'rgba(255,255,255,' + (.55 * Math.min(1, b * 2.2)).toFixed(3) + ')');
-        g.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, 0);
-        ctx.arc(0, 0, len, a0 - half, a0 + half); ctx.closePath(); ctx.fill();
+      const unit = Math.min(W, H);
+      for (const b of bubbles) {
+        const s = pos[b.si];
+        const f0 = FIZZ[0] + (6 - Math.min(6, b.si)) * .008 + (b.si === BIG ? .02 : 0) + b.delay;
+        const t = lin(f0, f0 + b.life + .06, p);
+        if (t <= 0 || t >= 1) continue;
+        const e = easeOut(t);
+        const x = s.x + b.ux * s.w + Math.cos(b.a) * b.d * s.w * .55 * e + Math.sin(b.wob + t * 5) * 4;
+        const y = s.y + b.uy * s.w + Math.sin(b.a) * b.d * s.w * .45 * e - b.rise * unit * .5 * e;
+        draw(x, y, b.r * unit * (1 + 1.6 * t), (t < .12 ? t / .12 : 1) * (1 - sm(.55, 1, t)) * (1 - wash * .6), b.ring);
       }
-      ctx.restore();
+      for (const b of field) {
+        const t = lin(WHITE[0] - .04 + b.delay, WHITE[0] + .14 + b.delay, p);
+        if (t <= 0 || t >= 1) continue;
+        draw(b.x * W, (b.y - b.rise * easeOut(t)) * H, b.r * unit * (1 + 2.2 * t), Math.sin(Math.PI * t) * .9 * (1 - wash * .5), b.ring);
+      }
     }
   }
   function loop() { paint(); if (layer.classList.contains('is-resting')) raf = requestAnimationFrame(loop); }
