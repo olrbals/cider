@@ -117,6 +117,6 @@
 .rich-duo [data-rich-depth],.rich-duo__slot{will-change:transform,opacity;backface-visibility:hidden}
 /* 11-08: header peeks back in on a small upward scroll, on every page */
 .site-header.is-off-hero{position:fixed;transform:translateY(-100%);transition:opacity .3s ease,visibility .3s ease,transform .38s cubic-bezier(.22,.8,.3,1)}
-.site-header.is-off-hero.is-peek{opacity:1;visibility:visible;pointer-events:auto;transform:none;height:80px;padding-top:0;color:var(--color-brand-deep);background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 1px 0 rgba(7,76,39,.08),0 8px 24px rgba(7,76,39,.06)}
-.site-header.is-off-hero.is-peek .header-utils__mall img{filter:brightness(0) invert(22%) sepia(64%) saturate(780%) hue-rotate(104deg) brightness(.9)}
+.site-header.is-off-hero.is-peek{opacity:1;visibility:visible;pointer-events:auto;transform:none;height:80px;padding-top:0;color:#111;background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 1px 0 rgba(7,76,39,.08),0 8px 24px rgba(7,76,39,.06)}
+.site-header.is-off-hero.is-peek .header-utils__mall img{filter:brightness(0)}
 @media (prefers-reduced-motion:reduce){.site-header.is-off-hero{transition:none}}
