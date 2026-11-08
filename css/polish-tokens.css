@@ -89,3 +89,4 @@
 #brand-values .brand-values__recap.is-playing .brand-values__recap-main b:nth-of-type(3){animation-delay:.32s}
 @keyframes bv-recap-lift{0%{transform:translateY(0)}40%{transform:translateY(-.16em)}100%{transform:translateY(0)}}
 @media (prefers-reduced-motion:reduce){#brand-values .brand-values__recap.is-playing .brand-values__recap-main b{animation:none}}
+#brand-values .bv-key,#brand-values .bz-key{font-weight:800}   /* 청량감 bold, in both lines */
