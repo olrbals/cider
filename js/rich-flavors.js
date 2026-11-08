@@ -82,7 +82,7 @@
     const bend=mix(pre[0],post[0],cross);   // 11-08: bottles glide to their places side by side — they no longer cross
     const flight=reduce.matches?0:Math.sin(Math.PI*smooth(.50,1.25,t));
     const drift=reduce.matches?0:smooth(1.0,1.3,t);
-    const x=bend+(side?760:-760)*(1-entry)+(fruit?(side?1:-1)*160*flight:0);
+    const x=bend+(side?440:-440)*(1-entry)+(fruit?(side?1:-1)*160*flight:0);
     const y=mix(pre[1],post[1],cross)+(side?1:-1)*(fruit?10:32)*Math.sin(Math.PI*cross)
       -(fruit?(side?190:145)*flight:0)+(fruit?Math.sin(t*5+pre[0]) * 20 * drift:0);
     let angle=mix(pre[4],post[4],cross)+(fruit?(side?1:-1)*48*flight+Math.sin(t*4)*9*drift:0);
@@ -94,8 +94,8 @@
       // up from below while the PET turns once on its axis like it's carried
       // by water, landing label-front.
       const k=clamp((t-(.02+delay))/.62), e=k*k*k*(k*(6*k-15)+10);   // smootherstep
-      fx=bend+(side?760:-760)*(1-e);
-      fy+=200*(1-e)**2 - 46*Math.sin(Math.PI*e)*(1-e*.5);
+      fx=post[0]+(side?440:-440)*(1-e);   // 11-08: starts closer, each from its own side (no crossing at the start)
+      fy+=120*(1-e)**2 - 46*Math.sin(Math.PI*e)*(1-e*.5);
       spin=(side?-1:1)*(1-e)*Math.PI*2;
       angle+=(side?1:-1)*(22*(1-e)+8*Math.sin(e*Math.PI*1.5)*(1-e));
     }
