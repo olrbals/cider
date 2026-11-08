@@ -46,9 +46,28 @@
 .rich-duo__name[data-name="grape"] b{color:#3f9a2f}
 
 /* Seven rising stars overlay */
-/* SEVEN STARS — the official film, big on the stage */
-#identity .seven-film{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none}
+/* SEVEN STARS — GLOSSY GEL stars (experiments/water-star-test.html) */
+#identity .seven-gel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none}
+#identity .seven-gel__star{position:absolute;left:0;top:0;transform-origin:50.25% 50.4%;will-change:transform,opacity}
+#identity .seven-gel__svg{display:block;width:100%;height:100%;overflow:visible}
+#identity .seven-gel__star--big .seven-gel__svg{transform-origin:50% 52%;animation:seven-gel-breathe 5.8s ease-in-out infinite}
+#identity .seven-gel__star--big .seven-gel__sheen--top{animation:seven-gel-glint 4.8s ease-in-out infinite}
+#identity .seven-gel__star--big .seven-gel__sheen--side{animation:seven-gel-glint 5.8s ease-in-out .9s infinite}
+#identity .seven-gel__star--big .seven-gel__sheen--base{animation:seven-gel-glint 5.3s ease-in-out .35s infinite}
+#identity .seven-gel__glint{position:absolute;left:84%;top:33%;width:34%;height:34%;transform:translate(-50%,-50%) scale(0);opacity:0;
+  background:radial-gradient(closest-side,#fff 0 6%,rgba(255,255,255,.55) 14%,transparent 60%),
+    linear-gradient(90deg,transparent 47%,#fff 49.5% 50.5%,transparent 53%),linear-gradient(0deg,transparent 47%,#fff 49.5% 50.5%,transparent 53%);
+  -webkit-mask:radial-gradient(closest-side,#000 40%,transparent 100%);mask:radial-gradient(closest-side,#000 40%,transparent 100%);
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}
+#identity .seven-gel__star--big.is-twinkling .seven-gel__glint{animation:seven-gel-twinkle 1.7s ease-in-out infinite}
+#identity .seven-gel__star--big.is-twinkling .seven-gel__svg{animation:seven-gel-pulse 1.7s ease-in-out infinite}
+@keyframes seven-gel-breathe{0%,100%{transform:scaleX(1.04) scaleY(.98)}38%{transform:scaleX(1.03) scaleY(.99)}68%{transform:scaleX(1.05) scaleY(.975)}}
+@keyframes seven-gel-glint{0%,100%{opacity:.36}48%{opacity:.7}72%{opacity:.48}}
+@keyframes seven-gel-twinkle{0%,62%,100%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(0)}22%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(25deg)}}
+@keyframes seven-gel-pulse{0%,62%,100%{transform:scale(1);filter:none}22%{transform:scale(1.05);filter:drop-shadow(0 0 18px rgba(255,255,255,.75))}}
 #identity.has-seven-film .identity-display,
 #identity.has-seven-film .identity-liquid-layer{opacity:0!important}
+@media (prefers-reduced-motion:reduce){#identity .seven-gel__svg,#identity .seven-gel__sheen,#identity .seven-gel__glint{animation:none!important}}
+
 /* sizes: footer emblem bigger, hero wordmark smaller */
 .footer-emblem{width:clamp(340px,30vw,460px)}
