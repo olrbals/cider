@@ -105,6 +105,7 @@
     return out;
   })();
   const morphD = m => 'M' + roundPts.map((a, i) => { const b = sharpPts[i]; return (a[0] + (b[0] - a[0]) * m).toFixed(1) + ' ' + (a[1] + (b[1] - a[1]) * m).toFixed(1); }).join('L') + 'Z';
+  const TIPS = [0, 2, 4, 6, 8].map(i => SHARP[i]);
   const whiteSVG = '<svg class="seven-gel__svg" viewBox="0 0 600 600" overflow="visible" aria-hidden="true" focusable="false"><path d="' + SHARP_D + '" fill="#fff"/></svg>';
 
   const layer = document.createElement('div');
@@ -116,9 +117,12 @@
     el.className = 'seven-gel__star' + (i === BIG ? ' seven-gel__star--gel' : '');
     el.style.setProperty('--twinkle-delay', (i * .23).toFixed(2) + 's');
     el.innerHTML = i === BIG ? gelSVG(uid) : whiteSVG;
+    const g = document.createElement('span'); g.className = 'seven-gel__spark'; el.append(g);
     layer.append(el);
     return el;
   });
+  const sparks = stars.map(el => el.querySelector('.seven-gel__spark'));
+  const flash = stars.map(() => ({ next: 0, at: -1, dur: .2 }));
   const canvas = document.createElement('canvas');
   canvas.className = 'seven-gel__fizz';
   stage.append(layer, canvas);
@@ -194,6 +198,26 @@
     body.style.opacity = (1 - sm(SWEEP[1] - .02, SWEEP[1] + .02, p)).toFixed(3);
     const resting = p >= SPLIT[1] - .005 && p < FIZZ[0] + .03 && !reduced.matches;
     layer.classList.toggle('is-resting', resting);
+    // Twinkle: quick, irregular flashes here and there, each with a glint on a random tip.
+    const now = performance.now() / 1000;
+    stars.forEach((el, i) => {
+      const f = flash[i];
+      if (!resting) { el.style.setProperty('--tw', '0'); f.next = 0; return; }
+      if (!f.next) f.next = now + Math.random() * .35;
+      if (now >= f.next && f.at < 0) {
+        f.at = now; f.dur = .14 + Math.random() * .16;
+        const tip = TIPS[(Math.random() * TIPS.length) | 0];
+        sparks[i].style.left = (tip[0] / 6).toFixed(1) + '%'; sparks[i].style.top = (tip[1] / 6).toFixed(1) + '%';
+        sparks[i].style.setProperty('--rot', (Math.random() * 40 - 20).toFixed(0) + 'deg');
+      }
+      let v = 0;
+      if (f.at >= 0) {
+        const k = (now - f.at) / f.dur;
+        if (k >= 1) { f.at = -1; f.next = now + .12 + Math.random() * .75; }
+        else v = Math.sin(Math.PI * k);
+      }
+      el.style.setProperty('--tw', v.toFixed(3));
+    });
     const pos = [];
     stars.forEach((el, i) => {
       const s = starPos(i, box);
@@ -243,6 +267,7 @@
       }
     }
   }
+  function loop() { paint(); if (layer.classList.contains('is-resting')) raf = requestAnimationFrame(loop); }
   function draw(x, y, r, a, ring) {
     if (a <= .01 || r <= .2) return;
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -252,6 +277,7 @@
   }
   function kick() { if (!raf) raf = requestAnimationFrame(paint); }
   addEventListener('chilsung:star-progress', e => { p = e.detail; kick(); });
+  new MutationObserver(() => { if (layer.classList.contains('is-resting') && !raf) raf = requestAnimationFrame(loop); }).observe(layer, { attributes: true, attributeFilter: ['class'] });
   addEventListener('resize', () => { W = 0; kick(); }, { passive: true });
   reduced.addEventListener?.('change', kick);
   kick();
