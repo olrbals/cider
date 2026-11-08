@@ -138,7 +138,7 @@
     p = e.detail;
     if (p < BURST_AT - .08) armed = true;
     if (armed && last < BURST_AT && p >= BURST_AT && p < BURST_AT + .12 && !reduced.matches) {
-      armed = false; size(); burst();
+      armed = false; size(); if (!window.__sevenStoryBubbles) burst();   // the gel story already fizzes into white
     }
     last = p;
     schedule();

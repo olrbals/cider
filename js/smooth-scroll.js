@@ -28,9 +28,10 @@
     if (id) {
       const t = absTop(id), r = span(id), hold = vh() * .7, base = Math.max(1, r - hold);
       out.push(t, t + base * .14, t + base * .32, t + base * .70 + hold * .5);   // SEVEN STARS · white star · seven stars · white line
-      // the official film plays through these two steps
+      // the star story plays through these steps
       slowStops.set(Math.min(maxY(), Math.round(t + base * .14)), 1500);
       slowStops.set(Math.min(maxY(), Math.round(t + base * .32)), 2300);
+      slowStops.set(Math.min(maxY(), Math.round(t + base * .70 + hold * .5)), 2400);   // fizz → white, ~2.4s
     }
     const hi = $('history-3d');
     if (hi) { const t = absTop(hi), r = span(hi); for (let i = 0; i < 8; i++) out.push(t + r * (i / 8 + (i ? .006 : 0))); }

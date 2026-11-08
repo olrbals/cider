@@ -146,7 +146,7 @@
     const expanded=center.size*Math.pow(huge/center.size,paper);
     const ax=center.x+(innerWidth*.5-center.x)*paper;
     const ay=center.y+(h*.5-center.y)*paper;
-    aperture.style.opacity=paperOpen?'0':takeover.toFixed(4);
+    aperture.style.opacity=paperOpen||window.__sevenStoryNoAperture?'0':takeover.toFixed(4);   // gel story: the screen turns white through bubbles instead
     if(!paperOpen&&takeover>0){
       const stageBox=identity.querySelector('.identity-stage').getBoundingClientRect();
       aperture.style.transform='translate('+(ax-expanded/2-stageBox.left)+'px,'+(ay-expanded/2-stageBox.top)+'px) scale('+(expanded/100)+')';
