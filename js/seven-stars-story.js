@@ -25,7 +25,7 @@
   })();
   // Puffy heritage star: fatter inner radius, heavily rounded tips, slight tilt.
   const puffyPts = (() => {
-    const cx = 50, cy = 51, R = 44, r = 21.5, raw = [];
+    const cx = 50, cy = 50, R = 45, r = 22.5, raw = [];
     for (let k = 0; k < N; k++) {
       const u = k / N, seg = u * 10, i = Math.floor(seg), f = seg - i;
       const a0 = -Math.PI / 2 + i * TAU / 10, a1 = -Math.PI / 2 + (i + 1) * TAU / 10;
@@ -43,15 +43,14 @@
       }
       pts = nxt;
     }
-    const tilt = -9 * Math.PI / 180, c = Math.cos(tilt), s = Math.sin(tilt);
-    return pts.map(([x, y]) => [50 + (x - 50) * c - (y - 50) * s, 49 + (x - 50) * s + (y - 50) * c]);
+    return pts.map(([x, y]) => [x, y - 2.5]);          // upright, centred on the new star
   })();
   const pathAt = m => {
     let d = '';
     for (let k = 0; k < N; k++) {
       const a = puffyPts[k], b = sharpPts[k];
       // tips sharpen a little ahead of the body: a bit of "stretch" mid-way
-      const x = a[0] + (b[0] - a[0]) * m, y = a[1] + (b[1] - a[1]) * m - Math.sin(Math.PI * m) * (b[1] < 30 ? 3 : 0);
+      const x = a[0] + (b[0] - a[0]) * m, y = a[1] + (b[1] - a[1]) * m;
       d += (k ? 'L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2);
     }
     return d + 'Z';
@@ -69,19 +68,19 @@
       '<linearGradient id="ssBandGrad" x1="0" y1="0" x2="1" y2="1"><stop class="ss-b1" offset="0" stop-color="#000"/><stop class="ss-b2" offset="0" stop-color="#fff"/><stop class="ss-b3" offset="0" stop-color="#000"/></linearGradient>' +
       '<mask id="ssBand" maskUnits="userSpaceOnUse" x="-12" y="-12" width="124" height="124"><rect x="-12" y="-12" width="124" height="124" fill="url(#ssBandGrad)"/></mask>' +
       '<mask id="ssSweep" maskUnits="userSpaceOnUse" x="-12" y="-12" width="124" height="124"><rect x="-12" y="-12" width="124" height="124" fill="url(#ssSweepGrad)"/></mask>' +
-      '<filter id="ssBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>' +
-      '<filter id="ssSoft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation=".9"/></filter>' +
+      '<filter id="ssBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.4"/></filter>' +
+      '<filter id="ssSoft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation=".45"/></filter>' +
     '</defs>' +
     // outer halo · deep-green face · lime face (split on a soft S-curve) · inner bevel light · rim · new white star
-    '<path class="ss-glow" fill="none" stroke="#e9fff0" stroke-width="5.5" filter="url(#ssBlur)"/>' +
+    '<path class="ss-glow" fill="none" stroke="#dcf7e4" stroke-width="4.5" stroke-linejoin="round" opacity=".7" filter="url(#ssBlur)"/>' +
     '<path class="ss-body" fill="url(#ssDeep)"/>' +
     '<g clip-path="url(#ssClip)">' +
       '<path class="ss-lime" d="M52 -20 C49 22 41 58 60 130 L140 130 L140 -20 Z" fill="url(#ssLime)"/>' +
-      '<path class="ss-crease" d="M52 -20 C49 22 41 58 60 130" fill="none" stroke="#2e7d3f" stroke-width="2.4" opacity=".6" filter="url(#ssSoft)"/>' +
-      '<path class="ss-bevel" fill="none" stroke="#ffffff" stroke-width="6" opacity=".55" filter="url(#ssBlur)"/>' +
+      '<path class="ss-crease" d="M52 -20 C49 22 41 58 60 130" fill="none" stroke="#2e7d3f" stroke-width="1.3" opacity=".6"/>' +
+      '<path class="ss-bevel" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" opacity=".4" filter="url(#ssSoft)"/>' +
     '</g>' +
-    '<path class="ss-rim" fill="none" stroke="#f6fff8" stroke-width="1.3" opacity=".9" filter="url(#ssSoft)"/>' +
-    '<g mask="url(#ssBand)"><path class="ss-sheen" fill="#fff" opacity=".85" filter="url(#ssSoft)"/></g>' +
+    '<path class="ss-rim" fill="none" stroke="#f6fff8" stroke-width="1.6" stroke-linejoin="round" opacity=".95"/>' +
+    '<g mask="url(#ssBand)"><path class="ss-sheen" fill="#fff" opacity=".8"/></g>' +
     '<path class="ss-white" fill="#fff" mask="url(#ssSweep)"/>' +
     '</svg>';
   document.body.append(wrap);
@@ -110,8 +109,8 @@
     if (!live) return;
     const size = r.width * 124 / 86;                     // svg box incl. glow margin ≈ star width / .86
     const x = r.left + r.width / 2, y = r.top + r.height / 2;
-    const m = easeIO(sm(.03, .2, p));                    // outline: puffy → sharp
-    const w = sm(.09, .29, p);                           // white sweep, top-left → bottom-right
+    const m = sm(.04, .17, p);                           // ① outline: puffy → sharp
+    const w = sm(.15, .29, p);                           // ② then the white sweep, top-left → bottom-right
     const d = pathAt(m);
     parts.forEach(el => el.setAttribute('d', d)); sheen.setAttribute('d', d);
     const edge = -.3 + 1.55 * w;
@@ -121,9 +120,8 @@
     parts[2].style.opacity = (.55 * (1 - w)).toFixed(3);
     crease.style.opacity = (.6 * (1 - m)).toFixed(3);
     parts[4].style.opacity = (.9 * (1 - w)).toFixed(3);
-    const stretch = 1 + .06 * Math.sin(Math.PI * m);
     svg.style.width = svg.style.height = size + 'px';
-    svg.style.transform = 'translate3d(' + (x - size / 2) + 'px,' + (y - size / 2) + 'px,0) scale(' + (1 / stretch).toFixed(4) + ',' + stretch.toFixed(4) + ')';
+    svg.style.transform = 'translate3d(' + (x - size / 2) + 'px,' + (y - size / 2) + 'px,0)';
     wrap.style.opacity = (1 - sm(.43, .45, p)).toFixed(3);   // the aperture takes over from here
   }
   const kick = () => { if (!raf) raf = requestAnimationFrame(paint); };

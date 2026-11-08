@@ -49,7 +49,7 @@
 /* SEVEN STARS story overlay — glossy heritage star centred, morphing into the new star */
 .seven-story{position:fixed;inset:0;z-index:26;pointer-events:none;visibility:hidden}
 .seven-story.is-on{visibility:visible}
-.seven-story__svg{position:absolute;left:0;top:0;overflow:visible;transform-origin:50% 50%;will-change:transform}
+.seven-story__svg{position:absolute;left:0;top:0;overflow:visible;shape-rendering:geometricPrecision}
 #identity.has-seven-story .identity-main-star{opacity:0!important}
 /* sizes: footer emblem bigger, hero wordmark smaller */
 .footer-emblem{width:clamp(340px,30vw,460px)}
