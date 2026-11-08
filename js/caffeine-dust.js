@@ -73,8 +73,8 @@
     raf = 0;
     const dt = Math.min(.05, (now - (prev || now)) / 1000); prev = now;
     const t = (now - t0) / 1000;
-    const dy = scrollY - lastScroll; lastScroll = scrollY;     // powder stays with the page
-    if (dy) for (const p of parts) p.y -= dy;
+    // 11-08: the word is pinned while it plays, so the powder must NOT follow
+    // page scroll (that made it look like it flew upward).
     ctx.clearRect(0, 0, w, h);
     let alive = false;
     for (const p of parts) {
