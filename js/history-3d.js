@@ -590,13 +590,22 @@ async function initHistory(section) {
     goTo(valueAt(e.clientX)); e.preventDefault();
   });
   bar.addEventListener('pointermove', e => { if (dragging) goTo(valueAt(e.clientX)); });
-  const release = () => { if (!dragging) return; dragging = false; bar.classList.remove('is-dragging'); goTo(snap(target)); };
+  // 11-08: picking a year on the bar also moves the page to that year's place,
+  // so the next scroll continues from there (2014 → 2024 → RICH), not from where you left.
+  function syncScroll(v) {
+    const era = Math.round(clamp(v) * last);
+    const top = section.getBoundingClientRect().top + scrollY, span = Math.max(1, section.offsetHeight - innerHeight);
+    scrollEra = era;
+    window.scrollTo(0, Math.round(top + span * (era / years.length + (era ? .006 : 0))));
+  }
+  const release = () => { if (!dragging) return; dragging = false; bar.classList.remove('is-dragging'); goTo(snap(target)); syncScroll(target); };
   bar.addEventListener('pointerup', release);
   bar.addEventListener('pointercancel', release);
   bar.addEventListener('keydown', e => {
     const step = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
     if (e.key === 'Home') goTo(0); else if (e.key === 'End') goTo(1);
     else if (step) goTo(snap(target + step / last)); else return;
+    syncScroll(target);
     e.preventDefault();
   });
   // Leaving toward RICH: glide to 2024 so the 2024 → 2026 year handoff still lines up.
