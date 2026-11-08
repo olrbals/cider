@@ -16,8 +16,10 @@
   const maxY = () => Math.max(0, document.documentElement.scrollHeight - innerHeight);
 
   // ---- resting points (absolute scrollY), recomputed on every gesture ----
+  let slowStops = new Set();
   function stops() {
     const out = [];
+    slowStops = new Set();
     const span = el => Math.max(1, el.offsetHeight - vh());
     const bv = $('brand-values');
     if (bv) { const t = absTop(bv), r = span(bv); [0, .06, .40, .645, .9].forEach(p => out.push(t + r * p)); }
@@ -25,7 +27,8 @@
     const id = $('identity');
     if (id) {
       const t = absTop(id), r = span(id), hold = vh() * .7, base = Math.max(1, r - hold);
-      out.push(t, t + base * .32, t + base * .70 + hold * .5);   // SEVEN STARS · star filled · white line
+      out.push(t, t + base * .32, t + base * .70 + hold * .5);   // SEVEN STARS · star turned white · white line
+      slowStops.add(Math.min(maxY(), Math.round(t + base * .32)));   // the heritage-star transformation plays like a film
     }
     const hi = $('history-3d');
     if (hi) { const t = absTop(hi), r = span(hi); for (let i = 0; i < 8; i++) out.push(t + r * (i / 8 + (i ? .006 : 0))); }
@@ -65,7 +68,7 @@
   function startGlide(to) {
     const from = scrollY, dist = Math.abs(to - from);
     if (dist < 3) return false;
-    glide = { from, to, t0: performance.now(), dur: Math.min(1100, 560 + dist * .3) };
+    glide = { from, to, t0: performance.now(), dur: to > from && slowStops.has(Math.round(to)) ? 1900 : Math.min(1100, 560 + dist * .3) };
     mode = 'glide'; window.__chilsungGlide = true;
     if (!raf) raf = requestAnimationFrame(frame);
     return true;

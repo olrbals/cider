@@ -76,7 +76,7 @@
     identity.classList.toggle('is-seven-complete', p >= .57 && rect.bottom > 0 && rect.top < height);
     // First a tiny outlined star is born between T and R, then the
     // growing slot pushes them apart rather than overlapping the letters.
-    const growth = smooth(p / .07);   // 11-08: slot opens early for the heritage star
+    const growth = 1;   // 11-08 (c): the heritage star is already sitting in ST★RS
     const reveal = smooth((p - .02) / .12);
     const fill = smooth((p - .25) / .02);   // 11-08: arrives already white from the heritage-star sweep
     identity.style.setProperty('--identity-star-slot', (.055 + .86 * growth).toFixed(4) + 'em');

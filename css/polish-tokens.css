@@ -46,13 +46,10 @@
 .rich-duo__name[data-name="grape"] b{color:#3f9a2f}
 
 /* Seven rising stars overlay */
-/* SEVEN STARS story overlay (glossy heritage star → sharp new star) */
+/* SEVEN STARS story overlay — glossy heritage star centred, morphing into the new star */
 .seven-story{position:fixed;inset:0;z-index:26;pointer-events:none;visibility:hidden}
 .seven-story.is-on{visibility:visible}
-.seven-story__old,.seven-story__new{position:absolute;left:0;top:0;transform-origin:50% 50%;will-change:transform,mask-image}
-.seven-story__old{height:auto}
-.seven-story__new{overflow:visible}
-.seven-story__new path{fill:#fff}
+.seven-story__svg{position:absolute;left:0;top:0;overflow:visible;transform-origin:50% 50%;will-change:transform}
 #identity.has-seven-story .identity-main-star{opacity:0!important}
 /* sizes: footer emblem bigger, hero wordmark smaller */
 .footer-emblem{width:clamp(340px,30vw,460px)}
