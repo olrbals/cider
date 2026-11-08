@@ -114,3 +114,6 @@
   transform:translate(-50%,-50%) rotate(-36deg);pointer-events:none;user-select:none;
   opacity:var(--hero-type-fade,1);translate:0 var(--hero-type-lift,0px)}
 #top .hero-korean-title{left:1180px;top:735px}
+/* 11-08 (b) — bigger wordmark, no Korean title in the hero */
+#top .hero-wordmark{width:1200px;top:440px}
+#top .hero-korean-title{display:none}
