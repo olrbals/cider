@@ -129,18 +129,18 @@
   function placeDepth(t){
     // 11-08: the fruits ride the same scene clock as the bottles, so they all
     // land in the very same moment the bottles do (bottles settle at t≈.98).
-    const k=reduce.matches?1:Math.max(0,Math.min(1,(t-.3)/(.66-.3)));   // 11-09: shorter, snappier flight that ends as the bottles settle
+    const k=reduce.matches?1:Math.max(0,Math.min(1,(t-.24)/(.69-.24)));   // 11-09: a visible 슈욱 flight that ends right as the bottles settle
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
       // 파팍: scattered pops, not one clump — each fruit starts already spread
       // out on its own side and lands on its own beat.
-      const delay=DEPTH_DELAY[i%DEPTH_DELAY.length]*.35;   // staggered starts, one shared landing
+      const delay=DEPTH_DELAY[i%DEPTH_DELAY.length]*.6;   // staggered starts, one shared landing
       const ki=Math.max(0,Math.min(1,(k-delay)/(1-delay)));
       // 11-08 '슈우우우웅!': like a ball thrown from far away — a perspective
       // approach (z 9 → 1): it stays small in the distance, then rushes up to
       // full size in the last moment, lands with a tiny overshoot.
-      const persp=1-Math.pow(1-ki,3);   // 11-09: shoots out fast and eases in (was a slow far-away start)
+      const persp=1-Math.pow(1-ki,2.2);   // 11-09: shoots out fast and eases in (was a slow far-away start)
       const land=ki>=1?0:Math.max(0,Math.sin(Math.PI*Math.min(1,(ki-.78)/.22)))*.28;   // rushes up close, then eases back
       const px=mix(clinkPt.x,x,persp)+Math.sin(t*4.5+i*1.3)*22*drift;
       const py=mix(clinkPt.y,y,persp)+Math.cos(t*3.7+i)*18*drift;
@@ -184,6 +184,9 @@
     scrollDuo=t;
     duoTarget=reduce.matches?(t>0?DUO_END:0):Math.max(0,Math.min(DUO_END,t*DUO_PER_SCREEN));
     if(t<-.3)duoClock=0;
+    // 11-09: skip the stretch where both bottles are still fully off-screen,
+    // so they show up the moment the 2026 copy leaves (no blank beat).
+    if(!reduce.matches&&duoTarget>0&&duoClock<.15)duoClock=Math.min(duoTarget,.15);
     if(duoClock!==duoTarget&&!duoRaf)duoRaf=requestAnimationFrame(tickDuo);
     paintDuo(duoClock,t);
   }
@@ -193,7 +196,7 @@
     duo.style.visibility=alpha>0?'visible':'hidden';duo.style.opacity=alpha.toFixed(4);
     duo.style.transform='translate3d(0,'+(-14*exit).toFixed(2)+'px,0)';
     // Background blooms pink/lime right at the clink.
-    duo.style.setProperty('--rich-bloom',smooth(.34,.68,t).toFixed(4));   // background colour blooms in with the landing
+    duo.style.setProperty('--rich-bloom',smooth(.3,.68,t).toFixed(4));   // background colour blooms in with the landing
     const poses={};
     slots.forEach(slot=>{
       const {node,key,pre,fruit}=slot;
