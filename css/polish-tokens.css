@@ -124,9 +124,9 @@
 /* 11-08 — hero type: CHILSUNG (Archivo Black, −8%) + CIDER (Archivo Bold, +8%), white @ 80% */
 #top .hero-wordmark{display:none}
 #top .hero-type-top{visibility:visible;left:50%;top:150px;transform:translateX(-50%);
-  font:900 200px/.86 "Archivo","Archivo Black",sans-serif;letter-spacing:-.08em;color:rgba(255,255,255,.8);
+  font:900 200px/.86 "Archivo","Archivo Black",sans-serif;letter-spacing:-.04em;color:rgba(255,255,255,.8);
   padding-right:.08em}
-#top .hero-cider{position:absolute;z-index:4;right:268px;top:326px;color:rgba(255,255,255,.8);
+#top .hero-cider{position:absolute;z-index:4;right:242px;top:326px;color:rgba(255,255,255,.8);
   font:700 44px/1 "Archivo",sans-serif;letter-spacing:.08em;margin-right:-.08em;pointer-events:none;
   opacity:var(--hero-type-fade,1);translate:0 var(--hero-type-lift,0px)}
 /* scroll cue under the can */
