@@ -147,3 +147,6 @@
 /* 11-09 — the Lotte Chilsung mark and 칠성몰 are real links */
 .site-header a.header-logo,.site-header a.header-utils__mall{pointer-events:auto!important;cursor:pointer!important;color:inherit;text-decoration:none}
 .site-header.is-off-hero:not(.is-peek) a.header-logo,.site-header.is-off-hero:not(.is-peek) a.header-utils__mall{pointer-events:none!important}
+/* 11-09 — peek bar: rows are 88px tall in the 80px bar, so content sat 4px low. Centre them. */
+.site-header.is-off-hero.is-peek{grid-template-rows:80px}
+.site-header.is-off-hero.is-peek > *{height:80px;max-height:80px;align-self:center}
