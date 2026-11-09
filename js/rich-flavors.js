@@ -129,7 +129,7 @@
   function placeDepth(t){
     // 11-08: the fruits ride the same scene clock as the bottles, so they all
     // land in the very same moment the bottles do (bottles settle at t≈.98).
-    const k=reduce.matches?1:Math.max(0,Math.min(1,(t-.2)/(.67-.2)));   // fast 슈웅-샥, all in before the bottles settle (t≈.62–.69)
+    const k=reduce.matches?1:Math.max(0,Math.min(1,(t-.3)/(.66-.3)));   // 11-09: shorter, snappier flight that ends as the bottles settle
     const drift=reduce.matches?0:smooth(clinkT+.3,clinkT+.8,t);
     depthNodes.forEach((n,i)=>{
       const [x,y,w,h,rotation,alpha]=depth[i];
@@ -140,7 +140,7 @@
       // 11-08 '슈우우우웅!': like a ball thrown from far away — a perspective
       // approach (z 9 → 1): it stays small in the distance, then rushes up to
       // full size in the last moment, lands with a tiny overshoot.
-      const Z0=6,z=Z0-(Z0-1)*ki,persp=(1/z-1/Z0)/(1-1/Z0);        // 0 → 1, accelerating
+      const persp=1-Math.pow(1-ki,3);   // 11-09: shoots out fast and eases in (was a slow far-away start)
       const land=ki>=1?0:Math.max(0,Math.sin(Math.PI*Math.min(1,(ki-.78)/.22)))*.28;   // rushes up close, then eases back
       const px=mix(clinkPt.x,x,persp)+Math.sin(t*4.5+i*1.3)*22*drift;
       const py=mix(clinkPt.y,y,persp)+Math.cos(t*3.7+i)*18*drift;
