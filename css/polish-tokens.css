@@ -118,7 +118,9 @@
 /* 11-08: header peeks back in on a small upward scroll, on every page */
 .site-header.is-off-hero{position:fixed;transform:translateY(-100%);transition:opacity .3s ease,visibility .3s ease,transform .38s cubic-bezier(.22,.8,.3,1)}
 .site-header.is-off-hero.is-peek{opacity:1;visibility:visible;pointer-events:auto;transform:none;height:80px;padding-top:0;color:#111;background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 1px 0 rgba(7,76,39,.08),0 8px 24px rgba(7,76,39,.06)}
-.site-header.is-off-hero.is-peek .header-utils__mall img{filter:brightness(0)}
+.site-header .header-utils .header-utils__mall img.mall-dark{display:none}
+.site-header.is-off-hero.is-peek .header-utils .header-utils__mall img.mall-white{display:none}
+.site-header.is-off-hero.is-peek .header-utils .header-utils__mall img.mall-dark{display:block}
 @media (prefers-reduced-motion:reduce){.site-header.is-off-hero{transition:none}}
 
 /* 11-08 — hero type: CHILSUNG (Archivo Black, −8%) + CIDER (Archivo Bold, +8%), white @ 80% */
@@ -142,3 +144,6 @@
 .site-header .header-logo .header-logo__white{display:block}
 .site-header.is-off-hero.is-peek .header-logo .header-logo__white{display:none}
 .site-header.is-off-hero.is-peek .header-logo .header-logo__color{display:block}
+/* 11-09 — the Lotte Chilsung mark and 칠성몰 are real links */
+.site-header a.header-logo,.site-header a.header-utils__mall{pointer-events:auto!important;cursor:pointer!important;color:inherit;text-decoration:none}
+.site-header.is-off-hero:not(.is-peek) a.header-logo,.site-header.is-off-hero:not(.is-peek) a.header-utils__mall{pointer-events:none!important}
